@@ -203,12 +203,10 @@ destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
-* Convert assets to numeric
+* Convert assets to numeric and track missing values
 foreach var in financial_wealth_pre real_estate_wealth_pre business_wealth_pre other_wealth_pre ///
                financial_wealth real_estate_wealth business_wealth other_wealth {
 	destring `var', replace force
-	replace `var' = 0 if `var' == .
-	replace `var' = round(`var')
 }
 
 * Rename for consistency
@@ -221,13 +219,31 @@ rename real_estate_wealth_pre re_pre
 rename business_wealth_pre bus_pre
 rename other_wealth_pre oth_pre
 
+* Create missing flags and replace missing with 0
+foreach var in fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur {
+	gen `var'_missing = (`var' == .)
+	replace `var' = 0 if `var' == .
+	replace `var' = round(`var')
+}
+
 * Handle duplicates - keep first per id-year
 sort id report_year
 bysort id report_year: keep if _n == 1
 
+* Handle decree_year variable
+capture confirm variable decree_year
+if _rc != 0 {
+	gen decree_year = .
+}
+else {
+	destring decree_year, replace force
+}
+
 * Keep key variables
-keep id filename municipio_name report_year match_year ///
-	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur
+keep id filename municipio_name report_year match_year decree_year ///
+	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur ///
+	fin_pre_missing re_pre_missing bus_pre_missing oth_pre_missing ///
+	fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing
 
 gen source_file = "2015-2018"
 
@@ -266,27 +282,51 @@ destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
-* Asset variables
-rename asset_type_financial_previous_re fin_pre
-rename asset_type_financial_current_rep fin_cur
-rename asset_type_real_estate_previous_ re_pre
-rename asset_type_real_estate_current_r re_cur
-rename asset_type_privately_held_busine bus_pre
-rename asset_type_privately_held_busin bus_cur
-rename asset_type_other_previous_report oth_pre
-rename asset_type_other_current_reporti oth_cur
+* Asset variables - use capture to handle variable name truncation variations
+capture rename asset_type_financial_previous_re fin_pre
+capture rename asset_type_financial_previous_rep fin_pre
+capture rename asset_type_financial_current_rep fin_cur
+capture rename asset_type_financial_current_repo fin_cur
+capture rename asset_type_real_estate_previous_ re_pre
+capture rename asset_type_real_estate_previous_r re_pre
+capture rename asset_type_real_estate_current_r re_cur
+capture rename asset_type_real_estate_current_re re_cur
+capture rename asset_type_privately_held_busine bus_pre
+capture rename asset_type_privately_held_business_pre bus_pre
+capture rename asset_type_privately_held_busin bus_cur
+capture rename asset_type_privately_held_business_cur bus_cur
+capture rename asset_type_other_previous_report oth_pre
+capture rename asset_type_other_previous_reporti oth_pre
+capture rename asset_type_other_current_reporti oth_cur
+capture rename asset_type_other_current_reporting oth_cur
 
+* Track which variables are real vs imputed (missing from source)
 foreach var in fin_pre fin_cur re_pre re_cur bus_pre bus_cur oth_pre oth_cur {
-	destring `var', replace force
-	replace `var' = 0 if `var' == .
-	replace `var' = round(`var')
+	capture confirm variable `var'
+	if _rc != 0 {
+		di "WARNING: Variable `var' not found, creating with missing flag"
+		gen `var' = .
+		gen `var'_missing = 1
+	}
+	else {
+		gen `var'_missing = 0
+		destring `var', replace force
+		replace `var'_missing = 1 if `var' == .
+		replace `var' = 0 if `var' == .
+		replace `var' = round(`var')
+	}
 }
 
 gen id = ""
 gen source_file = "2019"
 
-keep id filename municipio_name report_year match_year ///
-	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur source_file
+* 2019 doesn't have decree_year
+gen decree_year = .
+
+keep id filename municipio_name report_year match_year decree_year ///
+	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur ///
+	fin_pre_missing re_pre_missing bus_pre_missing oth_pre_missing ///
+	fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing source_file
 
 save "$CleanDataPath/clean_2019.dta", replace
 
@@ -311,26 +351,51 @@ destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
-rename asset_type_financial_previous_re fin_pre
-rename asset_type_financial_current_rep fin_cur
-rename asset_type_real_estate_previous_ re_pre
-rename asset_type_real_estate_current_r re_cur
-rename asset_type_privately_held_busine bus_pre
-rename asset_type_privately_held_busin bus_cur
-rename asset_type_other_previous_report oth_pre
-rename asset_type_other_current_reporti oth_cur
+* Asset variables - use capture to handle variable name truncation variations
+capture rename asset_type_financial_previous_re fin_pre
+capture rename asset_type_financial_previous_rep fin_pre
+capture rename asset_type_financial_current_rep fin_cur
+capture rename asset_type_financial_current_repo fin_cur
+capture rename asset_type_real_estate_previous_ re_pre
+capture rename asset_type_real_estate_previous_r re_pre
+capture rename asset_type_real_estate_current_r re_cur
+capture rename asset_type_real_estate_current_re re_cur
+capture rename asset_type_privately_held_busine bus_pre
+capture rename asset_type_privately_held_business_pre bus_pre
+capture rename asset_type_privately_held_busin bus_cur
+capture rename asset_type_privately_held_business_cur bus_cur
+capture rename asset_type_other_previous_report oth_pre
+capture rename asset_type_other_previous_reporti oth_pre
+capture rename asset_type_other_current_reporti oth_cur
+capture rename asset_type_other_current_reporting oth_cur
 
+* Track which variables are real vs imputed (missing from source)
 foreach var in fin_pre fin_cur re_pre re_cur bus_pre bus_cur oth_pre oth_cur {
-	destring `var', replace force
-	replace `var' = 0 if `var' == .
-	replace `var' = round(`var')
+	capture confirm variable `var'
+	if _rc != 0 {
+		di "WARNING: Variable `var' not found, creating with missing flag"
+		gen `var' = .
+		gen `var'_missing = 1
+	}
+	else {
+		gen `var'_missing = 0
+		destring `var', replace force
+		replace `var'_missing = 1 if `var' == .
+		replace `var' = 0 if `var' == .
+		replace `var' = round(`var')
+	}
 }
 
 gen id = ""
 gen source_file = "2020"
 
-keep id filename municipio_name report_year match_year ///
-	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur source_file
+* 2020 doesn't have decree_year
+gen decree_year = .
+
+keep id filename municipio_name report_year match_year decree_year ///
+	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur ///
+	fin_pre_missing re_pre_missing bus_pre_missing oth_pre_missing ///
+	fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing source_file
 
 save "$CleanDataPath/clean_2020.dta", replace
 
@@ -355,26 +420,51 @@ destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
-rename asset_type_financial_previous_re fin_pre
-rename asset_type_financial_current_rep fin_cur
-rename asset_type_real_estate_previous_ re_pre
-rename asset_type_real_estate_current_r re_cur
-rename asset_type_privately_held_busine bus_pre
-rename asset_type_privately_held_busin bus_cur
-rename asset_type_other_previous_report oth_pre
-rename asset_type_other_current_reporti oth_cur
+* Asset variables - use capture to handle variable name truncation variations
+capture rename asset_type_financial_previous_re fin_pre
+capture rename asset_type_financial_previous_rep fin_pre
+capture rename asset_type_financial_current_rep fin_cur
+capture rename asset_type_financial_current_repo fin_cur
+capture rename asset_type_real_estate_previous_ re_pre
+capture rename asset_type_real_estate_previous_r re_pre
+capture rename asset_type_real_estate_current_r re_cur
+capture rename asset_type_real_estate_current_re re_cur
+capture rename asset_type_privately_held_busine bus_pre
+capture rename asset_type_privately_held_business_pre bus_pre
+capture rename asset_type_privately_held_busin bus_cur
+capture rename asset_type_privately_held_business_cur bus_cur
+capture rename asset_type_other_previous_report oth_pre
+capture rename asset_type_other_previous_reporti oth_pre
+capture rename asset_type_other_current_reporti oth_cur
+capture rename asset_type_other_current_reporting oth_cur
 
+* Track which variables are real vs imputed (missing from source)
 foreach var in fin_pre fin_cur re_pre re_cur bus_pre bus_cur oth_pre oth_cur {
-	destring `var', replace force
-	replace `var' = 0 if `var' == .
-	replace `var' = round(`var')
+	capture confirm variable `var'
+	if _rc != 0 {
+		di "WARNING: Variable `var' not found, creating with missing flag"
+		gen `var' = .
+		gen `var'_missing = 1
+	}
+	else {
+		gen `var'_missing = 0
+		destring `var', replace force
+		replace `var'_missing = 1 if `var' == .
+		replace `var' = 0 if `var' == .
+		replace `var' = round(`var')
+	}
 }
 
 gen id = ""
 gen source_file = "2021"
 
-keep id filename municipio_name report_year match_year ///
-	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur source_file
+* 2021 doesn't have decree_year
+gen decree_year = .
+
+keep id filename municipio_name report_year match_year decree_year ///
+	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur ///
+	fin_pre_missing re_pre_missing bus_pre_missing oth_pre_missing ///
+	fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing source_file
 
 save "$CleanDataPath/clean_2021.dta", replace
 
@@ -399,26 +489,51 @@ destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
-rename asset_type_financial_previous_re fin_pre
-rename asset_type_financial_current_rep fin_cur
-rename asset_type_real_estate_previous_ re_pre
-rename asset_type_real_estate_current_r re_cur
-rename asset_type_privately_held_busine bus_pre
-rename asset_type_privately_held_busin bus_cur
-rename asset_type_other_previous_report oth_pre
-rename asset_type_other_current_reporti oth_cur
+* Asset variables - use capture to handle variable name truncation variations
+capture rename asset_type_financial_previous_re fin_pre
+capture rename asset_type_financial_previous_rep fin_pre
+capture rename asset_type_financial_current_rep fin_cur
+capture rename asset_type_financial_current_repo fin_cur
+capture rename asset_type_real_estate_previous_ re_pre
+capture rename asset_type_real_estate_previous_r re_pre
+capture rename asset_type_real_estate_current_r re_cur
+capture rename asset_type_real_estate_current_re re_cur
+capture rename asset_type_privately_held_busine bus_pre
+capture rename asset_type_privately_held_business_pre bus_pre
+capture rename asset_type_privately_held_busin bus_cur
+capture rename asset_type_privately_held_business_cur bus_cur
+capture rename asset_type_other_previous_report oth_pre
+capture rename asset_type_other_previous_reporti oth_pre
+capture rename asset_type_other_current_reporti oth_cur
+capture rename asset_type_other_current_reporting oth_cur
 
+* Track which variables are real vs imputed (missing from source)
 foreach var in fin_pre fin_cur re_pre re_cur bus_pre bus_cur oth_pre oth_cur {
-	destring `var', replace force
-	replace `var' = 0 if `var' == .
-	replace `var' = round(`var')
+	capture confirm variable `var'
+	if _rc != 0 {
+		di "WARNING: Variable `var' not found, creating with missing flag"
+		gen `var' = .
+		gen `var'_missing = 1
+	}
+	else {
+		gen `var'_missing = 0
+		destring `var', replace force
+		replace `var'_missing = 1 if `var' == .
+		replace `var' = 0 if `var' == .
+		replace `var' = round(`var')
+	}
 }
 
 gen id = ""
 gen source_file = "2022_format19"
 
-keep id filename municipio_name report_year match_year ///
-	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur source_file
+* 2022_format19 doesn't have decree_year (old form)
+gen decree_year = .
+
+keep id filename municipio_name report_year match_year decree_year ///
+	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur ///
+	fin_pre_missing re_pre_missing bus_pre_missing oth_pre_missing ///
+	fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing source_file
 
 save "$CleanDataPath/clean_2022_format19.dta", replace
 
@@ -443,26 +558,57 @@ destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
-rename asset_type_financial_previous_re fin_pre
-rename asset_type_financial_current_rep fin_cur
-rename asset_type_real_estate_previous_ re_pre
-rename asset_type_real_estate_current_r re_cur
-rename asset_type_privately_held_busine bus_pre
-rename asset_type_privately_held_busin bus_cur
-rename asset_type_other_previous_report oth_pre
-rename asset_type_other_current_reporti oth_cur
+* Asset variables - use capture to handle variable name truncation variations
+capture rename asset_type_financial_previous_re fin_pre
+capture rename asset_type_financial_previous_rep fin_pre
+capture rename asset_type_financial_current_rep fin_cur
+capture rename asset_type_financial_current_repo fin_cur
+capture rename asset_type_real_estate_previous_ re_pre
+capture rename asset_type_real_estate_previous_r re_pre
+capture rename asset_type_real_estate_current_r re_cur
+capture rename asset_type_real_estate_current_re re_cur
+capture rename asset_type_privately_held_busine bus_pre
+capture rename asset_type_privately_held_business_pre bus_pre
+capture rename asset_type_privately_held_busin bus_cur
+capture rename asset_type_privately_held_business_cur bus_cur
+capture rename asset_type_other_previous_report oth_pre
+capture rename asset_type_other_previous_reporti oth_pre
+capture rename asset_type_other_current_reporti oth_cur
+capture rename asset_type_other_current_reporting oth_cur
 
+* Track which variables are real vs imputed (missing from source)
 foreach var in fin_pre fin_cur re_pre re_cur bus_pre bus_cur oth_pre oth_cur {
-	destring `var', replace force
-	replace `var' = 0 if `var' == .
-	replace `var' = round(`var')
+	capture confirm variable `var'
+	if _rc != 0 {
+		di "WARNING: Variable `var' not found, creating with missing flag"
+		gen `var' = .
+		gen `var'_missing = 1
+	}
+	else {
+		gen `var'_missing = 0
+		destring `var', replace force
+		replace `var'_missing = 1 if `var' == .
+		replace `var' = 0 if `var' == .
+		replace `var' = round(`var')
+	}
 }
 
 gen id = ""
 gen source_file = "2022_format22"
 
-keep id filename municipio_name report_year match_year ///
-	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur source_file
+* Handle decree_year variable (2022_format22 has it)
+capture confirm variable decree_year
+if _rc != 0 {
+	gen decree_year = .
+}
+else {
+	destring decree_year, replace force
+}
+
+keep id filename municipio_name report_year match_year decree_year ///
+	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur ///
+	fin_pre_missing re_pre_missing bus_pre_missing oth_pre_missing ///
+	fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing source_file
 
 save "$CleanDataPath/clean_2022_format22.dta", replace
 
@@ -487,26 +633,57 @@ destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
-rename asset_type_financial_previous_re fin_pre
-rename asset_type_financial_current_rep fin_cur
-rename asset_type_real_estate_previous_ re_pre
-rename asset_type_real_estate_current_r re_cur
-rename asset_type_privately_held_busine bus_pre
-rename asset_type_privately_held_busin bus_cur
-rename asset_type_other_previous_report oth_pre
-rename asset_type_other_current_reporti oth_cur
+* Asset variables - use capture to handle variable name truncation variations
+capture rename asset_type_financial_previous_re fin_pre
+capture rename asset_type_financial_previous_rep fin_pre
+capture rename asset_type_financial_current_rep fin_cur
+capture rename asset_type_financial_current_repo fin_cur
+capture rename asset_type_real_estate_previous_ re_pre
+capture rename asset_type_real_estate_previous_r re_pre
+capture rename asset_type_real_estate_current_r re_cur
+capture rename asset_type_real_estate_current_re re_cur
+capture rename asset_type_privately_held_busine bus_pre
+capture rename asset_type_privately_held_business_pre bus_pre
+capture rename asset_type_privately_held_busin bus_cur
+capture rename asset_type_privately_held_business_cur bus_cur
+capture rename asset_type_other_previous_report oth_pre
+capture rename asset_type_other_previous_reporti oth_pre
+capture rename asset_type_other_current_reporti oth_cur
+capture rename asset_type_other_current_reporting oth_cur
 
+* Track which variables are real vs imputed (missing from source)
 foreach var in fin_pre fin_cur re_pre re_cur bus_pre bus_cur oth_pre oth_cur {
-	destring `var', replace force
-	replace `var' = 0 if `var' == .
-	replace `var' = round(`var')
+	capture confirm variable `var'
+	if _rc != 0 {
+		di "WARNING: Variable `var' not found, creating with missing flag"
+		gen `var' = .
+		gen `var'_missing = 1
+	}
+	else {
+		gen `var'_missing = 0
+		destring `var', replace force
+		replace `var'_missing = 1 if `var' == .
+		replace `var' = 0 if `var' == .
+		replace `var' = round(`var')
+	}
 }
 
 gen id = ""
 gen source_file = "2023"
 
-keep id filename municipio_name report_year match_year ///
-	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur source_file
+* Handle decree_year variable (2023 has it)
+capture confirm variable decree_year
+if _rc != 0 {
+	gen decree_year = .
+}
+else {
+	destring decree_year, replace force
+}
+
+keep id filename municipio_name report_year match_year decree_year ///
+	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur ///
+	fin_pre_missing re_pre_missing bus_pre_missing oth_pre_missing ///
+	fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing source_file
 
 save "$CleanDataPath/clean_2023.dta", replace
 
@@ -548,254 +725,398 @@ tab source_file has_id
 save "$CleanDataPath/all_records_combined.dta", replace
 
 ********************************************************************************
-* SECTION 5: SEQUENTIAL FUZZY MATCHING
+* SECTION 5: ITERATIVE CHAINED MATCHING
 ********************************************************************************
-* Strategy: Match forward through time. Each year's current assets become
-* the next year's previous assets for matching.
+* Strategy: Match forward through time ITERATIVELY.
+* 1. Start with 2015-2018 as the base (has known IDs)
+* 2. Match 2019 records to 2015-2018 based on previous year assets
+* 3. Add matched 2019 records to the base
+* 4. Match 2020 records to the expanded base
+* 5. Repeat for 2021, 2022, 2023
 *
-* For each unmatched record, try to find a match in earlier data where:
-*   - Municipality matches
-*   - Previous year assets match current year assets of the earlier record
-*   - Allow fuzzy matching with 1-2 digit tolerance
+* This allows chaining: A 2020 record can match to a 2019 record that was
+* already matched to a 2015-2018 ID.
 ********************************************************************************
 
 di " "
 di "========================================"
-di "STARTING SEQUENTIAL FUZZY MATCHING"
+di "STARTING ITERATIVE CHAINED MATCHING"
 di "========================================"
 
 *------------------------------------------------------------------------------
-* STEP 5.1: Create matching keys from 2015-2018 (the "base" with known IDs)
+* STEP 5.1: Initialize the base with 2015-2018 records
 *------------------------------------------------------------------------------
-* These are the records we'll try to match later records to.
-* For each observation, their CURRENT assets can match to future observations'
-* PREVIOUS assets.
+* The base contains records with known IDs whose CURRENT assets can be matched
+* against future records' PREVIOUS assets.
 
-use "$CleanDataPath/all_records_combined.dta", clear
+use "$CleanDataPath/clean_2015_2018.dta", clear
 
-* Keep only 2015-2018 records with IDs
-keep if source_file == "2015-2018"
+* For matching, current assets become the key
+* report_year becomes match_year_key (the year future records would reference)
+keep id filename municipio_name report_year ///
+	fin_cur re_cur bus_cur oth_cur ///
+	fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing
 
-* For matching, we need: municipality, report_year (becomes match_year for future),
-* and current assets (become previous assets for future records)
-keep obs_id id filename municipio_name report_year fin_cur re_cur bus_cur oth_cur
-
-* These current assets will be matched against future records' previous assets
-rename fin_cur fin_match
-rename re_cur re_match
-rename bus_cur bus_match
-rename oth_cur oth_match
+rename fin_cur fin_base
+rename re_cur re_base
+rename bus_cur bus_base
+rename oth_cur oth_base
+rename fin_cur_missing fin_base_missing
+rename re_cur_missing re_base_missing
+rename bus_cur_missing bus_base_missing
+rename oth_cur_missing oth_base_missing
 rename report_year match_year_key
+rename filename base_filename
 
-save "$CleanDataPath/base_for_matching.dta", replace
+save "$CleanDataPath/matching_base.dta", replace
 
-di "Base records for matching (2015-2018): " _N
+di "Initial base records (2015-2018): " _N
 
-*------------------------------------------------------------------------------
-* STEP 5.2: Create records to be matched (2019+)
-*------------------------------------------------------------------------------
-use "$CleanDataPath/all_records_combined.dta", clear
-
-* Keep records without ID (need to be matched)
-keep if id == "" | id == "."
-
-* For matching, we use previous assets
-keep obs_id filename municipio_name match_year report_year ///
-	fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur source_file
-
-* Rename for matching
-rename fin_pre fin_match
-rename re_pre re_match
-rename bus_pre bus_match
-rename oth_pre oth_match
-rename match_year match_year_key
-
-save "$CleanDataPath/records_to_match.dta", replace
-
-di "Records to match (2019+): " _N
+* Initialize all matches file (will append to this)
+clear
+gen obs_id = .
+gen id = ""
+gen filename = ""
+gen municipio_name = ""
+gen match_year_key = .
+gen report_year = .
+gen source_file = ""
+gen match_type = ""
+gen match_confidence = .
+save "$CleanDataPath/all_matches_full.dta", replace
 
 *------------------------------------------------------------------------------
-* STEP 5.3: EXACT MATCHING
+* STEP 5.2: Define matching program (to reuse for each year)
+*------------------------------------------------------------------------------
+capture program drop match_year_to_base
+program define match_year_to_base
+	args source_year
+
+	di " "
+	di "========================================"
+	di "MATCHING `source_year' DATA"
+	di "========================================"
+
+	* Load records from this source year
+	use "$CleanDataPath/clean_`source_year'.dta", clear
+
+	* Skip if no records or all have IDs already
+	count
+	if r(N) == 0 {
+		di "No records to match for `source_year'"
+		exit
+	}
+
+	* Keep records without ID (need to be matched)
+	keep if id == "" | id == "."
+	count
+	local n_to_match = r(N)
+	di "Records to match: `n_to_match'"
+
+	if `n_to_match' == 0 {
+		di "No unmatched records for `source_year'"
+		exit
+	}
+
+	* Prepare for matching - use previous year assets as the key
+	keep filename municipio_name match_year report_year ///
+		fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur ///
+		fin_pre_missing re_pre_missing bus_pre_missing oth_pre_missing ///
+		fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing
+
+	rename fin_pre fin_new
+	rename re_pre re_new
+	rename bus_pre bus_new
+	rename oth_pre oth_new
+	rename fin_pre_missing fin_new_missing
+	rename re_pre_missing re_new_missing
+	rename bus_pre_missing bus_new_missing
+	rename oth_pre_missing oth_new_missing
+	rename match_year match_year_key
+
+	gen source_file = "`source_year'"
+
+	tempfile to_match
+	save `to_match'
+
+	* Load base and join on municipality + year only first
+	* Then filter for exact asset matches
+	use "$CleanDataPath/matching_base.dta", clear
+
+	* Join on municipality and year - creates all candidate pairs
+	joinby municipio_name match_year_key using `to_match', unmatched(using) _merge(_m)
+
+	* For exact matches, require all 4 assets to match exactly
+	gen exact_match = (_m == 3) & ///
+		(fin_base == fin_new) & (re_base == re_new) & ///
+		(bus_base == bus_new) & (oth_base == oth_new)
+
+	* CRITICAL: Require at least one non-zero asset to count as valid match
+	gen n_nonzero = (fin_new > 0 & fin_new_missing == 0) + ///
+		(re_new > 0 & re_new_missing == 0) + ///
+		(bus_new > 0 & bus_new_missing == 0) + ///
+		(oth_new > 0 & oth_new_missing == 0)
+
+	* Reject matches where all assets are zero
+	replace exact_match = 0 if n_nonzero == 0
+
+	* Separate matched from unmatched
+	* First, save the joined data for later use
+	tempfile joined_data
+	save `joined_data'
+
+	keep if exact_match == 1
+
+	count
+	local n_exact = r(N)
+	di "Exact matches: `n_exact'"
+
+	if `n_exact' > 0 {
+		* Handle duplicates - keep first match per filename
+		bysort filename (id): gen dup = _n
+		keep if dup == 1
+		drop dup
+
+		* Also ensure each base record only matches once
+		bysort base_filename (filename): gen dup = _n
+		keep if dup == 1
+		drop dup
+
+		count
+		local n_exact_dedup = r(N)
+		di "Exact matches after dedup: `n_exact_dedup'"
+
+		* Save list of base records used and matched filenames
+		preserve
+		keep base_filename
+		duplicates drop
+		save "$CleanDataPath/temp_exact_used_base.dta", replace
+		restore
+
+		preserve
+		keep filename
+		duplicates drop
+		save "$CleanDataPath/temp_exact_matched_files.dta", replace
+		restore
+
+		gen match_type = "exact"
+		gen match_confidence = 100
+		gen obs_id = _n + 1000000  // Placeholder
+
+		* Save these matches
+		keep obs_id id filename municipio_name match_year_key report_year ///
+			source_file match_type match_confidence
+
+		append using "$CleanDataPath/all_matches_full.dta"
+		save "$CleanDataPath/all_matches_full.dta", replace
+	}
+	else {
+		* No exact matches - create empty temp files
+		clear
+		gen base_filename = ""
+		save "$CleanDataPath/temp_exact_used_base.dta", replace
+
+		clear
+		gen filename = ""
+		save "$CleanDataPath/temp_exact_matched_files.dta", replace
+	}
+
+	* Now get unmatched records - those that weren't exactly matched
+	* Reload the original to_match file to get clean unmatched records
+	use `to_match', clear
+	merge 1:1 filename using "$CleanDataPath/temp_exact_matched_files.dta", keep(master) nogen
+
+	count
+	local n_unmatched = r(N)
+	di "Unmatched after exact: `n_unmatched'"
+
+	if `n_unmatched' > 0 {
+		* FUZZY MATCHING
+		tempfile unmatched
+		save `unmatched'
+
+		* Load base for fuzzy matching - but exclude base records already used in exact matching
+		use "$CleanDataPath/matching_base.dta", clear
+
+		* Remove base records that were already used in exact matches
+		merge m:1 base_filename using "$CleanDataPath/temp_exact_used_base.dta", keep(master) nogen
+
+		* Join on municipality and year only
+		joinby municipio_name match_year_key using `unmatched', unmatched(none)
+
+		count
+		local n_candidates = r(N)
+		di "Fuzzy match candidates: `n_candidates'"
+
+		if `n_candidates' > 0 {
+			* Calculate digit distance for each asset
+			foreach asset in fin re bus oth {
+				gen `asset'_either_missing = (`asset'_new_missing == 1) | (`asset'_base_missing == 1)
+				gen `asset'_diff = abs(`asset'_new - `asset'_base)
+				gen `asset'_mag_new = floor(log10(max(`asset'_new, 1))) + 1
+				gen `asset'_mag_base = floor(log10(max(`asset'_base, 1))) + 1
+				gen `asset'_mag = max(`asset'_mag_new, `asset'_mag_base)
+				gen `asset'_both_zero = (`asset'_new == 0 & `asset'_base == 0)
+
+				gen `asset'_digit_dist = 0 if `asset'_diff == 0 & `asset'_both_zero == 0
+				replace `asset'_digit_dist = 88 if `asset'_both_zero == 1
+				replace `asset'_digit_dist = 1 if `asset'_diff > 0 & `asset'_diff <= 10^(`asset'_mag - 1)
+				replace `asset'_digit_dist = 2 if `asset'_diff > 10^(`asset'_mag - 1) & `asset'_diff <= 10^(`asset'_mag)
+				replace `asset'_digit_dist = 99 if `asset'_diff > 10^(`asset'_mag) | `asset'_digit_dist == .
+				replace `asset'_digit_dist = 99 if `asset'_either_missing == 1
+
+				drop `asset'_mag_new `asset'_mag_base `asset'_mag `asset'_either_missing `asset'_both_zero
+			}
+
+			* Require at least 1 valid non-zero match
+			gen n_valid = (fin_digit_dist < 88) + (re_digit_dist < 88) + ///
+				(bus_digit_dist < 88) + (oth_digit_dist < 88)
+			keep if n_valid >= 1
+
+			* Calculate total distance (only valid comparisons)
+			gen total_dist = 0
+			foreach asset in fin re bus oth {
+				replace total_dist = total_dist + `asset'_digit_dist if `asset'_digit_dist < 88
+			}
+
+			* Keep only fuzzy matches with small total distance
+			keep if total_dist <= 4 & total_dist > 0
+
+			count
+			local n_fuzzy_cand = r(N)
+			di "Fuzzy candidates after distance filter: `n_fuzzy_cand'"
+
+			if `n_fuzzy_cand' > 0 {
+				* Confidence score
+				gen n_1digit = (fin_digit_dist == 1) + (re_digit_dist == 1) + ///
+					(bus_digit_dist == 1) + (oth_digit_dist == 1)
+				gen n_2digit = (fin_digit_dist == 2) + (re_digit_dist == 2) + ///
+					(bus_digit_dist == 2) + (oth_digit_dist == 2)
+				gen match_confidence = 100 - 5*n_1digit - 10*n_2digit
+
+				* Keep best match per filename (new record)
+				gsort filename -match_confidence total_dist
+				bysort filename: gen rank = _n
+				keep if rank == 1
+				drop rank
+
+				* Keep best match per base record (base_filename is unique)
+				gsort base_filename -match_confidence total_dist
+				bysort base_filename: gen rank = _n
+				keep if rank == 1
+				drop rank
+
+				count
+				local n_fuzzy = r(N)
+				di "Final fuzzy matches: `n_fuzzy'"
+
+				gen match_type = "fuzzy"
+				gen obs_id = _n + 2000000
+
+				keep obs_id id filename municipio_name match_year_key report_year ///
+					source_file match_type match_confidence
+
+				append using "$CleanDataPath/all_matches_full.dta"
+				save "$CleanDataPath/all_matches_full.dta", replace
+			}
+		}
+	}
+
+	* UPDATE THE BASE: Add ALL records from this year (matched AND unmatched)
+	* Their current assets become available for matching future years
+	* This allows chaining: 2020 can match to unmatched 2019 records, etc.
+
+	* First, get matched IDs for this year
+	use "$CleanDataPath/all_matches_full.dta", clear
+	keep if source_file == "`source_year'"
+
+	count
+	local n_matched = r(N)
+	di "Matched records from `source_year': `n_matched'"
+
+	if `n_matched' > 0 {
+		keep filename id
+		tempfile matched_ids
+		save `matched_ids'
+	}
+
+	* Now load ALL records from this year
+	use "$CleanDataPath/clean_`source_year'.dta", clear
+
+	* Merge in IDs for matched records
+	if `n_matched' > 0 {
+		merge 1:1 filename using `matched_ids', keep(master match) nogen
+	}
+
+	* For unmatched records, assign filename as temporary ID for chaining
+	replace id = filename if id == "" | id == "."
+
+	count
+	local n_all = r(N)
+	di "Total records to add to base from `source_year': `n_all'"
+
+	* Prepare for base format
+	rename fin_cur fin_base
+	rename re_cur re_base
+	rename bus_cur bus_base
+	rename oth_cur oth_base
+	rename fin_cur_missing fin_base_missing
+	rename re_cur_missing re_base_missing
+	rename bus_cur_missing bus_base_missing
+	rename oth_cur_missing oth_base_missing
+	rename report_year match_year_key
+	rename filename base_filename
+
+	keep id base_filename municipio_name match_year_key ///
+		fin_base re_base bus_base oth_base ///
+		fin_base_missing re_base_missing bus_base_missing oth_base_missing
+
+	* Append to base
+	append using "$CleanDataPath/matching_base.dta"
+	save "$CleanDataPath/matching_base.dta", replace
+
+	di "Base expanded with ALL `n_all' records from `source_year'"
+	di "New base size: " _N
+
+end
+
+*------------------------------------------------------------------------------
+* STEP 5.3: Run matching for each year sequentially
+*------------------------------------------------------------------------------
+match_year_to_base 2019
+match_year_to_base 2020
+match_year_to_base 2021
+match_year_to_base 2022
+match_year_to_base 2023
+
+*------------------------------------------------------------------------------
+* STEP 5.4: Summary of all matches
 *------------------------------------------------------------------------------
 di " "
-di "--- EXACT MATCHING ---"
+di "========================================"
+di "MATCHING COMPLETE"
+di "========================================"
 
-use "$CleanDataPath/records_to_match.dta", clear
+use "$CleanDataPath/all_matches_full.dta", clear
 
-* Create unique list of base municipality + year + asset combinations
-preserve
-use "$CleanDataPath/base_for_matching.dta", clear
-keep municipio_name match_year_key fin_match re_match bus_match oth_match id
-tempfile base_unique
-save `base_unique'
-restore
+* Remove placeholder empty row
+drop if id == ""
 
-* Join on all keys
-joinby municipio_name match_year_key fin_match re_match bus_match oth_match ///
-	using `base_unique', unmatched(master) _merge(_exact)
+count
+local n_total = r(N)
+di "Total matches: `n_total'"
 
-* Count matches
-count if _exact == 3
-local n_exact = r(N)
-di "Exact matches found: `n_exact'"
-
-* For matched records, assign the ID
-replace id = "" if _exact == 1
-
-* Handle duplicates - if multiple matches, keep first
-bysort obs_id (id): gen dup = _n
-keep if dup == 1
-drop dup _exact
-
-* Save exact matches
-preserve
-keep if id != ""
-gen match_type = "exact"
-gen match_confidence = 100
-save "$CleanDataPath/matches_exact_full.dta", replace
-di "Exact matches saved: " _N
-restore
-
-* Keep unmatched for fuzzy matching
-keep if id == ""
-drop id
-save "$CleanDataPath/unmatched_stage1.dta", replace
-di "Unmatched after exact: " _N
-
-*------------------------------------------------------------------------------
-* STEP 5.4: FUZZY MATCHING (1-2 digit tolerance)
-*------------------------------------------------------------------------------
-di " "
-di "--- FUZZY MATCHING ---"
-
-use "$CleanDataPath/unmatched_stage1.dta", clear
-
-* Join on municipality and year only
-joinby municipio_name match_year_key ///
-	using "$CleanDataPath/base_for_matching.dta", unmatched(master) _merge(_fuzzy)
-
-* Keep only potential matches
-keep if _fuzzy == 3
-
-* Calculate digit distance for each asset
-foreach asset in fin re bus oth {
-	* Absolute difference
-	gen `asset'_diff = abs(`asset'_match - `asset'_match)
-
-	* Wait - we need the base values. Let me fix this.
-	* The issue is that after joinby, we have BOTH sets of values.
-	* Actually joinby creates duplicate column names... need to handle this differently.
-}
-
-* This approach won't work directly. Let me restructure.
-drop _all
-
-*------------------------------------------------------------------------------
-* STEP 5.4 (REVISED): FUZZY MATCHING WITH PROPER STRUCTURE
-*------------------------------------------------------------------------------
-di " "
-di "--- FUZZY MATCHING (Revised) ---"
-
-* Load unmatched records
-use "$CleanDataPath/unmatched_stage1.dta", clear
-
-* Rename matching variables to distinguish them
-rename fin_match fin_new
-rename re_match re_new
-rename bus_match bus_new
-rename oth_match oth_new
-
-tempfile unmatched_renamed
-save `unmatched_renamed'
-
-* Load base records and rename their variables
-use "$CleanDataPath/base_for_matching.dta", clear
-rename fin_match fin_base
-rename re_match re_base
-rename bus_match bus_base
-rename oth_match oth_base
-
-* Join on municipality and year only (creates all candidate pairs)
-joinby municipio_name match_year_key using `unmatched_renamed', unmatched(none)
-
-di "Candidate pairs for fuzzy matching: " _N
-
-* Calculate digit distance for each asset
-foreach asset in fin re bus oth {
-	gen `asset'_diff = abs(`asset'_new - `asset'_base)
-
-	* Calculate magnitude (number of digits)
-	gen `asset'_mag_new = floor(log10(max(`asset'_new, 1))) + 1
-	gen `asset'_mag_base = floor(log10(max(`asset'_base, 1))) + 1
-	gen `asset'_mag = max(`asset'_mag_new, `asset'_mag_base)
-
-	* Classify digit distance
-	gen `asset'_digit_dist = 0 if `asset'_diff == 0
-	replace `asset'_digit_dist = 1 if `asset'_diff > 0 & `asset'_diff <= 10^(`asset'_mag - 1)
-	replace `asset'_digit_dist = 2 if `asset'_diff > 10^(`asset'_mag - 1) & `asset'_diff <= 10^(`asset'_mag)
-	replace `asset'_digit_dist = 99 if `asset'_diff > 10^(`asset'_mag) | `asset'_digit_dist == .
-
-	drop `asset'_mag_new `asset'_mag_base `asset'_mag
-}
-
-* Total digit distance
-gen total_digit_dist = fin_digit_dist + re_digit_dist + bus_digit_dist + oth_digit_dist
-
-* Keep only fuzzy matches (total distance <= 4, meaning at most 2 one-digit errors per asset on average)
-keep if total_digit_dist <= 4 & total_digit_dist > 0
-
-di "Fuzzy match candidates (total_digit_dist <= 4): " _N
-
-* Calculate confidence score
-* Base 100, -5 per 1-digit error, -10 per 2-digit error
-gen n_1digit = (fin_digit_dist == 1) + (re_digit_dist == 1) + (bus_digit_dist == 1) + (oth_digit_dist == 1)
-gen n_2digit = (fin_digit_dist == 2) + (re_digit_dist == 2) + (bus_digit_dist == 2) + (oth_digit_dist == 2)
-gen match_confidence = 100 - 5*n_1digit - 10*n_2digit
-
-* For each unmatched record, keep best match (highest confidence, then lowest distance)
-gsort obs_id -match_confidence total_digit_dist
-bysort obs_id: gen rank = _n
-keep if rank == 1
-drop rank
-
-* Also ensure each base ID only matches once (keep best match)
-gsort id -match_confidence total_digit_dist
-bysort id match_year_key: gen rank = _n
-keep if rank == 1
-drop rank
-
-gen match_type = "fuzzy"
-
-di "Final fuzzy matches: " _N
-
-save "$CleanDataPath/matches_fuzzy_full.dta", replace
-
-*------------------------------------------------------------------------------
-* STEP 5.5: Combine all matches
-*------------------------------------------------------------------------------
-di " "
-di "--- COMBINING MATCHES ---"
-
-use "$CleanDataPath/matches_exact_full.dta", clear
-
-* Keep relevant variables
-keep obs_id id filename municipio_name match_year_key report_year ///
-	fin_match re_match bus_match oth_match fin_cur re_cur bus_cur oth_cur ///
-	source_file match_type match_confidence
-
-append using "$CleanDataPath/matches_fuzzy_full.dta", ///
-	keep(obs_id id filename municipio_name match_year_key report_year ///
-	source_file match_type match_confidence)
-
-di "Total matches: " _N
-
-* Count by type
-tab match_type
+tab source_file match_type
 
 save "$CleanDataPath/all_matches_full.dta", replace
 
 ********************************************************************************
 * SECTION 6: CREATE PANEL DATASET
+********************************************************************************
+* The panel needs to track:
+* - Original IDs from 2015-2018 file
+* - Filenames from each year (since the same person has different filenames each year)
+* - Matched IDs (which could be original IDs or filenames from earlier years)
 ********************************************************************************
 
 di " "
@@ -803,19 +1124,119 @@ di "========================================"
 di "CREATING PANEL DATASET"
 di "========================================"
 
-* Start with all records
-use "$CleanDataPath/all_records_combined.dta", clear
+* First, build a crosswalk of all matched records to trace chains back
+* Start with the matches file and expand to track all filenames per person
 
-* Merge in matched IDs
-merge 1:1 obs_id using "$CleanDataPath/all_matches_full.dta", ///
-	keepusing(id match_type match_confidence) update replace
+use "$CleanDataPath/all_matches_full.dta", clear
+drop if id == ""
 
-* For unmatched records without ID, use filename as panel_id
+* Keep key variables
+keep id filename source_file
+rename filename matched_filename
+rename source_file matched_year
+
+* Save crosswalk of matches
+save "$CleanDataPath/match_crosswalk.dta", replace
+
+* Now build the panel - start with 2015-2018
+use "$CleanDataPath/clean_2015_2018.dta", clear
+keep id filename municipio_name report_year decree_year fin_cur re_cur bus_cur oth_cur
+rename filename filename_2015_2018
+gen source_file = "2015-2018"
+
+* Create placeholder filename variables for future years
+foreach year in 2019 2020 2021 2022 2023 {
+	gen filename_`year' = ""
+}
+
+tempfile panel_build
+save `panel_build'
+
+* First, create a deduplicated version of matches for merging
+use "$CleanDataPath/all_matches_full.dta", clear
+drop if id == ""
+* Keep one match per filename (prefer higher confidence)
+gsort filename -match_confidence
+bysort filename: keep if _n == 1
+keep filename id
+save "$CleanDataPath/all_matches_dedup.dta", replace
+
+* For each subsequent year, process and add to panel
+foreach year in 2019 2020 2021 2022 2023 {
+	use "$CleanDataPath/clean_`year'.dta", clear
+	keep filename municipio_name report_year decree_year fin_cur re_cur bus_cur oth_cur
+
+	* Merge in matched IDs (using deduplicated file)
+	merge 1:1 filename using "$CleanDataPath/all_matches_dedup.dta", ///
+		keepusing(id) keep(master match) nogen
+
+	* For unmatched, use filename as ID (they start their own chain)
+	replace id = filename if id == "" | id == "."
+
+	gen source_file = "`year'"
+
+	* Create year-specific filename variable
+	gen filename_`year' = filename
+	rename filename filename_original
+
+	* Create placeholder filename variables for other years
+	gen filename_2015_2018 = ""
+	foreach yr in 2019 2020 2021 2022 2023 {
+		if "`yr'" != "`year'" {
+			gen filename_`yr' = ""
+		}
+	}
+
+	rename filename_original filename
+
+	append using `panel_build'
+	save `panel_build', replace
+}
+
+use `panel_build', clear
+
+* Now we need to fill in the filename columns for matched records
+* For records that matched to a 2015-2018 ID, the 2015-2018 filename should be populated
+* For records that matched to a 2019 filename-ID, the 2019 filename should be filled
+
+* First, get 2015-2018 filenames for records with original IDs
+preserve
+keep if source_file == "2015-2018"
+keep id filename_2015_2018
+rename filename_2015_2018 fn_1518
+duplicates drop id, force
+tempfile fn1518
+save `fn1518'
+restore
+
+merge m:1 id using `fn1518', keep(master match) nogen
+replace filename_2015_2018 = fn_1518 if filename_2015_2018 == "" & fn_1518 != ""
+drop fn_1518
+
+* Now propagate filenames for chained matches (2019 onward)
+* For each year, get the filename for records that match to that year's IDs
+foreach year in 2019 2020 2021 2022 2023 {
+	preserve
+	keep if source_file == "`year'"
+	keep id filename_`year'
+	rename filename_`year' fn_`year'
+	* Keep only where the ID started in this year (filename-based ID)
+	gen id_from_this_year = (id == fn_`year')
+	keep if id_from_this_year == 1 | fn_`year' != ""
+	drop id_from_this_year
+	duplicates drop id, force
+	tempfile fn`year'
+	save `fn`year''
+	restore
+
+	merge m:1 id using `fn`year'', keep(master match) nogen
+	replace filename_`year' = fn_`year' if filename_`year' == "" & fn_`year' != ""
+	capture drop fn_`year'
+}
+
+* For unmatched records without original ID, use filename as panel_id
 gen panel_id = id
 replace panel_id = filename if panel_id == "" | panel_id == "."
-
-* Keep panel variables
-keep panel_id report_year id filename fin_cur re_cur bus_cur oth_cur source_file
 
 * Rename assets
 rename fin_cur fin
@@ -824,19 +1245,39 @@ rename bus_cur bus
 rename oth_cur oth
 
 * Order and sort
-order panel_id report_year id filename fin re bus oth source_file
+order panel_id report_year decree_year id filename filename_2015_2018 filename_2019 ///
+	filename_2020 filename_2021 filename_2022 filename_2023 ///
+	fin re bus oth source_file
 sort panel_id report_year
 
 * Label variables
-label var panel_id "Unique person identifier"
+label var panel_id "Unique person identifier (original ID or first filename)"
 label var report_year "Current reporting year"
-label var id "Original ID from 2015-2018 file"
-label var filename "Original CSV filename"
+label var decree_year "Year of Act 22 decree (if available)"
+label var id "Matched ID (original ID or filename from first appearance)"
+label var filename "CSV filename for this specific record"
+label var filename_2015_2018 "Filename from 2015-2018 file (if matched)"
+label var filename_2019 "Filename from 2019 file (if matched)"
+label var filename_2020 "Filename from 2020 file (if matched)"
+label var filename_2021 "Filename from 2021 file (if matched)"
+label var filename_2022 "Filename from 2022 file (if matched)"
+label var filename_2023 "Filename from 2023 file (if matched)"
 label var fin "Financial wealth"
 label var re "Real estate wealth"
 label var bus "Business wealth"
 label var oth "Other wealth"
 label var source_file "Source data file"
+
+* Verify panel uniqueness - panel_id + report_year should be unique
+duplicates tag panel_id report_year, gen(dup_check)
+count if dup_check > 0
+local n_dups = r(N)
+if `n_dups' > 0 {
+	di "WARNING: `n_dups' duplicate panel_id + report_year combinations found!"
+	di "Keeping first observation per panel_id + report_year"
+	bysort panel_id report_year: keep if _n == 1
+}
+drop dup_check
 
 * Summary statistics
 di " "
@@ -847,15 +1288,17 @@ di "========================================"
 egen tag_panel = tag(panel_id)
 count if tag_panel == 1
 local n_persons = r(N)
-di "Unique persons: `n_persons'"
+di "Unique persons (panel_id): `n_persons'"
 
-count if id != "" & id != "."
-local n_with_id = r(N)
-di "Records with original ID: `n_with_id'"
+* Count records linked to original 2015-2018 IDs
+gen has_orig_id = (substr(id, 1, 2) != "" & strpos(id, ".pdf") == 0 & strpos(id, ".PDF") == 0)
+count if has_orig_id == 1
+local n_with_orig_id = r(N)
+di "Records linked to 2015-2018 ID: `n_with_orig_id'"
 
-count if id == "" | id == "."
-local n_without_id = r(N)
-di "Records without original ID: `n_without_id'"
+count if has_orig_id == 0
+local n_new_chains = r(N)
+di "Records in new chains (2019+): `n_new_chains'"
 
 di " "
 di "Records by source file:"
@@ -865,9 +1308,28 @@ di " "
 di "Records by reporting year:"
 tab report_year
 
-drop tag_panel
+di " "
+di "Filename coverage by year:"
+count if filename_2015_2018 != ""
+di "Records with 2015-2018 filename: " r(N)
+count if filename_2019 != ""
+di "Records with 2019 filename: " r(N)
+count if filename_2020 != ""
+di "Records with 2020 filename: " r(N)
+count if filename_2021 != ""
+di "Records with 2021 filename: " r(N)
+count if filename_2022 != ""
+di "Records with 2022 filename: " r(N)
+count if filename_2023 != ""
+di "Records with 2023 filename: " r(N)
+
+drop tag_panel has_orig_id
 
 save "$CleanDataPath/act22_panel_full.dta", replace
+
+* Clean up temporary files
+capture erase "$CleanDataPath/temp_exact_used_base.dta"
+capture erase "$CleanDataPath/temp_exact_matched_files.dta"
 
 di " "
 di "========================================"
