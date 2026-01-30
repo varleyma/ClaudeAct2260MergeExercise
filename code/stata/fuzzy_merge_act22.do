@@ -477,7 +477,14 @@ egen match_key_tag = tag(municipio_name_mode ///
 
 * Count unique vs duplicate matching keys
 tab match_key_tag
-local n_unique_keys_1518 = r(N) if match_key_tag == 1
+
+* Count how many have unique keys vs duplicates
+count if match_key_tag == 1
+local n_unique_keys_1518 = r(N)
+count if match_key_tag == 0
+local n_dup_keys_1518 = r(N)
+di "Unique matching keys: `n_unique_keys_1518'"
+di "Duplicate matching keys: `n_dup_keys_1518'"
 
 * For now, keep only unique matching keys (exact duplicates cause ambiguity)
 * We'll handle these with fuzzy matching later
@@ -551,14 +558,19 @@ merge 1:1 municipio_name_mode ///
 
 * Document match results
 tab _merge
-local n_exact_match = r(N) if _merge == 3
-local n_2019_only = r(N) if _merge == 1
-local n_1518_only = r(N) if _merge == 2
+
+* Count matches by merge status
+count if _merge == 3
+local n_exact_match = r(N)
+count if _merge == 1
+local n_2019_only = r(N)
+count if _merge == 2
+local n_1518_only = r(N)
 
 di "===== EXACT MATCH RESULTS ====="
-di "Matched (both datasets): " _N - (`n_2019_only' + `n_1518_only')
-di "2019 only (unmatched): " `n_2019_only'
-di "2015-2018 only (unmatched): " `n_1518_only'
+di "Matched (both datasets): `n_exact_match'"
+di "2019 only (unmatched): `n_2019_only'"
+di "2015-2018 only (unmatched): `n_1518_only'"
 
 * Save exact matches
 preserve
