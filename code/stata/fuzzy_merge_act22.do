@@ -1046,6 +1046,374 @@ local pct_1518 = round(100 * `n_1518_matched' / `n_unique_1518', 0.1)
 di "  - 2019 records matched: `n_2019_matched' / `n_matchable_2019' (`pct_2019'%)"
 di "  - 2015-2018 persons matched: `n_1518_matched' / `n_unique_1518' (`pct_1518'%)"
 
+di " "
+di "========================================"
+di "DIAGNOSTICS: WHY RECORDS DIDN'T MATCH"
+di "========================================"
+
+*------------------------------------------------------------------------------
+* Analyze 2015-2018 file: What's the last reporting year for each person?
+*------------------------------------------------------------------------------
+di " "
+di "--- 2015-2018 FILE: Last Reporting Year Distribution ---"
+
+use "$CleanDataPath/clean_1518_long.dta", clear
+
+* Find the last (max) year each person reported
+bysort id: egen last_year = max(match_year)
+
+* Keep one row per person
+bysort id: keep if _n == 1
+
+* Tabulate last reporting year
+di "Last reporting year for each person in 2015-2018 file:"
+tab last_year
+
+* Count how many have last year before 2017
+count if last_year < 2017
+local n_before_2017 = r(N)
+local pct_before_2017 = round(100 * `n_before_2017' / `n_unique_1518', 0.1)
+di " "
+di "Persons whose last report was BEFORE 2017: `n_before_2017' (`pct_before_2017'%)"
+di "  (These cannot match to 2019 file where most report 2017 as previous year)"
+
+* Check which of these were matched vs unmatched
+* First create a unique list of matched IDs
+preserve
+use "$CleanDataPath/all_matches.dta", clear
+keep id
+duplicates drop
+tempfile matched_ids
+save `matched_ids'
+restore
+
+merge 1:1 id using `matched_ids', keep(master match) gen(_matched)
+
+di " "
+di "Breakdown by match status and last year:"
+tab last_year _matched, row
+
+*------------------------------------------------------------------------------
+* Analyze 2019 file: What previous year do they report?
+*------------------------------------------------------------------------------
+di " "
+di "--- 2019 FILE: Previous Year (match_year) Distribution ---"
+
+use "$CleanDataPath/clean_2019_long.dta", clear
+di "Previous year reported in 2019 file:"
+tab match_year
+
+* How many report years that aren't in the 2015-2018 data?
+count if match_year < 2013
+local n_pre_2013 = r(N)
+di " "
+di "2019 records reporting previous year before 2013: `n_pre_2013'"
+di "  (These cannot match because 2015-2018 file only has years 2013-2017)"
+
+*------------------------------------------------------------------------------
+* Analyze unmatched 2019 records: Why didn't they match?
+*------------------------------------------------------------------------------
+di " "
+di "--- UNMATCHED 2019 RECORDS: Analysis ---"
+
+* Load 2019 matchable records
+use "$CleanDataPath/clean_2019_long.dta", clear
+
+* Merge to see which were matched
+* First create a unique list of matched filenames
+preserve
+use "$CleanDataPath/all_matches.dta", clear
+keep filename2019
+duplicates drop
+tempfile matched_filenames
+save `matched_filenames'
+restore
+
+merge 1:1 filename2019 using `matched_filenames', keep(master match) gen(_was_matched)
+
+* Keep unmatched
+keep if _was_matched == 1
+local n_unmatched_2019 = _N
+di "Unmatched 2019 records: `n_unmatched_2019'"
+
+if `n_unmatched_2019' > 0 {
+	di " "
+	di "Previous year distribution of UNMATCHED 2019 records:"
+	tab match_year
+
+	di " "
+	di "Municipality distribution of UNMATCHED 2019 records (top 10):"
+	preserve
+	gen one = 1
+	collapse (sum) n = one, by(municipio_name_mode)
+	gsort -n
+	list in 1/10
+	restore
+
+	* Check if their previous year exists in 2015-2018 at all
+	di " "
+	di "Checking if unmatched 2019 records have ANY potential match in 2015-2018..."
+
+	* Create a unique list of municipality + year combinations in 2015-2018
+	preserve
+	use "$CleanDataPath/clean_1518_long.dta", clear
+	keep municipio_name_mode match_year
+	duplicates drop
+	tempfile muni_year_combos
+	save `muni_year_combos'
+	restore
+
+	* For each unmatched 2019, check if there's a 2015-2018 record with same municipality + year
+	merge m:1 municipio_name_mode match_year using `muni_year_combos', ///
+		keep(master match) gen(_has_muni_year)
+
+	count if _has_muni_year == 1
+	local n_no_muni_year = r(N)
+	local pct_no_muni_year = round(100 * `n_no_muni_year' / `n_unmatched_2019', 0.1)
+	di "Unmatched because NO 2015-2018 record exists with same municipality + year: `n_no_muni_year' (`pct_no_muni_year'%)"
+
+	count if _has_muni_year == 3
+	local n_has_muni_year = r(N)
+	local pct_has_muni_year = round(100 * `n_has_muni_year' / `n_unmatched_2019', 0.1)
+	di "Had municipality + year match but assets didn't match: `n_has_muni_year' (`pct_has_muni_year'%)"
+}
+
+*------------------------------------------------------------------------------
+* Analyze unmatched 2015-2018 persons
+*------------------------------------------------------------------------------
+di " "
+di "--- UNMATCHED 2015-2018 PERSONS: Analysis ---"
+
+use "$CleanDataPath/clean_2015_2018.dta", clear
+
+* Merge to see which were matched
+* First create a unique list of matched IDs
+preserve
+use "$CleanDataPath/all_matches.dta", clear
+keep id
+duplicates drop
+tempfile matched_ids_1518
+save `matched_ids_1518'
+restore
+
+merge 1:1 id using `matched_ids_1518', keep(master match) gen(_was_matched)
+
+* Keep unmatched
+keep if _was_matched == 1
+local n_unmatched_1518 = _N
+di "Unmatched 2015-2018 persons: `n_unmatched_1518'"
+
+if `n_unmatched_1518' > 0 {
+	* Get their last reporting year from long file
+	merge 1:m id using "$CleanDataPath/clean_1518_long.dta", ///
+		keepusing(match_year) keep(match) nogen
+
+	bysort id: egen last_year = max(match_year)
+	bysort id: keep if _n == 1
+
+	di " "
+	di "Last reporting year of UNMATCHED 2015-2018 persons:"
+	tab last_year
+
+	count if last_year == 2017
+	local n_unmatched_2017 = r(N)
+	di " "
+	di "Unmatched persons who DID report in 2017: `n_unmatched_2017'"
+	di "  (These should have been matchable - check municipality spelling or asset values)"
+
+	di " "
+	di "Municipality distribution of UNMATCHED 2015-2018 persons (top 10):"
+	preserve
+	gen one = 1
+	collapse (sum) n = one, by(municipio_name_mode)
+	gsort -n
+	list in 1/10
+	restore
+}
+
+di " "
+di "========================================"
+di "END OF DIAGNOSTICS"
+di "========================================"
+
+********************************************************************************
+* SECTION 7: CREATE PANEL DATASET
+********************************************************************************
+* Create a unified panel dataset with:
+*   - panel_id: unique person identifier (created)
+*   - report_year: current reporting year (time variable)
+*   - id: original ID from 2015-2018 file (empty for unmatched 2019 records)
+*   - filename: original CSV filename
+*   - fin: financial wealth (current year)
+*   - re: real estate wealth (current year)
+*   - bus: business wealth (current year)
+*   - oth: other wealth (current year)
+********************************************************************************
+
+di " "
+di "========================================"
+di "CREATING PANEL DATASET"
+di "========================================"
+
+*------------------------------------------------------------------------------
+* STEP 7.1: Get matched IDs from all_matches
+*------------------------------------------------------------------------------
+use "$CleanDataPath/all_matches.dta", clear
+keep id filename2019
+duplicates drop
+rename filename2019 filename
+tempfile matched_links
+save `matched_links'
+
+*------------------------------------------------------------------------------
+* STEP 7.2: Build 2015-2018 panel observations
+*------------------------------------------------------------------------------
+* Re-import raw data to get current year assets for each year
+
+import delimited "$RawDataPath/Act22AnnualReports2015-2018.csv", ///
+	varnames(1) clear stringcols(_all)
+
+* Keep key variables
+keep id filename current_reporting_year ///
+	asset_type_financial_current_rep asset_type_real_estate_current_r ///
+	asset_type_privately_held_busin asset_type_other_current_reporti
+
+* Rename and clean
+rename current_reporting_year report_year
+rename asset_type_financial_current_rep fin
+rename asset_type_real_estate_current_r re
+capture rename asset_type_privately_held_busin bus
+capture rename v40 bus
+rename asset_type_other_current_reporti oth
+
+* Convert to numeric
+destring report_year fin re bus oth, replace force
+
+* Drop duplicates (keep first observation for each id-year)
+sort id report_year
+bysort id report_year: keep if _n == 1
+
+* Mark source
+gen source = "2015-2018"
+
+tempfile panel_1518
+save `panel_1518'
+
+di "2015-2018 panel observations: " _N
+
+*------------------------------------------------------------------------------
+* STEP 7.3: Build 2019 panel observations
+*------------------------------------------------------------------------------
+import delimited "$RawDataPath/Act22AnnualReports2019.csv", ///
+	varnames(1) clear stringcols(_all)
+
+* Keep key variables
+keep filename current_reporting_year ///
+	asset_type_financial_current_rep asset_type_real_estate_current_r ///
+	asset_type_privately_held_busin asset_type_other_current_reporti
+
+* Rename and clean
+rename current_reporting_year report_year
+rename asset_type_financial_current_rep fin
+rename asset_type_real_estate_current_r re
+rename asset_type_privately_held_busin bus
+rename asset_type_other_current_reporti oth
+
+* Convert to numeric
+destring report_year fin re bus oth, replace force
+
+* Merge in ID from matched records
+merge 1:1 filename using `matched_links', keep(master match) nogen
+
+* Mark source
+gen source = "2019"
+
+tempfile panel_2019
+save `panel_2019'
+
+di "2019 panel observations: " _N
+
+*------------------------------------------------------------------------------
+* STEP 7.4: Combine into unified panel
+*------------------------------------------------------------------------------
+use `panel_1518', clear
+append using `panel_2019'
+
+di "Combined panel observations: " _N
+
+*------------------------------------------------------------------------------
+* STEP 7.5: Create unified panel_id
+*------------------------------------------------------------------------------
+* Logic:
+*   - If id exists (from 2015-2018 or matched 2019), use id as base
+*   - If id missing (unmatched 2019), create new ID based on filename
+
+* First, for records with id, panel_id = id
+gen panel_id = id
+
+* For records without id, use filename as panel_id
+* This ensures stability - same filename always gets same panel_id
+count if panel_id == ""
+local n_need_id = r(N)
+di "Records needing new panel_id: `n_need_id'"
+
+replace panel_id = filename if panel_id == ""
+
+*------------------------------------------------------------------------------
+* STEP 7.6: Final cleanup and order
+*------------------------------------------------------------------------------
+* Keep only the 8 required variables
+keep panel_id report_year id filename fin re bus oth
+
+* Order variables
+order panel_id report_year id filename fin re bus oth
+
+* Sort by panel_id and year
+sort panel_id report_year
+
+* Label variables
+label var panel_id "Unique person identifier (created)"
+label var report_year "Current reporting year"
+label var id "Original ID from 2015-2018 file (empty if unmatched 2019)"
+label var filename "Original CSV filename"
+label var fin "Financial wealth (current year)"
+label var re "Real estate wealth (current year)"
+label var bus "Business wealth (current year)"
+label var oth "Other wealth (current year)"
+
+* Verify panel structure
+di " "
+di "Panel dataset summary:"
+di "======================"
+egen tag_panel_id = tag(panel_id)
+count if tag_panel_id == 1
+local n_persons = r(N)
+drop tag_panel_id
+di "Unique persons (panel_id): `n_persons'"
+
+tab report_year
+
+* Count by source
+count if id != ""
+local n_with_id = r(N)
+count if id == ""
+local n_without_id = r(N)
+di " "
+di "Observations with original ID: `n_with_id'"
+di "Observations without original ID (unmatched 2019): `n_without_id'"
+
+* Save panel dataset
+save "$CleanDataPath/act22_panel.dta", replace
+
+di " "
+di "========================================"
+di "PANEL DATASET SAVED"
+di "========================================"
+di "File: $CleanDataPath/act22_panel.dta"
+di "Variables: panel_id report_year id filename fin re bus oth"
+di "Unique persons: `n_persons'"
+di "Total observations: " _N
+
 ********************************************************************************
 * END OF SCRIPT
 ********************************************************************************
