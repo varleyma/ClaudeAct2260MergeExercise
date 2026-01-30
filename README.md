@@ -26,6 +26,9 @@ GitHub\ClaudeAct2260MergeExercise\
 ├── README.md           (this file - project documentation)
 ├── CLAUDE.md           (AI assistant rules and instructions)
 ├── .git\               (git version control)
+├── log\                (progress logs for session continuity)
+│   ├── log.md          (explains the logging system)
+│   └── YYYY-MM-DD_HHMM.md  (dated session logs)
 └── code\
     ├── python\         (Python scripts - empty, 0 files)
     ├── R\              (R scripts - empty, 0 files)
@@ -40,10 +43,12 @@ GitHub\ClaudeAct2260MergeExercise\
 |------|-------------|
 | `README.md` | Project overview, directory structure, data descriptions |
 | `CLAUDE.md` | Critical rules for AI assistant (no deletion, folder boundaries, git restrictions) |
+| `log/log.md` | Explains the progress log system for session continuity |
+| `log/YYYY-MM-DD_HHMM.md` | Dated progress logs capturing session work |
 | `dta_act60_report_fuzzy_merge.do` | Stata script (~25KB) - Cleans and prepares 2015-2018 data, standardizes location names, handles redacted values |
 | `mrg_act60_report_fuzzy_merge.do` | Stata script (~2.5KB) - Performs fuzzy merge matching 2017 assets to 2018 filings using municipality + wealth variables |
 
-**Total Files:** 4 (2 markdown, 2 Stata do-files)
+**Total Files:** 6 (2 markdown in root, 2 in log/, 2 Stata do-files)
 
 ## Data Description
 

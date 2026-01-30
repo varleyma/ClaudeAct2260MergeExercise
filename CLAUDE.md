@@ -2,6 +2,8 @@
 
 **READ THIS FILE FIRST EVERY TIME YOU ENTER THIS PROJECT.**
 
+**THEN read the latest log file in `log/` to pick up where we left off.**
+
 This file contains critical rules and instructions for Claude (AI assistant) when working on this project. These rules are non-negotiable and must be followed at all times.
 
 ---
@@ -56,6 +58,12 @@ Claude may **ONLY** perform the following git operations:
 
 Only the user decides when to push commits to GitHub. When commits are ready, Claude should inform the user and let them run `git push origin main` themselves.
 
+### Rule 5: MAINTAIN PROGRESS LOGS
+Claude must regularly update progress logs in the `log/` directory to ensure session continuity:
+- Create new log entries with format `YYYY-MM-DD_HHMM.md`
+- Log what was accomplished, files changed, current status, and next steps
+- When starting a new session, read the latest log to resume work seamlessly
+
 ---
 
 ## Git & GitHub Guidance
@@ -87,6 +95,7 @@ Always explain what each git command does before running it.
 |------|------------|
 | 2025-01-30 | Initial rules: No deletion, folder boundaries, read/write separation |
 | 2025-01-30 | Rule 4: Claude may stage and commit, but NEVER push to GitHub |
+| 2025-01-30 | Rule 5: Maintain progress logs in `log/` for session continuity |
 
 ---
 
