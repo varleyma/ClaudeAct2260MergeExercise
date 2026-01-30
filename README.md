@@ -23,16 +23,27 @@ Dropbox\ClaudeAct2260MergeExercise\
 
 ```
 GitHub\ClaudeAct2260MergeExercise\
-├── README.md           (this file)
-├── CLAUDE.md           (AI assistant instructions)
+├── README.md           (this file - project documentation)
+├── CLAUDE.md           (AI assistant rules and instructions)
 ├── .git\               (git version control)
 └── code\
-    ├── python\         (Python scripts - empty)
-    ├── R\              (R scripts - empty)
-    └── stata\
-        ├── dta_act60_report_fuzzy_merge.do
-        └── mrg_act60_report_fuzzy_merge.do
+    ├── python\         (Python scripts - empty, 0 files)
+    ├── R\              (R scripts - empty, 0 files)
+    └── stata\          (Stata do-files - 2 files)
+        ├── dta_act60_report_fuzzy_merge.do  (data cleaning/prep script)
+        └── mrg_act60_report_fuzzy_merge.do  (merge execution script)
 ```
+
+**File Descriptions:**
+
+| File | Description |
+|------|-------------|
+| `README.md` | Project overview, directory structure, data descriptions |
+| `CLAUDE.md` | Critical rules for AI assistant (no deletion, folder boundaries, git restrictions) |
+| `dta_act60_report_fuzzy_merge.do` | Stata script (~25KB) - Cleans and prepares 2015-2018 data, standardizes location names, handles redacted values |
+| `mrg_act60_report_fuzzy_merge.do` | Stata script (~2.5KB) - Performs fuzzy merge matching 2017 assets to 2018 filings using municipality + wealth variables |
+
+**Total Files:** 4 (2 markdown, 2 Stata do-files)
 
 ## Data Description
 
