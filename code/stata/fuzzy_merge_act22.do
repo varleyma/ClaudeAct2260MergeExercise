@@ -600,7 +600,13 @@ restore
 * SECTION 5: FUZZY MATCHING
 ********************************************************************************
 * For records that didn't match exactly, we try fuzzy matching with tolerance
-* for small differences in asset values (potential typos/rounding errors)
+* for small differences in asset values (potential typos/rounding errors).
+*
+* DUPLICATE HANDLING STRATEGY:
+* 1. Identify records with same matching key (municipality + bucketed assets)
+* 2. For TRUE duplicates (same person filed twice): keep one, track the other
+* 3. For FALSE duplicates (different people): use additional variables to
+*    distinguish (current assets, days in PR, expenditure, etc.)
 ********************************************************************************
 
 use "$CleanDataPath/unmatched_2019.dta", clear
@@ -608,8 +614,10 @@ use "$CleanDataPath/unmatched_2019.dta", clear
 local n_unmatched_2019 = _N
 di "Attempting fuzzy match for `n_unmatched_2019' unmatched 2019 records"
 
-* Generate fuzzy match candidates by allowing 1-digit tolerance
-* Strategy: For each asset, create "bucket" variables that group similar values
+*------------------------------------------------------------------------------
+* STEP 5.1: Create bucketed asset variables for fuzzy matching
+*------------------------------------------------------------------------------
+* Buckets allow matching with tolerance for small typos/rounding differences
 
 foreach var in financial_wealth2017 real_estate_wealth2017 ///
 	business_wealth2017 other_wealth2017 {
@@ -623,9 +631,79 @@ foreach var in financial_wealth2017 real_estate_wealth2017 ///
 	replace `var'_bucket = . if `var' == .
 }
 
+*------------------------------------------------------------------------------
+* STEP 5.2: Identify and handle duplicates in 2019 data
+*------------------------------------------------------------------------------
+* Tag records that share the same matching key
+
+egen fuzzy_key_group = group(municipio_name_mode ///
+	financial_wealth2017_bucket real_estate_wealth2017_bucket ///
+	business_wealth2017_bucket other_wealth2017_bucket), missing
+
+bysort fuzzy_key_group: gen n_in_group = _N
+bysort fuzzy_key_group: gen group_seq = _n
+
+* Count how many have duplicates
+count if n_in_group > 1
+local n_with_dups = r(N)
+di "2019 records sharing a matching key with others: `n_with_dups'"
+
+* For records with duplicates, we need to decide which to keep
+* Strategy:
+*   - If current year assets are identical -> TRUE duplicate, keep first
+*   - If current year assets differ -> different people, keep both but flag
+
+* Create a "duplicate signature" using current year assets to identify true dups
+egen dup_sig = group(fuzzy_key_group ///
+	financial_wealth real_estate_wealth business_wealth other_wealth), missing
+
+bysort dup_sig: gen n_true_dup = _N
+bysort dup_sig: gen true_dup_seq = _n
+
+* TRUE DUPLICATES: Same matching key AND same current assets
+* These are likely the same filing processed twice
+gen is_true_duplicate = (n_in_group > 1 & n_true_dup > 1 & true_dup_seq > 1)
+
+count if is_true_duplicate == 1
+local n_true_dups = r(N)
+di "True duplicates identified (same person, duplicate filing): `n_true_dups'"
+
+* Save info about true duplicates before dropping
+preserve
+keep if n_true_dup > 1
+keep filename2019 municipio_name_mode fuzzy_key_group dup_sig ///
+	financial_wealth2017 real_estate_wealth2017 ///
+	business_wealth2017 other_wealth2017 ///
+	financial_wealth real_estate_wealth business_wealth other_wealth ///
+	true_dup_seq
+save "$CleanDataPath/true_duplicates_2019.dta", replace
+restore
+
+* Drop true duplicates (keep first occurrence)
+drop if is_true_duplicate == 1
+
+* FALSE DUPLICATES: Same matching key but different current assets
+* These are different people who happen to have similar previous-year assets
+* We will keep all of them but need m:1 or m:m merge strategy
+
+gen is_false_duplicate = (n_in_group > 1 & n_true_dup == 1)
+
+count if is_false_duplicate == 1
+local n_false_dups = r(N)
+di "False duplicates (different people, same key): `n_false_dups'"
+
+* Create a flag for records that need special handling in merge
+gen needs_tiebreak = (n_in_group > 1)
+
+* For unique records (n_in_group == 1), we can do 1:1 merge
+* For duplicates, we'll need to use additional variables
+
 save "$CleanDataPath/unmatched_2019_bucketed.dta", replace
 
-* Similarly bucket the 2015-2018 unmatched data
+*------------------------------------------------------------------------------
+* STEP 5.3: Similarly prepare 2015-2018 unmatched data
+*------------------------------------------------------------------------------
+
 use "$CleanDataPath/unmatched_1518.dta", clear
 
 foreach var in financial_wealth2017 real_estate_wealth2017 ///
@@ -638,50 +716,205 @@ foreach var in financial_wealth2017 real_estate_wealth2017 ///
 	replace `var'_bucket = . if `var' == .
 }
 
+* Check for duplicates in 1518 data too
+egen fuzzy_key_group = group(municipio_name_mode ///
+	financial_wealth2017_bucket real_estate_wealth2017_bucket ///
+	business_wealth2017_bucket other_wealth2017_bucket), missing
+
+bysort fuzzy_key_group: gen n_in_group = _N
+bysort fuzzy_key_group: gen group_seq = _n
+
+count if n_in_group > 1
+local n_dups_1518 = r(N)
+di "2015-2018 records sharing a matching key: `n_dups_1518'"
+
 save "$CleanDataPath/unmatched_1518_bucketed.dta", replace
 
-* Attempt fuzzy merge on buckets
+*------------------------------------------------------------------------------
+* STEP 5.4: Fuzzy merge - handle unique keys first (1:1)
+*------------------------------------------------------------------------------
+
+* First, merge records with unique keys (no duplicates)
 use "$CleanDataPath/unmatched_2019_bucketed.dta", clear
+keep if needs_tiebreak == 0
+
+tempfile unique_2019
+save `unique_2019'
+
+use "$CleanDataPath/unmatched_1518_bucketed.dta", clear
+keep if n_in_group == 1
 
 merge 1:1 municipio_name_mode ///
 	financial_wealth2017_bucket real_estate_wealth2017_bucket ///
 	business_wealth2017_bucket other_wealth2017_bucket ///
-	using "$CleanDataPath/unmatched_1518_bucketed.dta"
+	using `unique_2019'
 
+di "===== FUZZY MATCH (UNIQUE KEYS) ====="
 tab _merge
 
-* For matches, calculate confidence score based on how close the actual values are
-gen match_confidence = .
-gen match_type = ""
+* Save matched unique records
+gen match_type = "fuzzy_unique" if _merge == 3
+gen match_confidence = 90 if _merge == 3  // High confidence for unique matches
 
-replace match_type = "fuzzy_bucket" if _merge == 3
-
-* Calculate percentage difference for each asset
-foreach var in financial_wealth2017 real_estate_wealth2017 ///
-	business_wealth2017 other_wealth2017 {
-
-	* Get the value from both sources (need to reconstruct from merge)
-	* For matched records, calculate absolute percent difference
-	gen `var'_pct_diff = .
-	replace `var'_pct_diff = abs(`var' - `var') / max(`var', 1) * 100 if _merge == 3
-}
-
-* Confidence = 100 - average percentage difference across assets
-* (Higher confidence = smaller differences)
-egen avg_pct_diff = rowmean(*_pct_diff)
-replace match_confidence = 100 - min(avg_pct_diff, 100) if _merge == 3
-
-* Save fuzzy matches
 preserve
 keep if _merge == 3
 keep filename2019 id municipio_name_mode match_type match_confidence ///
 	financial_wealth2017 real_estate_wealth2017 ///
 	business_wealth2017 other_wealth2017
-save "$CleanDataPath/fuzzy_matches.dta", replace
+save "$CleanDataPath/fuzzy_matches_unique.dta", replace
 restore
 
-di "===== FUZZY MATCH RESULTS ====="
-tab _merge
+* Save unmatched for further processing
+preserve
+keep if _merge == 1
+drop _merge match_type match_confidence
+save "$CleanDataPath/still_unmatched_2019.dta", replace
+restore
+
+preserve
+keep if _merge == 2
+drop _merge match_type match_confidence
+save "$CleanDataPath/still_unmatched_1518.dta", replace
+restore
+
+*------------------------------------------------------------------------------
+* STEP 5.5: Fuzzy merge - handle duplicate keys (m:m with tiebreaker)
+*------------------------------------------------------------------------------
+* For records with duplicate keys, we use joinby and then pick best match
+* based on similarity of current-year assets and other variables
+
+use "$CleanDataPath/unmatched_2019_bucketed.dta", clear
+keep if needs_tiebreak == 1
+
+local n_needs_tiebreak = _N
+di "2019 records needing tiebreak matching: `n_needs_tiebreak'"
+
+if `n_needs_tiebreak' > 0 {
+
+	* Rename variables to avoid conflicts in joinby
+	rename financial_wealth financial_wealth_2019
+	rename real_estate_wealth real_estate_wealth_2019
+	rename business_wealth business_wealth_2019
+	rename other_wealth other_wealth_2019
+	rename financial_wealth2017 financial_wealth2017_2019
+	rename real_estate_wealth2017 real_estate_wealth2017_2019
+	rename business_wealth2017 business_wealth2017_2019
+	rename other_wealth2017 other_wealth2017_2019
+
+	drop fuzzy_key_group n_in_group group_seq dup_sig n_true_dup ///
+		true_dup_seq is_true_duplicate is_false_duplicate needs_tiebreak
+
+	tempfile dup_2019
+	save `dup_2019'
+
+	use "$CleanDataPath/unmatched_1518_bucketed.dta", clear
+	keep if n_in_group > 1
+
+	* Rename to indicate source
+	rename financial_wealth2017 financial_wealth2017_1518
+	rename real_estate_wealth2017 real_estate_wealth2017_1518
+	rename business_wealth2017 business_wealth2017_1518
+	rename other_wealth2017 other_wealth2017_1518
+
+	drop fuzzy_key_group n_in_group group_seq
+
+	* Join all possible matches
+	joinby municipio_name_mode ///
+		financial_wealth2017_bucket real_estate_wealth2017_bucket ///
+		business_wealth2017_bucket other_wealth2017_bucket ///
+		using `dup_2019', unmatched(both)
+
+	di "===== FUZZY MATCH (DUPLICATE KEYS - ALL CANDIDATES) ====="
+	tab _merge
+
+	* For matched records, calculate match quality score
+	* based on how similar the actual (non-bucketed) values are
+
+	gen match_score = 0 if _merge == 3
+
+	* Score based on closeness of previous year assets (exact match = 25 pts each)
+	foreach var in financial_wealth2017 real_estate_wealth2017 ///
+		business_wealth2017 other_wealth2017 {
+
+		* Calculate absolute difference
+		gen `var'_diff = abs(`var'_2019 - `var'_1518) if _merge == 3
+
+		* Score: 25 points for exact match, decreasing for larger differences
+		* Use log scale to handle large values
+		gen `var'_score = 0 if _merge == 3
+		replace `var'_score = 25 if `var'_diff == 0 & _merge == 3
+		replace `var'_score = 20 if `var'_diff > 0 & `var'_diff <= 10 & _merge == 3
+		replace `var'_score = 15 if `var'_diff > 10 & `var'_diff <= 100 & _merge == 3
+		replace `var'_score = 10 if `var'_diff > 100 & `var'_diff <= 1000 & _merge == 3
+		replace `var'_score = 5 if `var'_diff > 1000 & `var'_diff <= 10000 & _merge == 3
+		replace `var'_score = 0 if `var'_diff > 10000 & _merge == 3
+
+		replace match_score = match_score + `var'_score if _merge == 3
+	}
+
+	* Maximum score is 100 (perfect match on all 4 assets)
+
+	di "Match score distribution for candidates:"
+	summarize match_score if _merge == 3, detail
+
+	* For each 2019 record, keep the best match (highest score)
+	gsort filename2019 -match_score
+	bysort filename2019: gen best_match = (_n == 1)
+
+	* Also for each 1518 record, ensure it's not matched to multiple 2019 records
+	gsort id -match_score
+	bysort id: gen already_matched = (_n > 1 & best_match == 1)
+
+	* Keep only best matches that aren't already used
+	keep if _merge == 3 & best_match == 1 & already_matched == 0
+
+	gen match_type = "fuzzy_tiebreak"
+	gen match_confidence = match_score  // Score out of 100
+
+	* Standardize variable names for output
+	rename financial_wealth2017_1518 financial_wealth2017
+	rename real_estate_wealth2017_1518 real_estate_wealth2017
+	rename business_wealth2017_1518 business_wealth2017
+	rename other_wealth2017_1518 other_wealth2017
+
+	keep filename2019 id municipio_name_mode match_type match_confidence ///
+		financial_wealth2017 real_estate_wealth2017 ///
+		business_wealth2017 other_wealth2017
+
+	save "$CleanDataPath/fuzzy_matches_tiebreak.dta", replace
+
+	local n_tiebreak_matches = _N
+	di "Tiebreak matches found: `n_tiebreak_matches'"
+}
+else {
+	* Create empty file if no tiebreak needed
+	clear
+	gen filename2019 = ""
+	gen id = ""
+	gen municipio_name_mode = ""
+	gen match_type = ""
+	gen match_confidence = .
+	gen financial_wealth2017 = .
+	gen real_estate_wealth2017 = .
+	gen business_wealth2017 = .
+	gen other_wealth2017 = .
+	save "$CleanDataPath/fuzzy_matches_tiebreak.dta", replace
+}
+
+*------------------------------------------------------------------------------
+* STEP 5.6: Combine all fuzzy matches
+*------------------------------------------------------------------------------
+
+use "$CleanDataPath/fuzzy_matches_unique.dta", clear
+append using "$CleanDataPath/fuzzy_matches_tiebreak.dta"
+
+local n_total_fuzzy = _N
+di "===== TOTAL FUZZY MATCHES: `n_total_fuzzy' ====="
+
+save "$CleanDataPath/fuzzy_matches.dta", replace
+
+tab match_type
+summarize match_confidence, detail
 
 ********************************************************************************
 * SECTION 6: COMBINE ALL MATCHES AND GENERATE STATISTICS
