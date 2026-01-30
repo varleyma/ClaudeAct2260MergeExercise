@@ -46,6 +46,16 @@ You are **ONLY** permitted to work within these two folder paths:
 [Dropbox - READ ONLY] ──READ──> [Your Process] ──WRITE──> [GitHub Repository]
 ```
 
+### Rule 4: GIT PUSH RESTRICTIONS
+Claude may **ONLY** perform the following git operations:
+- `git status` - Check repository status
+- `git add` - Stage files for commit
+- `git commit` - Commit staged changes locally
+
+**Claude is NEVER permitted to run `git push`.**
+
+Only the user decides when to push commits to GitHub. When commits are ready, Claude should inform the user and let them run `git push origin main` themselves.
+
 ---
 
 ## Git & GitHub Guidance
@@ -55,7 +65,7 @@ Since the user is new to GitHub, provide clear step-by-step guidance for:
 1. **Checking status:** `git status`
 2. **Staging changes:** `git add <filename>` or `git add .`
 3. **Committing:** `git commit -m "descriptive message"`
-4. **Pushing:** `git push origin main`
+4. **Pushing:** `git push origin main` *(User runs this manually)*
 
 Always explain what each git command does before running it.
 
@@ -76,6 +86,7 @@ Always explain what each git command does before running it.
 | Date | Rule Added |
 |------|------------|
 | 2025-01-30 | Initial rules: No deletion, folder boundaries, read/write separation |
+| 2025-01-30 | Rule 4: Claude may stage and commit, but NEVER push to GitHub |
 
 ---
 
