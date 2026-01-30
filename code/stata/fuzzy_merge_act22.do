@@ -940,7 +940,9 @@ save "$CleanDataPath/all_matches.dta", replace
 
 * Generate match quality report
 preserve
-collapse (count) n_matches = id (mean) avg_confidence = match_confidence ///
+* Create numeric variable for counting (can't use count with string vars)
+gen one = 1
+collapse (sum) n_matches = one (mean) avg_confidence = match_confidence ///
 	(min) min_confidence = match_confidence ///
 	(max) max_confidence = match_confidence, by(match_type)
 list
