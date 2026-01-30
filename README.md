@@ -1,7 +1,7 @@
 # ClaudeAct2260MergeExercise
 
 ## Project Overview
-This project performs a fuzzy merge of Puerto Rico Act 22 (Individual Investor) Annual Filing Reports across multiple years. The goal is to link individual investor records across different reporting periods using fuzzy matching techniques.
+This project performs a fuzzy merge of Puerto Rico Act 22 (Individual Investor) Annual Filing Reports across multiple years (2015-2023). The goal is to link individual investor records across different reporting periods using fuzzy matching techniques to create a unified panel dataset.
 
 ## Directory Structure
 
@@ -12,85 +12,99 @@ This project performs a fuzzy merge of Puerto Rico Act 22 (Individual Investor) 
 Dropbox\ClaudeAct2260MergeExercise\
 └── data\
     └── raw\
-        ├── Act22AnnualReports2015-2018.csv  (1,532 records + header)
-        └── Act22AnnualReports2019.csv       (877 records + header)
+        ├── Act22AnnualReports2015-2018.csv   (has unique ID per person)
+        ├── Act22AnnualReports2019.csv        (NO unique ID)
+        ├── Act22AnnualReports2020.csv        (NO unique ID)
+        ├── Act22AnnualReports2021.csv        (NO unique ID)
+        ├── Act22AnnualReports2022_format19.csv (NO unique ID, old form)
+        ├── Act22AnnualReports2022_format22.csv (NO unique ID, new form)
+        └── Act22AnnualReports2023.csv        (NO unique ID)
 ```
-
-**Total Records:** 2,409 investor annual filings
 
 ### Code Repository (GitHub)
 **Location:** `C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\`
 
 ```
 GitHub\ClaudeAct2260MergeExercise\
-├── README.md           (this file - project documentation)
-├── CLAUDE.md           (AI assistant rules and instructions)
-├── .git\               (git version control)
-├── log\                (progress logs for session continuity)
-│   ├── log.md          (explains the logging system)
-│   └── YYYY-MM-DD_HHMM.md  (dated session logs)
-└── code\
-    ├── python\         (Python scripts - empty, 0 files)
-    ├── R\              (R scripts - empty, 0 files)
-    └── stata\          (Stata do-files - 2 files)
-        ├── dta_act60_report_fuzzy_merge.do  (data cleaning/prep script)
-        └── mrg_act60_report_fuzzy_merge.do  (merge execution script)
+├── README.md                   (this file - project documentation)
+├── CLAUDE.md                   (AI assistant rules and instructions)
+├── .git\                       (git version control)
+│
+├── 2015to2019example\          (Example merge using only 2015-2019 data)
+│   ├── code\stata\             (Stata scripts for 2-file merge)
+│   ├── data\raw\               (2015-2018 and 2019 CSV files)
+│   ├── data\clean\             (Cleaned datasets and match results)
+│   ├── output\                 (Reports and statistics)
+│   └── log\                    (Progress logs)
+│
+├── code\                       (MAIN: Full 7-file merge scripts)
+│   └── stata\
+│       └── fuzzy_merge_act22_full.do  (Full panel merge script)
+│
+├── data\
+│   ├── raw\                    (All 7 CSV files from Dropbox)
+│   └── clean\                  (Output: cleaned data and panel)
+│
+├── output\                     (Reports and statistics)
+└── log\                        (Progress logs)
 ```
-
-**File Descriptions:**
-
-| File | Description |
-|------|-------------|
-| `README.md` | Project overview, directory structure, data descriptions |
-| `CLAUDE.md` | Critical rules for AI assistant (no deletion, folder boundaries, git restrictions) |
-| `log/log.md` | Explains the progress log system for session continuity |
-| `log/YYYY-MM-DD_HHMM.md` | Dated progress logs capturing session work |
-| `dta_act60_report_fuzzy_merge.do` | Stata script (~25KB) - Cleans and prepares 2015-2018 data, standardizes location names, handles redacted values |
-| `mrg_act60_report_fuzzy_merge.do` | Stata script (~2.5KB) - Performs fuzzy merge matching 2017 assets to 2018 filings using municipality + wealth variables |
-
-**Total Files:** 6 (2 markdown in root, 2 in log/, 2 Stata do-files)
 
 ## Data Description
 
-### Act22AnnualReports2015-2018.csv
-- **Records:** 1,532 annual filings
-- **Years Covered:** Tax years 2013-2017 (filings from 2015-2018)
-- **Key Identifier:** `id` column (format: "XX-22-S-XXX", e.g., "12-22-S-003")
-- **Key Columns:** 60 columns including:
-  - `id`, `taxable_year_end`, `decree_year`
-  - `county`, `state`, `physical_address`
-  - Income fields (interest, dividends, capital gains, wages)
-  - Asset fields (financial, real estate, business)
-  - Business information, days in PR, expenditures
+### Files with Unique IDs
 
-### Act22AnnualReports2019.csv
-- **Records:** 877 annual filings
-- **Years Covered:** Tax year 2018 (and some catch-up filings from prior years)
-- **Key Identifier:** `filename` column (format: "2019-RepAct22-XXXXXX_Redacted.pdf")
-- **Key Columns:** 67 columns including:
-  - `filename`, `fecha_de_radicacion` (filing date)
-  - `county`, `state`, `country`
-  - Similar income and asset fields to 2015-2018 data
-  - Additional business type columns (up to 9 businesses)
+**Act22AnnualReports2015-2018.csv**
+- Contains unique `id` column (format: "XX-22-S-XXX")
+- Multiple years per person (2013-2017 reporting years)
+- This is the "base" file for linking
 
-## Fuzzy Merge Challenge
+### Files without Unique IDs (require fuzzy matching)
 
-The primary challenge is that:
-1. **No direct ID linkage** between the two datasets
-2. **Names are redacted** for privacy
-3. **Column schemas differ** between datasets
-4. Must rely on **indirect matching** using:
-   - Location (county, municipality)
-   - Financial profiles (net worth ranges, property values)
-   - Business types and decree information
-   - Asset patterns over time
+| File | Records | Notes |
+|------|---------|-------|
+| Act22AnnualReports2019.csv | ~877 | First file without IDs |
+| Act22AnnualReports2020.csv | varies | |
+| Act22AnnualReports2021.csv | varies | |
+| Act22AnnualReports2022_format19.csv | varies | Old form format |
+| Act22AnnualReports2022_format22.csv | varies | New form format |
+| Act22AnnualReports2023.csv | varies | |
+
+### Key Matching Variables
+- `county` / `municipio_name`: Puerto Rico municipality
+- `previous_reporting_year` / `current_reporting_year`: Year identifiers
+- Asset variables (previous and current year):
+  - `asset_type_financial_*`
+  - `asset_type_real_estate_*`
+  - `asset_type_privately_held_business_*`
+  - `asset_type_other_*`
+
+## Fuzzy Merge Strategy
+
+1. **Clean municipality names** - Standardize across all files
+2. **Sequential matching** - Match forward through time:
+   - 2015-2018 (base with IDs) → 2019 → 2020 → 2021 → 2022 → 2023
+3. **Exact matching first** - Match on municipality + year + all 4 assets
+4. **Fuzzy matching second** - Allow 1-2 digit tolerance in asset values
+5. **Confidence scoring** - 100 (exact), 95 (1-digit off), 90 (2-digits off)
+
+## Output
+
+The main output is `data/clean/act22_panel_full.dta` with 8 variables:
+- `panel_id` - Unique person identifier (original ID or filename)
+- `report_year` - Reporting year (time variable)
+- `id` - Original ID from 2015-2018 (blank for unmatched)
+- `filename` - Source CSV filename
+- `fin` - Financial wealth
+- `re` - Real estate wealth
+- `bus` - Business wealth
+- `oth` - Other wealth
 
 ## Getting Started
 
 1. Read `CLAUDE.md` for project rules and conventions
-2. All new code goes in `code/python/`, `code/R/`, or `code/stata/`
-3. Data is READ-ONLY from Dropbox
-4. Commit changes to GitHub regularly
+2. For the simpler 2-file example, see `2015to2019example/`
+3. For the full 7-file merge, run `code/stata/fuzzy_merge_act22_full.do`
+4. Data is READ-ONLY from Dropbox; outputs go to GitHub
 
 ---
 *Last Updated: January 30, 2025*

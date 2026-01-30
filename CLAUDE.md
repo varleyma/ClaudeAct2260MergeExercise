@@ -82,8 +82,11 @@ Always explain what each git command does before running it.
 ## Project Context
 
 - **Purpose:** Fuzzy merge of Puerto Rico Act 22 Individual Investor Annual Reports
-- **Data Sources:** Two CSV files covering 2015-2018 and 2019 filings
-- **Challenge:** No direct ID linkage; must use location, financial, and business data for matching
+- **Data Sources:** Seven CSV files covering 2015-2023 filings
+  - `Act22AnnualReports2015-2018.csv` (has unique IDs)
+  - `Act22AnnualReports2019.csv` through `Act22AnnualReports2023.csv` (no IDs)
+- **Challenge:** No direct ID linkage in 2019+ files; must use location and financial data for matching
+- **Example:** The `2015to2019example/` folder contains a simpler 2-file merge example
 
 ---
 
@@ -96,6 +99,7 @@ Always explain what each git command does before running it.
 | 2025-01-30 | Initial rules: No deletion, folder boundaries, read/write separation |
 | 2025-01-30 | Rule 4: Claude may stage and commit, but NEVER push to GitHub |
 | 2025-01-30 | Rule 5: Maintain progress logs in `log/` for session continuity |
+| 2025-01-30 | Project expanded from 2 files to 7 files (2015-2023); original work moved to 2015to2019example/ |
 
 ---
 
