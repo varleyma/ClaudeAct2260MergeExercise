@@ -549,34 +549,61 @@ save "$CleanDataPath/clean_2019_long.dta", replace
 *------------------------------------------------------------------------------
 * STEP 4.1: EXACT MATCHING (Confidence = 100)
 *------------------------------------------------------------------------------
+* Use joinby instead of merge to handle non-unique keys, then deduplicate
 
+* Load 2019 data
 use "$CleanDataPath/clean_2019_long.dta", clear
 
-* Join to 2015-2018 on municipality + match_year + all 4 previous year assets
-rename fin_2019_pre fin_match
-rename re_2019_pre re_match
-rename bus_2019_pre bus_match
-rename oth_2019_pre oth_match
+* Create standardized join keys from 2019 previous year values
+rename fin_2019_pre fin_key
+rename re_2019_pre re_key
+rename bus_2019_pre bus_key
+rename oth_2019_pre oth_key
 
-merge m:1 municipio_name_mode match_year fin_match re_match bus_match oth_match ///
-	using "$CleanDataPath/clean_1518_long.dta", ///
-	keepusing(id fin_1518 re_1518 bus_1518 oth_1518) ///
-	keep(master match) gen(_merge_exact)
+tempfile temp_2019_for_join
+save `temp_2019_for_join'
 
-* Rename back
-rename fin_match fin_2019_pre
-rename re_match re_2019_pre
-rename bus_match bus_2019_pre
-rename oth_match oth_2019_pre
+* Load 2015-2018 data and create matching keys
+use "$CleanDataPath/clean_1518_long.dta", clear
+rename fin_1518 fin_key
+rename re_1518 re_key
+rename bus_1518 bus_key
+rename oth_1518 oth_key
 
-* Count exact matches
-count if _merge_exact == 3
-local n_exact = r(N)
-di "===== EXACT MATCHES: `n_exact' ====="
+* Join on all 6 keys: municipality + year + 4 assets
+joinby municipio_name_mode match_year fin_key re_key bus_key oth_key ///
+	using `temp_2019_for_join', unmatched(both) _merge(_join_exact)
 
-* Save exact matches
+* Rename keys back
+rename fin_key fin_2019_pre
+rename re_key re_2019_pre
+rename bus_key bus_2019_pre
+rename oth_key oth_2019_pre
+
+* Count matches
+count if _join_exact == 3
+local n_exact_raw = r(N)
+di "Raw exact match pairs: `n_exact_raw'"
+
+* Save exact matches (matched records)
 preserve
-keep if _merge_exact == 3
+keep if _join_exact == 3
+
+* Handle duplicates: if same 2019 record matches multiple 1518 records, keep first
+* (they have same assets so it's arbitrary which one we pick)
+bysort filename2019 (id): gen dup_2019 = _n
+keep if dup_2019 == 1
+drop dup_2019
+
+* Also prevent same 1518 record from matching multiple 2019 records
+bysort id match_year (filename2019): gen dup_1518 = _n
+keep if dup_1518 == 1
+drop dup_1518
+
+count
+local n_exact = r(N)
+di "===== EXACT MATCHES (after deduplication): `n_exact' ====="
+
 gen match_type = "exact"
 gen match_confidence = 100
 gen digits_changed = 0
@@ -586,9 +613,10 @@ keep filename2019 id municipio_name_mode match_year report_year ///
 save "$CleanDataPath/matches_exact.dta", replace
 restore
 
-* Keep unmatched for fuzzy matching
-keep if _merge_exact == 1
-drop _merge_exact id fin_1518 re_1518 bus_1518 oth_1518
+* Keep unmatched 2019 records for fuzzy matching
+* _join_exact == 2 means record was only in 2019 (using data), not matched
+keep if _join_exact == 2
+drop _join_exact id
 save "$CleanDataPath/unmatched_2019_stage1.dta", replace
 
 *------------------------------------------------------------------------------
@@ -955,6 +983,21 @@ di "========================================"
 di "SUMMARY STATISTICS"
 di "========================================"
 
+* Count unique persons in each original file
+use "$CleanDataPath/clean_2015_2018.dta", clear
+local n_unique_1518 = _N
+di "Unique persons in 2015-2018 file: `n_unique_1518'"
+
+use "$CleanDataPath/clean_2019.dta", clear
+local n_unique_2019 = _N
+di "Unique records in 2019 file: `n_unique_2019'"
+
+* Count matchable 2019 records (those with previous year data)
+use "$CleanDataPath/clean_2019_long.dta", clear
+local n_matchable_2019 = _N
+di "Matchable 2019 records (with previous year data): `n_matchable_2019'"
+
+* Count matches
 use "$CleanDataPath/all_matches.dta", clear
 local n_total = _N
 
@@ -967,10 +1010,41 @@ local n_fuzzy1 = r(N)
 count if match_type == "fuzzy_2digit"
 local n_fuzzy2 = r(N)
 
-di "Total matches: `n_total'"
-di "  - Exact matches: `n_exact'"
-di "  - Fuzzy (1-digit): `n_fuzzy1'"
-di "  - Fuzzy (2-digit): `n_fuzzy2'"
+* Count unique 2019 records that were matched
+preserve
+keep filename2019
+duplicates drop
+local n_2019_matched = _N
+restore
+
+* Count unique 1518 IDs that were matched
+preserve
+keep id
+duplicates drop
+local n_1518_matched = _N
+restore
+
+di " "
+di "========================================"
+di "MATCH RESULTS"
+di "========================================"
+di " "
+di "ORIGINAL DATA:"
+di "  - Unique persons in 2015-2018 file: `n_unique_1518'"
+di "  - Total records in 2019 file: `n_unique_2019'"
+di "  - Matchable 2019 records (with prev year data): `n_matchable_2019'"
+di " "
+di "MATCHES FOUND:"
+di "  - Total matches: `n_total'"
+di "    - Exact matches: `n_exact'"
+di "    - Fuzzy (1-digit): `n_fuzzy1'"
+di "    - Fuzzy (2-digit): `n_fuzzy2'"
+di " "
+di "MATCH RATES:"
+local pct_2019 = round(100 * `n_2019_matched' / `n_matchable_2019', 0.1)
+local pct_1518 = round(100 * `n_1518_matched' / `n_unique_1518', 0.1)
+di "  - 2019 records matched: `n_2019_matched' / `n_matchable_2019' (`pct_2019'%)"
+di "  - 2015-2018 persons matched: `n_1518_matched' / `n_unique_1518' (`pct_1518'%)"
 
 ********************************************************************************
 * END OF SCRIPT
