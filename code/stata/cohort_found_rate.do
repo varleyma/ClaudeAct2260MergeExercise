@@ -98,7 +98,7 @@ twoway ///
 	(connected found_pct ayear if act=="60" & inrange(ayear,2021,2024), ///
 		lcolor(orange) mcolor(orange) msymbol(D) lpattern(dash) lwidth(medthick) ///
 		mlabel(nlab) mlabpos(12) mlabsize(vsmall) mlabcolor(orange)), ///
-	ylabel(0(10)70, grid angle(0)) yscale(range(0 72)) ///
+	ylabel(40(5)65, grid angle(0)) yscale(range(40 66)) ///
 	ytitle("% of cohort found with property (search)") ///
 	xlabel(2012(1)2024, angle(45)) xtitle("Decree approval year (cohort)") ///
 	title("Property-search found rate by approval cohort", size(medium)) ///
