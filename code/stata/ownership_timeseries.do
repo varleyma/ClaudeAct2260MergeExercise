@@ -178,26 +178,23 @@ merge 1:1 year using "$Clean/ts_search.dta", nogen
 keep if inrange(year, 2015, 2022)
 sort year
 save "$Clean/ts_combined.dta", replace
-list year own_rate cum_found cum_found_uniq, noobs
+list year own_rate cum_found, noobs
 
 twoway ///
 	(connected own_rate year, lcolor(navy) mcolor(navy) ///
 		msymbol(O) lwidth(medthick)) ///
 	(connected cum_found year, lcolor(orange) mcolor(orange) ///
-		msymbol(D) lpattern(dash) lwidth(medthick)) ///
-	(connected cum_found_uniq year, lcolor(cranberry) mcolor(cranberry) ///
-		msymbol(T) lpattern(shortdash) lwidth(medthick)), ///
-	ylabel(40(5)65, grid angle(0)) yscale(range(40 65)) ///
+		msymbol(D) lpattern(dash) lwidth(medthick)), ///
+	ylabel(45(5)65, grid angle(0)) yscale(range(47 63)) ///
 	ytitle("Percent who own a home") ///
 	xlabel(2015(1)2022) xtitle("Reporting year (reports) / approval year (search)") ///
 	title("Homeownership over time: reports vs. property search", size(medium)) ///
 	subtitle("Act 22 + Act 60 decree holders, 2015-2022", size(small)) ///
 	legend(order(1 "Reports: share who OWN" ///
-		2 "Search: found w/ property (all names)" ///
-		3 "Search: distinctive surnames only (namesake-robust)") ///
-		rows(3) size(small) position(6) region(lstyle(none))) ///
-	note("Search = cumulative homeowner share by decree approval year (once-a-homeowner-always)." ///
-	     "Distinctive-surname line strips same-name false positives.", size(vsmall)) ///
+		2 "Search: found w/ property (all names)") ///
+		rows(2) size(small) position(6) region(lstyle(none))) ///
+	note("Search = cumulative homeowner share by decree approval year (once-a-homeowner-always).", ///
+	     size(vsmall)) ///
 	graphregion(color(white)) plotregion(color(white))
 
 graph export "$Out/ownership_timeseries.png", replace width(1700) height(1050)
