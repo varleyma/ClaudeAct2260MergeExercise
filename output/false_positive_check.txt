@@ -1,0 +1,30 @@
+HOW BADLY COULD SAME-NAME FALSE POSITIVES INFLATE THE ~52%?
+==========================================================
+
+Raw name search found property for  52.0% of decree names.
+There are TWO kinds of false positive; they differ a lot in size.
+
+1) UNRELATED-NAME COINCIDENCE  (a totally different name matches)
+   Placebo test: scramble first<->last pairings into fake-but-
+   realistic names, run the same search. They match only 2.5%
+   of the time (mean of 30 shuffles; range 2.1-3.0%).
+   => Random-name noise is SMALL. The search is not just matching junk.
+
+2) SAME-NAME, DIFFERENT PERSON  (searched the right name, but the
+   property belongs to a namesake) -- the real concern, and the
+   placebo CANNOT see it. Proxy = how found rate moves with how
+   common the surname is (true ownership should not depend on that):
+     unique surname (1 holder):   45.4%
+     3+ holders share surname:    61.5%
+   The 16.1-point jump for common surnames is
+   plausibly namesake inflation, concentrated among common names.
+
+BOTTOM LINE
+- Wholesale name noise is minor (~ 3%).
+- But namesake collisions DO inflate the raw 52%: a
+  cleaner 'discovery' rate is nearer the unique-surname 45%,
+  so the raw figure is inflated by roughly  7-16 points
+  (aggregate vs. common-surname worst case).
+- Net: the earlier conclusion (search UNDER-covered true owners,
+  ~58% own vs ~52% found) is ROBUST -- deflating for false positives
+  only widens the gap.
