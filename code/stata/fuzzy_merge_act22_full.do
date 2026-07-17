@@ -54,116 +54,272 @@ capture mkdir "$OutputPath"
 * SECTION 1: DEFINE MUNICIPALITY STANDARDIZATION PROGRAM
 ********************************************************************************
 * This program standardizes municipality names across all files.
-* It handles all known variations and typos.
+* STRATEGY: Convert to uppercase first, then clean suffixes, then map to standard names.
+* IMPORTANT: Municipality must be a Puerto Rico municipality, NOT a US mainland location.
 ********************************************************************************
 
 capture program drop standardize_municipio
 program define standardize_municipio
 	* Input: variable called municipio_name
-	* Output: standardized municipio_name
+	* Output: standardized municipio_name (UPPERCASE, ASCII only)
 
-	* Remove common suffixes
-	replace municipio_name = subinstr(municipio_name, ", Puerto Rico", "", .)
-	replace municipio_name = subinstr(municipio_name, ", P.R.", "", .)
-	replace municipio_name = subinstr(municipio_name, ", P. R.", "", .)
-	replace municipio_name = subinstr(municipio_name, " P.R.", "", .)
+	* STEP 1: Replace accented characters with ASCII equivalents BEFORE uppercasing
+	* Spanish accented vowels (lowercase)
+	replace municipio_name = subinstr(municipio_name, "á", "a", .)
+	replace municipio_name = subinstr(municipio_name, "é", "e", .)
+	replace municipio_name = subinstr(municipio_name, "í", "i", .)
+	replace municipio_name = subinstr(municipio_name, "ó", "o", .)
+	replace municipio_name = subinstr(municipio_name, "ú", "u", .)
+	replace municipio_name = subinstr(municipio_name, "ü", "u", .)
+	replace municipio_name = subinstr(municipio_name, "ñ", "n", .)
+
+	* Spanish accented vowels (uppercase)
+	replace municipio_name = subinstr(municipio_name, "Á", "A", .)
+	replace municipio_name = subinstr(municipio_name, "É", "E", .)
+	replace municipio_name = subinstr(municipio_name, "Í", "I", .)
+	replace municipio_name = subinstr(municipio_name, "Ó", "O", .)
+	replace municipio_name = subinstr(municipio_name, "Ú", "U", .)
+	replace municipio_name = subinstr(municipio_name, "Ü", "U", .)
+	replace municipio_name = subinstr(municipio_name, "Ñ", "N", .)
+
+	* Common garbled encodings from PDF extraction (UTF-8 misread as Latin-1, etc.)
+	replace municipio_name = subinstr(municipio_name, "Ă", "A", .)
+	replace municipio_name = subinstr(municipio_name, "ă", "a", .)
+	replace municipio_name = subinstr(municipio_name, "ł", "n", .)
+	replace municipio_name = subinstr(municipio_name, "ń", "n", .)
+	replace municipio_name = subinstr(municipio_name, "ö", "o", .)
+	replace municipio_name = subinstr(municipio_name, "ź", "z", .)
+	replace municipio_name = subinstr(municipio_name, "ż", "z", .)
+	replace municipio_name = subinstr(municipio_name, "ş", "s", .)
+	replace municipio_name = subinstr(municipio_name, "ğ", "g", .)
+	replace municipio_name = subinstr(municipio_name, "ı", "i", .)
+	replace municipio_name = subinstr(municipio_name, "ą", "A", .)  // garbled Añasco
+	replace municipio_name = subinstr(municipio_name, "­", "I", .)  // soft hyphen becoming I for Río Grande
+
+	* STEP 2: Convert to uppercase - eliminates case sensitivity issues
+	replace municipio_name = upper(municipio_name)
+
+	* STEP 3: Trim whitespace
+	replace municipio_name = strtrim(municipio_name)
+	replace municipio_name = stritrim(municipio_name)  // Remove internal multiple spaces
+
+	* STEP 3: Remove "PUERTO RICO" and variants (order matters - longer first)
+	replace municipio_name = subinstr(municipio_name, "PUERTO RICO USA", "", .)
+	replace municipio_name = subinstr(municipio_name, "PUETO RICO", "", .)
+	replace municipio_name = subinstr(municipio_name, "PURETO RICO", "", .)
+	replace municipio_name = subinstr(municipio_name, "PUERTO RICO", "", .)
+	replace municipio_name = subinstr(municipio_name, "P.R.", "", .)
+	replace municipio_name = subinstr(municipio_name, "P. R.", "", .)
 	replace municipio_name = subinstr(municipio_name, ", PR", "", .)
 	replace municipio_name = subinstr(municipio_name, " PR", "", .)
-	replace municipio_name = subinstr(municipio_name, " Puerto Rico", "", .)
+	replace municipio_name = subinstr(municipio_name, ",PR", "", .)
+
+	* STEP 4: Remove "USA" and variants
 	replace municipio_name = subinstr(municipio_name, ", USA", "", .)
 	replace municipio_name = subinstr(municipio_name, " USA", "", .)
 	replace municipio_name = subinstr(municipio_name, ", U.S.A.", "", .)
-	replace municipio_name = subinstr(municipio_name, " -", "", .)
+	replace municipio_name = subinstr(municipio_name, ", U.S.A", "", .)
+	replace municipio_name = subinstr(municipio_name, ", UNITED STATES", "", .)
 
-	* Trim whitespace
+	* STEP 5: Remove other common suffixes and prefixes
+	replace municipio_name = subinstr(municipio_name, " -", "", .)
+	replace municipio_name = subinstr(municipio_name, "- ", "", .)
+	replace municipio_name = subinstr(municipio_name, ",", " ", .)  // Replace commas with spaces
+
+	* Re-trim after substitutions
+	replace municipio_name = strtrim(municipio_name)
+	replace municipio_name = stritrim(municipio_name)
+
+	* STEP 6: Fix specific typos and variations (all uppercase now)
+	* Dorado variations
+	replace municipio_name = "DORADO" if regexm(municipio_name, "^DORADO")
+	replace municipio_name = "DORADO" if inlist(municipio_name, "DOADO", "CARIBE")
+
+	* San Juan variations
+	replace municipio_name = "SAN JUAN" if regexm(municipio_name, "^SAN ?JUAN")
+	replace municipio_name = "SAN JUAN" if inlist(municipio_name, "SANJUAN", "SAN JAUN", "SAB JUAN")
+	replace municipio_name = "SAN JUAN" if inlist(municipio_name, "SANTURCE", "CONDADO", "MILFORD SAN JUAN")
+	replace municipio_name = "SAN JUAN" if inlist(municipio_name, "AVE SAN JUAN", "SAN JUANP")
+
+	* Humacao variations
+	replace municipio_name = "HUMACAO" if regexm(municipio_name, "^HUMACAO")
+	replace municipio_name = "HUMACAO" if inlist(municipio_name, "HUMACO", "HUMACOA", "ALMACAO", "UMACAO")
+	replace municipio_name = "HUMACAO" if municipio_name == "PALMAS DEL MAR"
+
+	* Rincon variations
+	replace municipio_name = "RINCON" if regexm(municipio_name, "^RINCON")
+	replace municipio_name = "RINCON" if municipio_name == "RINCANN"  // garbled encoding
+
+	* Guaynabo variations
+	replace municipio_name = "GUAYNABO" if regexm(municipio_name, "^GUAYNABO")
+	replace municipio_name = "GUAYNABO" if municipio_name == "GUAYANABO"
+
+	* Quebradillas variations
+	replace municipio_name = "QUEBRADILLAS" if regexm(municipio_name, "^QUEBRADILLAS")
+
+	* Bayamon variations (handle accented characters that become garbled)
+	replace municipio_name = "BAYAMON" if regexm(municipio_name, "^BAYAM")
+
+	* Anasco variations
+	replace municipio_name = "ANASCO" if regexm(municipio_name, "^A.ASCO")
+	replace municipio_name = "ANASCO" if regexm(municipio_name, "^AA.ASCO")  // AAąASCO garbled encoding
+	replace municipio_name = "ANASCO" if inlist(municipio_name, "AIASCO", "AFIASCO", "AAASCO")
+
+	* Mayaguez variations
+	replace municipio_name = "MAYAGUEZ" if regexm(municipio_name, "^MAYAG")
+
+	* Rio Grande variations
+	replace municipio_name = "RIO GRANDE" if regexm(municipio_name, "^R.O GRANDE")
+	replace municipio_name = "RIO GRANDE" if regexm(municipio_name, "^RA.O GRANDE")  // RA­O GRANDE garbled encoding
+	replace municipio_name = "RIO GRANDE" if municipio_name == "BAHIA BEACH"
+
+	* Other specific fixes
+	replace municipio_name = "CAROLINA" if regexm(municipio_name, "^CAROLINA")
+	replace municipio_name = "LOIZA" if municipio_name == "LOZA"
+	replace municipio_name = "SAN GERMAN" if regexm(municipio_name, "^SAN GERM")
+	replace municipio_name = "ADJUNTAS" if regexm(municipio_name, "^ADJUNTAS")
+	replace municipio_name = "COTO LAUREL" if municipio_name == "COTO LAUREL"  // This is in Ponce
+	replace municipio_name = "PONCE" if municipio_name == "COTO LAUREL"
+	replace municipio_name = "TOA BAJA" if municipio_name == "SABANA SECA"  // Sabana Seca is in Toa Baja
+	replace municipio_name = "HUMACAO" if municipio_name == "PALMER"  // Palmer is in Humacao
+
+	* Handle neighborhoods/barrios that should map to municipalities
+	replace municipio_name = "SAN JUAN" if municipio_name == "SANTURCE"
+	replace municipio_name = "SAN JUAN" if municipio_name == "CONDADO"
+	replace municipio_name = "SAN JUAN" if municipio_name == "HATO REY"
+	replace municipio_name = "SAN JUAN" if municipio_name == "RIO PIEDRAS"
+	replace municipio_name = "HUMACAO" if municipio_name == "PALMAS DEL MAR"
+	replace municipio_name = "RIO GRANDE" if municipio_name == "BAHIA BEACH"
+
+	* Additional typos from data inspection
+	replace municipio_name = "BOQUERON" if municipio_name == "BOQUERON"  // Boqueron is in Cabo Rojo
+	replace municipio_name = "CABO ROJO" if municipio_name == "BOQUERON"
+	replace municipio_name = "SAN JUAN" if municipio_name == "ORLANDOFLORIDA"  // Clearly wrong extraction
+
+	* Handle "DORADO BEACH DRIVE DORADO" and similar
+	replace municipio_name = "DORADO" if regexm(municipio_name, "DORADO BEACH")
+	replace municipio_name = "DORADO" if regexm(municipio_name, "^DORADOPUERTO")  // DORADOPUERTO RIC
+
+	* Handle garbled encoding that shows "FLORIDA" but means Puerto Rico municipality
+	* Note: There IS a municipality called Florida in PR - don't change legitimate Florida
+
+	* Fix ORLANDOFLORIDA - this is clearly garbled
+	replace municipio_name = "" if municipio_name == "ORLANDOFLORIDA"
+
+	* STEP 7: Final cleanup - remove any trailing numbers (like zip codes)
+	replace municipio_name = regexr(municipio_name, " [0-9]+$", "")
 	replace municipio_name = strtrim(municipio_name)
 
-	* Standardize to title case versions
-	replace municipio_name = "Aguada" if inlist(municipio_name, "AGUADA", "aguada")
-	replace municipio_name = "Aguadilla" if inlist(municipio_name, "AGUADILLA", "aguadilla")
-	replace municipio_name = "Aguas Buenas" if inlist(municipio_name, "AGUAS BUENAS", "aguas buenas", "Aguas buenas")
-	replace municipio_name = "Aibonito" if inlist(municipio_name, "AIBONITO", "aibonito")
-	replace municipio_name = "Anasco" if inlist(municipio_name, "ANASCO", "Añasco", "AÑASCO", "anasco")
-	replace municipio_name = "Arecibo" if inlist(municipio_name, "ARECIBO", "arecibo")
-	replace municipio_name = "Arroyo" if inlist(municipio_name, "ARROYO", "arroyo")
-	replace municipio_name = "Barceloneta" if inlist(municipio_name, "BARCELONETA", "barceloneta")
-	replace municipio_name = "Barranquitas" if inlist(municipio_name, "BARRANQUITAS", "barranquitas")
-	replace municipio_name = "Bayamon" if inlist(municipio_name, "BAYAMON", "Bayamón", "BAYAMÓN", "bayamon")
-	replace municipio_name = "Cabo Rojo" if inlist(municipio_name, "CABO ROJO", "cabo rojo", "Cabo rojo")
-	replace municipio_name = "Caguas" if inlist(municipio_name, "CAGUAS", "caguas")
-	replace municipio_name = "Camuy" if inlist(municipio_name, "CAMUY", "camuy")
-	replace municipio_name = "Canovanas" if inlist(municipio_name, "CANOVANAS", "Canóvanas", "CANÓVANAS", "canovanas")
-	replace municipio_name = "Carolina" if inlist(municipio_name, "CAROLINA", "carolina", "Carolina, P R   U S A")
-	replace municipio_name = "Catano" if inlist(municipio_name, "CATANO", "Cataño", "CATAÑO", "catano")
-	replace municipio_name = "Cayey" if inlist(municipio_name, "CAYEY", "cayey")
-	replace municipio_name = "Ceiba" if inlist(municipio_name, "CEIBA", "ceiba")
-	replace municipio_name = "Ciales" if inlist(municipio_name, "CIALES", "ciales")
-	replace municipio_name = "Cidra" if inlist(municipio_name, "CIDRA", "cidra")
-	replace municipio_name = "Coamo" if inlist(municipio_name, "COAMO", "coamo")
-	replace municipio_name = "Comerio" if inlist(municipio_name, "COMERIO", "Comerío", "COMERÍO", "comerio")
-	replace municipio_name = "Corozal" if inlist(municipio_name, "COROZAL", "corozal")
-	replace municipio_name = "Culebra" if inlist(municipio_name, "CULEBRA", "culebra")
-	replace municipio_name = "Dorado" if inlist(municipio_name, "DORADO", "dorado")
-	replace municipio_name = "Fajardo" if inlist(municipio_name, "FAJARDO", "fajardo")
-	replace municipio_name = "Florida" if inlist(municipio_name, "FLORIDA", "florida")
-	replace municipio_name = "Guanica" if inlist(municipio_name, "GUANICA", "Guánica", "GUÁNICA", "guanica")
-	replace municipio_name = "Guayama" if inlist(municipio_name, "GUAYAMA", "guayama")
-	replace municipio_name = "Guayanilla" if inlist(municipio_name, "GUAYANILLA", "guayanilla")
-	replace municipio_name = "Guaynabo" if inlist(municipio_name, "GUAYNABO", "guaynabo")
-	replace municipio_name = "Gurabo" if inlist(municipio_name, "GURABO", "gurabo")
-	replace municipio_name = "Hatillo" if inlist(municipio_name, "HATILLO", "hatillo")
-	replace municipio_name = "Hormigueros" if inlist(municipio_name, "HORMIGUEROS", "hormigueros")
-	replace municipio_name = "Humacao" if inlist(municipio_name, "HUMACAO", "humacao")
-	replace municipio_name = "Isabela" if inlist(municipio_name, "ISABELA", "isabela")
-	replace municipio_name = "Jayuya" if inlist(municipio_name, "JAYUYA", "jayuya")
-	replace municipio_name = "Juana Diaz" if inlist(municipio_name, "JUANA DIAZ", "Juana Díaz", "JUANA DÍAZ", "juana diaz")
-	replace municipio_name = "Juncos" if inlist(municipio_name, "JUNCOS", "juncos")
-	replace municipio_name = "Lajas" if inlist(municipio_name, "LAJAS", "lajas")
-	replace municipio_name = "Lares" if inlist(municipio_name, "LARES", "lares")
-	replace municipio_name = "Las Marias" if inlist(municipio_name, "LAS MARIAS", "Las Marías", "LAS MARÍAS", "las marias")
-	replace municipio_name = "Las Piedras" if inlist(municipio_name, "LAS PIEDRAS", "las piedras")
-	replace municipio_name = "Loiza" if inlist(municipio_name, "LOIZA", "Loíza", "LOÍZA", "loiza")
-	replace municipio_name = "Luquillo" if inlist(municipio_name, "LUQUILLO", "luquillo")
-	replace municipio_name = "Manati" if inlist(municipio_name, "MANATI", "Manatí", "MANATÍ", "manati")
-	replace municipio_name = "Maricao" if inlist(municipio_name, "MARICAO", "maricao")
-	replace municipio_name = "Maunabo" if inlist(municipio_name, "MAUNABO", "maunabo")
-	replace municipio_name = "Mayaguez" if inlist(municipio_name, "MAYAGUEZ", "Mayagüez", "MAYAGÜEZ", "mayaguez")
-	replace municipio_name = "Moca" if inlist(municipio_name, "MOCA", "moca")
-	replace municipio_name = "Morovis" if inlist(municipio_name, "MOROVIS", "morovis")
-	replace municipio_name = "Naguabo" if inlist(municipio_name, "NAGUABO", "naguabo")
-	replace municipio_name = "Naranjito" if inlist(municipio_name, "NARANJITO", "naranjito")
-	replace municipio_name = "Orocovis" if inlist(municipio_name, "OROCOVIS", "orocovis")
-	replace municipio_name = "Patillas" if inlist(municipio_name, "PATILLAS", "patillas")
-	replace municipio_name = "Penuelas" if inlist(municipio_name, "PENUELAS", "Peñuelas", "PEÑUELAS", "penuelas")
-	replace municipio_name = "Ponce" if inlist(municipio_name, "PONCE", "ponce")
-	replace municipio_name = "Quebradillas" if inlist(municipio_name, "QUEBRADILLAS", "quebradillas")
-	replace municipio_name = "Rincon" if inlist(municipio_name, "RINCON", "Rincón", "RINCÓN", "rincon")
-	replace municipio_name = "Rio Grande" if inlist(municipio_name, "RIO GRANDE", "Río Grande", "RÍO GRANDE", "rio grande")
-	replace municipio_name = "Sabana Grande" if inlist(municipio_name, "SABANA GRANDE", "sabana grande")
-	replace municipio_name = "Salinas" if inlist(municipio_name, "SALINAS", "salinas")
-	replace municipio_name = "San German" if inlist(municipio_name, "SAN GERMAN", "San Germán", "SAN GERMÁN", "san german")
-	replace municipio_name = "San Juan" if inlist(municipio_name, "SAN JUAN", "san juan", "Sn Juan", "SN JUAN")
-	replace municipio_name = "San Lorenzo" if inlist(municipio_name, "SAN LORENZO", "san lorenzo")
-	replace municipio_name = "San Sebastian" if inlist(municipio_name, "SAN SEBASTIAN", "San Sebastián", "SAN SEBASTIÁN", "san sebastian")
-	replace municipio_name = "Santa Isabel" if inlist(municipio_name, "SANTA ISABEL", "santa isabel")
-	replace municipio_name = "Toa Alta" if inlist(municipio_name, "TOA ALTA", "toa alta")
-	replace municipio_name = "Toa Baja" if inlist(municipio_name, "TOA BAJA", "toa baja")
-	replace municipio_name = "Trujillo Alto" if inlist(municipio_name, "TRUJILLO ALTO", "trujillo alto")
-	replace municipio_name = "Utuado" if inlist(municipio_name, "UTUADO", "utuado")
-	replace municipio_name = "Vega Alta" if inlist(municipio_name, "VEGA ALTA", "vega alta")
-	replace municipio_name = "Vega Baja" if inlist(municipio_name, "VEGA BAJA", "vega baja")
-	replace municipio_name = "Vieques" if inlist(municipio_name, "VIEQUES", "vieques")
-	replace municipio_name = "Villalba" if inlist(municipio_name, "VILLALBA", "villalba")
-	replace municipio_name = "Yabucoa" if inlist(municipio_name, "YABUCOA", "yabucoa")
-	replace municipio_name = "Yauco" if inlist(municipio_name, "YAUCO", "yauco")
+	* STEP 8: Flag known US mainland locations as empty (will be dropped or use fallback)
+	* These are confirmed US locations, not PR municipalities
+	replace municipio_name = "" if inlist(municipio_name, "AUSTIN", "BIRMINGHAM", "BOCA RATON", "BOYNTON BEACH")
+	replace municipio_name = "" if inlist(municipio_name, "CHICO", "DURANGO", "DURANGO CO", "HAVERFORD")
+	replace municipio_name = "" if inlist(municipio_name, "IRVING", "LA JOLLA", "SANDS POINT", "SEELEY LAKE")
+	replace municipio_name = "" if inlist(municipio_name, "TAMPA", "SAN DIEGO")
 
-	* Additional common variations/typos from 2015-2019 data
-	replace municipio_name = "Dorado" if inlist(municipio_name, "dorado PR", "Dorado PR")
-	replace municipio_name = "San Juan" if inlist(municipio_name, "San  Juan", "San juan", "Sanjuan", "SANJUAN")
-	replace municipio_name = "Guaynabo" if inlist(municipio_name, "Guayanabo", "GUAYANABO")
-	replace municipio_name = "Carolina" if inlist(municipio_name, "Caroliina", "CAROLIINA")
-	replace municipio_name = "Humacao" if inlist(municipio_name, "Humacoa", "HUMACOA")
-	replace municipio_name = "Bayamon" if inlist(municipio_name, "Bayamon PR", "BAYAMON PR")
+end
+
+********************************************************************************
+* SECTION 1B: DEFINE PROGRAM TO VALIDATE AND FLAG INVALID MUNICIPALITIES
+********************************************************************************
+* This checks if the municipality is a valid PR municipality (UPPERCASE).
+* US mainland locations get flagged for review/dropping.
+********************************************************************************
+
+capture program drop validate_pr_municipio
+program define validate_pr_municipio
+	* Creates valid_pr_muni = 1 if it's a valid Puerto Rico municipality
+
+	* List of all 78 Puerto Rico municipalities (UPPERCASE standardized names)
+	gen valid_pr_muni = 0
+
+	* Check against valid list (all UPPERCASE)
+	replace valid_pr_muni = 1 if inlist(municipio_name, "ADJUNTAS", "AGUADA", "AGUADILLA", "AGUAS BUENAS", "AIBONITO", "ANASCO", "ARECIBO")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "ARROYO", "BARCELONETA", "BARRANQUITAS", "BAYAMON", "CABO ROJO", "CAGUAS", "CAMUY")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "CANOVANAS", "CAROLINA", "CATANO", "CAYEY", "CEIBA", "CIALES", "CIDRA")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "COAMO", "COMERIO", "COROZAL", "CULEBRA", "DORADO", "FAJARDO", "FLORIDA")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "GUANICA", "GUAYAMA", "GUAYANILLA", "GUAYNABO", "GURABO", "HATILLO", "HORMIGUEROS")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "HUMACAO", "ISABELA", "JAYUYA", "JUANA DIAZ", "JUNCOS", "LAJAS", "LARES")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "LAS MARIAS", "LAS PIEDRAS", "LOIZA", "LUQUILLO", "MANATI", "MARICAO", "MAUNABO")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "MAYAGUEZ", "MOCA", "MOROVIS", "NAGUABO", "NARANJITO", "OROCOVIS", "PATILLAS")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "PENUELAS", "PONCE", "QUEBRADILLAS", "RINCON", "RIO GRANDE", "SABANA GRANDE", "SALINAS")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "SAN GERMAN", "SAN JUAN", "SAN LORENZO", "SAN SEBASTIAN", "SANTA ISABEL", "TOA ALTA", "TOA BAJA")
+	replace valid_pr_muni = 1 if inlist(municipio_name, "TRUJILLO ALTO", "UTUADO", "VEGA ALTA", "VEGA BAJA", "VIEQUES", "VILLALBA", "YABUCOA", "YAUCO")
+
+	* Report invalid municipalities
+	count if valid_pr_muni == 0
+	if r(N) > 0 {
+		di "WARNING: Found " r(N) " records with invalid/US mainland municipality names:"
+		tab municipio_name if valid_pr_muni == 0, sort
+	}
+
+end
+
+********************************************************************************
+* SECTION 1C: DEFINE PROGRAM TO EXTRACT BEST PR MUNICIPALITY FROM MULTIPLE VARS
+********************************************************************************
+* When county shows a US mainland location, the PR municipality might be in
+* another variable like real_estate_municipality, mailing_county, etc.
+* This program tries multiple sources to find a valid PR municipality.
+********************************************************************************
+
+capture program drop extract_best_municipio
+program define extract_best_municipio
+	args primary_var alt_var1 alt_var2
+	* primary_var: first choice (usually county)
+	* alt_var1: second choice (usually real_estate_municipality)
+	* alt_var2: third choice (usually mailing_county)
+
+	* Start with primary variable
+	gen municipio_name = `primary_var'
+	standardize_municipio
+	validate_pr_municipio
+
+	* If primary is invalid, try alternative 1
+	capture confirm variable `alt_var1'
+	if _rc == 0 {
+		gen temp_muni = `alt_var1' if valid_pr_muni == 0
+		replace temp_muni = "" if temp_muni == "NA"
+		gen orig_muni = municipio_name if valid_pr_muni == 0
+		replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+		drop valid_pr_muni
+		standardize_municipio
+		validate_pr_municipio
+
+		* Report how many were fixed
+		count if valid_pr_muni == 1 & orig_muni != ""
+		if r(N) > 0 {
+			di "Fixed " r(N) " records using `alt_var1' instead of `primary_var'"
+		}
+		drop temp_muni orig_muni
+	}
+
+	* If still invalid, try alternative 2
+	capture confirm variable `alt_var2'
+	if _rc == 0 {
+		gen temp_muni = `alt_var2' if valid_pr_muni == 0
+		replace temp_muni = "" if temp_muni == "NA"
+		gen orig_muni = municipio_name if valid_pr_muni == 0
+		replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+		drop valid_pr_muni
+		standardize_municipio
+		validate_pr_municipio
+
+		* Report how many were fixed
+		count if valid_pr_muni == 1 & orig_muni != ""
+		if r(N) > 0 {
+			di "Fixed " r(N) " records using `alt_var2'"
+		}
+		drop temp_muni orig_muni
+	}
+
+	* Final report
+	count if valid_pr_muni == 0
+	if r(N) > 0 {
+		di " "
+		di "FINAL: " r(N) " records still have invalid municipality after trying all sources:"
+		tab municipio_name if valid_pr_muni == 0, sort
+	}
 
 end
 
@@ -182,9 +338,114 @@ import delimited "$RawDataPath/Act22AnnualReports2015-2018.csv", ///
 local n_initial_1518 = _N
 di "Initial 2015-2018 records: `n_initial_1518'"
 
-* Extract municipality from sworn statement location
+* Extract municipality - try multiple sources
+* Primary: sworn_statement_city_and_country (most reliable for this file per original code)
+* Fallback 1: county
+* Fallback 2: real_estate_municipality
+
+* Start with sworn_statement_city_and_country (as in original code)
 gen municipio_name = sworn_statement_city_and_country
 standardize_municipio
+validate_pr_municipio
+
+* If invalid, try county
+gen temp_muni = county if valid_pr_muni == 0
+replace temp_muni = "" if temp_muni == "NA"
+replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+drop valid_pr_muni temp_muni
+standardize_municipio
+validate_pr_municipio
+
+* If still invalid, try real_estate_municipality
+capture confirm variable real_estate_municipality
+if _rc == 0 {
+	gen temp_muni = real_estate_municipality if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni
+	drop valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* Apply ID-based manual corrections from original code (all UPPERCASE)
+replace municipio_name = "HUMACAO" if id == "12-22-S-009"
+replace municipio_name = "SAN JUAN" if id == "16-22-S-153"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-324"
+replace municipio_name = "HUMACAO" if id == "15-22-S-265"
+replace municipio_name = "SAN JUAN" if id == "13-22-S-128"
+replace municipio_name = "GUAYNABO" if id == "14-22-S-151"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-219"
+replace municipio_name = "SAN JUAN" if id == "15-22-S-193"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-039"
+replace municipio_name = "CAROLINA" if id == "14-22-S-099"
+replace municipio_name = "DORADO" if id == "14-22-S-130"
+replace municipio_name = "DORADO" if id == "14-22-S-032"
+replace municipio_name = "DORADO" if id == "14-22-S-055"
+replace municipio_name = "DORADO" if id == "15-22-S-005"
+replace municipio_name = "HUMACAO" if id == "15-22-S-011"
+replace municipio_name = "DORADO" if id == "15-22-S-050"
+replace municipio_name = "ANASCO" if id == "15-22-S-233"
+replace municipio_name = "ANASCO" if id == "15-22-S-234"
+replace municipio_name = "GUAYNABO" if id == "16-22-S-057"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-286"
+replace municipio_name = "SAN JUAN" if id == "15-22-S-133"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-321"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-136"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-137"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-315"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-316"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-067"
+replace municipio_name = "HUMACAO" if id == "14-22-S-161"
+replace municipio_name = "SAN JUAN" if id == "13-22-S-108"
+replace municipio_name = "VEGA ALTA" if id == "15-22-S-027"
+replace municipio_name = "SAN JUAN" if id == "13-22-S-023"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-110"
+replace municipio_name = "SAN JUAN" if id == "15-22-S-063"
+replace municipio_name = "PONCE" if id == "13-22-S-109"
+replace municipio_name = "RIO GRANDE" if id == "15-22-S-155"
+replace municipio_name = "HUMACAO" if id == "15-22-S-184"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-037"
+replace municipio_name = "HUMACAO" if id == "15-22-S-045"
+replace municipio_name = "HUMACAO" if id == "14-22-S-300"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-150"
+replace municipio_name = "SAN JUAN" if id == "16-22-S-159"
+replace municipio_name = "SAN JUAN" if id == "16-22-S-182"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-001"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-075"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-337"
+replace municipio_name = "SAN JUAN" if id == "15-22-S-025"
+replace municipio_name = "SAN JUAN" if id == "15-22-S-026"
+replace municipio_name = "CAROLINA" if id == "15-22-S-256"
+replace municipio_name = "DORADO" if id == "16-22-S-179"
+replace municipio_name = "DORADO" if id == "16-22-S-323"
+replace municipio_name = "DORADO" if id == "16-22-S-107"
+replace municipio_name = "DORADO" if id == "12-22-S-006"
+replace municipio_name = "SAN JUAN" if id == "13-22-S-054"
+replace municipio_name = "DORADO" if id == "13-22-S-119"
+replace municipio_name = "DORADO" if id == "13-22-S-132"
+replace municipio_name = "DORADO" if id == "13-22-S-136"
+replace municipio_name = "DORADO" if id == "14-22-S-141"
+replace municipio_name = "DORADO" if id == "15-22-S-270"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-081"
+replace municipio_name = "SAN JUAN" if id == "14-22-S-126"
+replace municipio_name = "GUAYNABO" if id == "14-22-S-271"
+replace municipio_name = "DORADO" if id == "16-22-S-036"
+replace municipio_name = "DORADO" if id == "13-22-S-062"
+replace municipio_name = "RIO GRANDE" if id == "14-22-S-023"
+replace municipio_name = "RIO GRANDE" if id == "14-22-S-022"
+replace municipio_name = "DORADO" if id == "14-22-S-025"
+replace municipio_name = "DORADO" if id == "16-22-S-324"
+
+* Re-run validation after manual corrections
+drop valid_pr_muni
+validate_pr_municipio
+
+* Drop records with REDACTED or NA municipalities (can't match anyway)
+drop if municipio_name == "REDACTED" | municipio_name == "NA" | municipio_name == ""
+
+* Final count
+di "After municipality cleaning, remaining records: " _N
 
 * Rename and convert asset variables
 rename asset_type_financial_previous_re financial_wealth_pre
@@ -273,9 +534,56 @@ import delimited "$RawDataPath/Act22AnnualReports2019.csv", ///
 local n_2019 = _N
 di "2019 records: `n_2019'"
 
-* Municipality is in 'county' field
-rename county municipio_name
+* Municipality extraction - try multiple sources
+* Primary: county
+* Fallback 1: real_estate_municipality
+* Fallback 2: mailing_county
+
+gen municipio_name = county
 standardize_municipio
+validate_pr_municipio
+
+* If invalid, try real_estate_municipality
+capture confirm variable real_estate_municipality
+if _rc == 0 {
+	gen temp_muni = real_estate_municipality if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* If still invalid, try mailing_county
+capture confirm variable mailing_county
+if _rc == 0 {
+	gen temp_muni = mailing_county if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* Manual corrections from original code for known mainland US locations
+* These were manually verified to have correct PR municipality from other data
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "DALLAS", "NEWBURY PARK", "AUSTIN")
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "IRON STATION", "MIAMI", "NEW YORK, NY")
+replace municipio_name = "GUAYNABO" if upper(county) == "KEY LARGO"
+replace municipio_name = "CAROLINA" if inlist(upper(county), "QUEENS", "WESTON")
+replace municipio_name = "HUMACAO" if inlist(upper(county), "REDONDO BEACH", "CARY", "URBANDALE")
+replace municipio_name = "DORADO" if inlist(upper(county), "CHICAGO", "FALLBROOK")
+replace municipio_name = "CAROLINA" if filename == "2020-RepAct22-001283_Redacted.pdf"
+
+* Drop records we can't reliably identify
+drop if inlist(upper(county), "26", "HILLSBOROUGH", "LAS VEGAS", "LOGANVILLE")
+drop if municipio_name == "REDACTED" | municipio_name == ""
+
+* Re-validate after corrections
+drop valid_pr_muni
+validate_pr_municipio
+
+di "After municipality cleaning: " _N " records"
 
 * Year variables
 destring current_reporting_year previous_reporting_year, replace force
@@ -283,6 +591,7 @@ rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
 * Asset variables - use capture to handle variable name truncation variations
+* Note: business_wealth_cur gets truncated to v41 for 2019, 2020, 2021, 2022_format19
 capture rename asset_type_financial_previous_re fin_pre
 capture rename asset_type_financial_previous_rep fin_pre
 capture rename asset_type_financial_current_rep fin_cur
@@ -293,6 +602,7 @@ capture rename asset_type_real_estate_current_r re_cur
 capture rename asset_type_real_estate_current_re re_cur
 capture rename asset_type_privately_held_busine bus_pre
 capture rename asset_type_privately_held_business_pre bus_pre
+capture rename v41 bus_cur
 capture rename asset_type_privately_held_busin bus_cur
 capture rename asset_type_privately_held_business_cur bus_cur
 capture rename asset_type_other_previous_report oth_pre
@@ -344,14 +654,54 @@ import delimited "$RawDataPath/Act22AnnualReports2020.csv", ///
 local n_2020 = _N
 di "2020 records: `n_2020'"
 
-rename county municipio_name
+* Municipality extraction - try multiple sources
+gen municipio_name = county
 standardize_municipio
+validate_pr_municipio
+
+* If invalid, try real_estate_municipality
+capture confirm variable real_estate_municipality
+if _rc == 0 {
+	gen temp_muni = real_estate_municipality if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* If still invalid, try mailing_county
+capture confirm variable mailing_county
+if _rc == 0 {
+	gen temp_muni = mailing_county if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* Manual corrections for known US mainland locations
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "DALLAS", "NEWBURY PARK", "AUSTIN")
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "IRON STATION", "MIAMI")
+replace municipio_name = "GUAYNABO" if upper(county) == "KEY LARGO"
+replace municipio_name = "CAROLINA" if inlist(upper(county), "QUEENS", "WESTON")
+replace municipio_name = "HUMACAO" if inlist(upper(county), "REDONDO BEACH", "CARY", "URBANDALE")
+replace municipio_name = "DORADO" if inlist(upper(county), "CHICAGO", "FALLBROOK")
+
+* Drop records we can't reliably identify
+drop if inlist(upper(county), "26", "HILLSBOROUGH", "LAS VEGAS", "LOGANVILLE")
+drop if municipio_name == "REDACTED" | municipio_name == ""
+
+drop valid_pr_muni
+di "After municipality cleaning: " _N " records"
 
 destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
 * Asset variables - use capture to handle variable name truncation variations
+* Note: business_wealth_cur gets truncated to v41 for 2019, 2020, 2021, 2022_format19
 capture rename asset_type_financial_previous_re fin_pre
 capture rename asset_type_financial_previous_rep fin_pre
 capture rename asset_type_financial_current_rep fin_cur
@@ -362,6 +712,7 @@ capture rename asset_type_real_estate_current_r re_cur
 capture rename asset_type_real_estate_current_re re_cur
 capture rename asset_type_privately_held_busine bus_pre
 capture rename asset_type_privately_held_business_pre bus_pre
+capture rename v41 bus_cur
 capture rename asset_type_privately_held_busin bus_cur
 capture rename asset_type_privately_held_business_cur bus_cur
 capture rename asset_type_other_previous_report oth_pre
@@ -413,14 +764,54 @@ import delimited "$RawDataPath/Act22AnnualReports2021.csv", ///
 local n_2021 = _N
 di "2021 records: `n_2021'"
 
-rename county municipio_name
+* Municipality extraction - try multiple sources
+gen municipio_name = county
 standardize_municipio
+validate_pr_municipio
+
+* If invalid, try real_estate_municipality
+capture confirm variable real_estate_municipality
+if _rc == 0 {
+	gen temp_muni = real_estate_municipality if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* If still invalid, try mailing_county
+capture confirm variable mailing_county
+if _rc == 0 {
+	gen temp_muni = mailing_county if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* Manual corrections for known US mainland locations
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "DALLAS", "NEWBURY PARK", "AUSTIN")
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "IRON STATION", "MIAMI")
+replace municipio_name = "GUAYNABO" if upper(county) == "KEY LARGO"
+replace municipio_name = "CAROLINA" if inlist(upper(county), "QUEENS", "WESTON")
+replace municipio_name = "HUMACAO" if inlist(upper(county), "REDONDO BEACH", "CARY", "URBANDALE")
+replace municipio_name = "DORADO" if inlist(upper(county), "CHICAGO", "FALLBROOK")
+
+* Drop records we can't reliably identify
+drop if inlist(upper(county), "26", "HILLSBOROUGH", "LAS VEGAS", "LOGANVILLE")
+drop if municipio_name == "REDACTED" | municipio_name == ""
+
+drop valid_pr_muni
+di "After municipality cleaning: " _N " records"
 
 destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
 * Asset variables - use capture to handle variable name truncation variations
+* Note: business_wealth_cur gets truncated to v41 for 2019, 2020, 2021, 2022_format19
 capture rename asset_type_financial_previous_re fin_pre
 capture rename asset_type_financial_previous_rep fin_pre
 capture rename asset_type_financial_current_rep fin_cur
@@ -431,6 +822,7 @@ capture rename asset_type_real_estate_current_r re_cur
 capture rename asset_type_real_estate_current_re re_cur
 capture rename asset_type_privately_held_busine bus_pre
 capture rename asset_type_privately_held_business_pre bus_pre
+capture rename v41 bus_cur
 capture rename asset_type_privately_held_busin bus_cur
 capture rename asset_type_privately_held_business_cur bus_cur
 capture rename asset_type_other_previous_report oth_pre
@@ -482,14 +874,54 @@ import delimited "$RawDataPath/Act22AnnualReports2022_format19.csv", ///
 local n_2022a = _N
 di "2022 format19 records: `n_2022a'"
 
-rename county municipio_name
+* Municipality extraction - try multiple sources
+gen municipio_name = county
 standardize_municipio
+validate_pr_municipio
+
+* If invalid, try real_estate_municipality
+capture confirm variable real_estate_municipality
+if _rc == 0 {
+	gen temp_muni = real_estate_municipality if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* If still invalid, try mailing_county
+capture confirm variable mailing_county
+if _rc == 0 {
+	gen temp_muni = mailing_county if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* Manual corrections for known US mainland locations
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "DALLAS", "NEWBURY PARK", "AUSTIN")
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "IRON STATION", "MIAMI")
+replace municipio_name = "GUAYNABO" if upper(county) == "KEY LARGO"
+replace municipio_name = "CAROLINA" if inlist(upper(county), "QUEENS", "WESTON")
+replace municipio_name = "HUMACAO" if inlist(upper(county), "REDONDO BEACH", "CARY", "URBANDALE")
+replace municipio_name = "DORADO" if inlist(upper(county), "CHICAGO", "FALLBROOK")
+
+* Drop records we can't reliably identify
+drop if inlist(upper(county), "26", "HILLSBOROUGH", "LAS VEGAS", "LOGANVILLE")
+drop if municipio_name == "REDACTED" | municipio_name == "" | municipio_name == "NA"
+
+drop valid_pr_muni
+di "After municipality cleaning: " _N " records"
 
 destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
 * Asset variables - use capture to handle variable name truncation variations
+* Note: business_wealth_cur gets truncated to v41 for 2019, 2020, 2021, 2022_format19
 capture rename asset_type_financial_previous_re fin_pre
 capture rename asset_type_financial_previous_rep fin_pre
 capture rename asset_type_financial_current_rep fin_cur
@@ -500,6 +932,7 @@ capture rename asset_type_real_estate_current_r re_cur
 capture rename asset_type_real_estate_current_re re_cur
 capture rename asset_type_privately_held_busine bus_pre
 capture rename asset_type_privately_held_business_pre bus_pre
+capture rename v41 bus_cur
 capture rename asset_type_privately_held_busin bus_cur
 capture rename asset_type_privately_held_business_cur bus_cur
 capture rename asset_type_other_previous_report oth_pre
@@ -551,14 +984,54 @@ import delimited "$RawDataPath/Act22AnnualReports2022_format22.csv", ///
 local n_2022b = _N
 di "2022 format22 records: `n_2022b'"
 
-rename county municipio_name
+* Municipality extraction - try multiple sources
+gen municipio_name = county
 standardize_municipio
+validate_pr_municipio
+
+* If invalid, try real_estate_municipality
+capture confirm variable real_estate_municipality
+if _rc == 0 {
+	gen temp_muni = real_estate_municipality if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* If still invalid, try mailing_county
+capture confirm variable mailing_county
+if _rc == 0 {
+	gen temp_muni = mailing_county if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* Manual corrections for known US mainland locations
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "DALLAS", "NEWBURY PARK", "AUSTIN")
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "IRON STATION", "MIAMI")
+replace municipio_name = "GUAYNABO" if upper(county) == "KEY LARGO"
+replace municipio_name = "CAROLINA" if inlist(upper(county), "QUEENS", "WESTON")
+replace municipio_name = "HUMACAO" if inlist(upper(county), "REDONDO BEACH", "CARY", "URBANDALE")
+replace municipio_name = "DORADO" if inlist(upper(county), "CHICAGO", "FALLBROOK")
+
+* Drop records we can't reliably identify
+drop if inlist(upper(county), "26", "HILLSBOROUGH", "LAS VEGAS", "LOGANVILLE")
+drop if municipio_name == "REDACTED" | municipio_name == "" | municipio_name == "NA"
+
+drop valid_pr_muni
+di "After municipality cleaning: " _N " records"
 
 destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
 * Asset variables - use capture to handle variable name truncation variations
+* Note: business_wealth_cur gets truncated to v42 for 2022_format22 and 2023
 capture rename asset_type_financial_previous_re fin_pre
 capture rename asset_type_financial_previous_rep fin_pre
 capture rename asset_type_financial_current_rep fin_cur
@@ -569,6 +1042,7 @@ capture rename asset_type_real_estate_current_r re_cur
 capture rename asset_type_real_estate_current_re re_cur
 capture rename asset_type_privately_held_busine bus_pre
 capture rename asset_type_privately_held_business_pre bus_pre
+capture rename v42 bus_cur
 capture rename asset_type_privately_held_busin bus_cur
 capture rename asset_type_privately_held_business_cur bus_cur
 capture rename asset_type_other_previous_report oth_pre
@@ -626,14 +1100,54 @@ import delimited "$RawDataPath/Act22AnnualReports2023.csv", ///
 local n_2023 = _N
 di "2023 records: `n_2023'"
 
-rename county municipio_name
+* Municipality extraction - try multiple sources
+gen municipio_name = county
 standardize_municipio
+validate_pr_municipio
+
+* If invalid, try real_estate_municipality
+capture confirm variable real_estate_municipality
+if _rc == 0 {
+	gen temp_muni = real_estate_municipality if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* If still invalid, try mailing_county
+capture confirm variable mailing_county
+if _rc == 0 {
+	gen temp_muni = mailing_county if valid_pr_muni == 0
+	replace temp_muni = "" if temp_muni == "NA"
+	replace municipio_name = temp_muni if valid_pr_muni == 0 & temp_muni != ""
+	drop temp_muni valid_pr_muni
+	standardize_municipio
+	validate_pr_municipio
+}
+
+* Manual corrections for known US mainland locations
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "DALLAS", "NEWBURY PARK", "AUSTIN")
+replace municipio_name = "SAN JUAN" if inlist(upper(county), "IRON STATION", "MIAMI")
+replace municipio_name = "GUAYNABO" if upper(county) == "KEY LARGO"
+replace municipio_name = "CAROLINA" if inlist(upper(county), "QUEENS", "WESTON")
+replace municipio_name = "HUMACAO" if inlist(upper(county), "REDONDO BEACH", "CARY", "URBANDALE")
+replace municipio_name = "DORADO" if inlist(upper(county), "CHICAGO", "FALLBROOK")
+
+* Drop records we can't reliably identify
+drop if inlist(upper(county), "26", "HILLSBOROUGH", "LAS VEGAS", "LOGANVILLE")
+drop if municipio_name == "REDACTED" | municipio_name == "" | municipio_name == "NA"
+
+drop valid_pr_muni
+di "After municipality cleaning: " _N " records"
 
 destring current_reporting_year previous_reporting_year, replace force
 rename current_reporting_year report_year
 rename previous_reporting_year match_year
 
 * Asset variables - use capture to handle variable name truncation variations
+* Note: business_wealth_cur gets truncated to v42 for 2022_format22 and 2023
 capture rename asset_type_financial_previous_re fin_pre
 capture rename asset_type_financial_previous_rep fin_pre
 capture rename asset_type_financial_current_rep fin_cur
@@ -644,6 +1158,7 @@ capture rename asset_type_real_estate_current_r re_cur
 capture rename asset_type_real_estate_current_re re_cur
 capture rename asset_type_privately_held_busine bus_pre
 capture rename asset_type_privately_held_business_pre bus_pre
+capture rename v42 bus_cur
 capture rename asset_type_privately_held_busin bus_cur
 capture rename asset_type_privately_held_business_cur bus_cur
 capture rename asset_type_other_previous_report oth_pre
@@ -727,15 +1242,17 @@ save "$CleanDataPath/all_records_combined.dta", replace
 ********************************************************************************
 * SECTION 5: ITERATIVE CHAINED MATCHING
 ********************************************************************************
-* Strategy: Match forward through time ITERATIVELY.
-* 1. Start with 2015-2018 as the base (has known IDs)
-* 2. Match 2019 records to 2015-2018 based on previous year assets
-* 3. Add matched 2019 records to the base
-* 4. Match 2020 records to the expanded base
-* 5. Repeat for 2021, 2022, 2023
+* Strategy: Match forward through time BY REPORTING YEAR (not by source file).
 *
-* This allows chaining: A 2020 record can match to a 2019 record that was
-* already matched to a 2015-2018 ID.
+* IMPORTANT: Each source file contains filings from MULTIPLE reporting years.
+* For example, the 2022 file might have filings for reporting years 2019-2022.
+*
+* Approach:
+* 1. Combine all 2019+ records into one dataset
+* 2. Start with 2015-2018 as the base (has known IDs)
+* 3. Match by REPORTING YEAR sequence: 2016, 2017, 2018, 2019, 2020, 2021, 2022
+* 4. After matching each reporting year, add those records to the base
+* 5. This allows proper chaining regardless of which source file a record is in
 ********************************************************************************
 
 di " "
@@ -744,7 +1261,71 @@ di "STARTING ITERATIVE CHAINED MATCHING"
 di "========================================"
 
 *------------------------------------------------------------------------------
-* STEP 5.1: Initialize the base with 2015-2018 records
+* STEP 5.1: Combine all 2019+ records into one dataset
+*------------------------------------------------------------------------------
+di "Combining all 2019+ records..."
+
+use "$CleanDataPath/clean_2019.dta", clear
+append using "$CleanDataPath/clean_2020.dta"
+append using "$CleanDataPath/clean_2021.dta"
+append using "$CleanDataPath/clean_2022.dta"
+append using "$CleanDataPath/clean_2023.dta"
+
+di "Total 2019+ records (before dedup): " _N
+
+* Check for and remove duplicate filenames
+* This can happen if a record appears in multiple source files
+duplicates tag filename, gen(_dup_fn)
+count if _dup_fn > 0
+if r(N) > 0 {
+	di "WARNING: Found " r(N) " duplicate filenames in combined 2019+ data"
+	di "Keeping first observation per filename (prioritizing earlier source files)"
+	bysort filename: keep if _n == 1
+}
+drop _dup_fn
+
+di "Total 2019+ records (after dedup): " _N
+
+* Fix obvious errors in report_year
+* Values like 2, 7000 are clearly data entry/extraction errors
+* Attempt to fix based on source_file, otherwise drop
+count if report_year < 2010 | report_year > 2025
+if r(N) > 0 {
+	di "WARNING: Found " r(N) " records with invalid report_year values"
+	tab report_year source_file if report_year < 2010 | report_year > 2025
+
+	* Try to infer correct year from source_file
+	* Records from 2022 batch with bad year → assume 2021 (most common reporting year in that batch)
+	replace report_year = 2021 if (report_year < 2010 | report_year > 2025) & ///
+		(source_file == "2022" | source_file == "2022_format19" | source_file == "2022_format22")
+
+	* Records from 2023 batch with bad year → assume 2022
+	replace report_year = 2022 if (report_year < 2010 | report_year > 2025) & source_file == "2023"
+
+	* Any remaining bad values - drop them since we can't determine their report year
+	count if report_year < 2010 | report_year > 2025
+	if r(N) > 0 {
+		di "Dropping " r(N) " records with unfixable report_year values"
+		drop if report_year < 2010 | report_year > 2025
+	}
+}
+
+* Also fix bad match_year values (previous_reporting_year)
+count if match_year != . & (match_year < 2010 | match_year > 2025)
+if r(N) > 0 {
+	di "WARNING: Found " r(N) " records with invalid match_year values"
+	* Set to missing - they can still be added to base but won't match on year
+	replace match_year = . if match_year < 2010 | match_year > 2025
+}
+
+* Show distribution of reporting years across source files
+di "Reporting year distribution by source file:"
+tab report_year source_file
+
+save "$CleanDataPath/all_2019plus_records.dta", replace
+
+*------------------------------------------------------------------------------
+* STEP 5.2: Initialize the base with 2015-2018 records
 *------------------------------------------------------------------------------
 * The base contains records with known IDs whose CURRENT assets can be matched
 * against future records' PREVIOUS assets.
@@ -771,6 +1352,8 @@ rename filename base_filename
 save "$CleanDataPath/matching_base.dta", replace
 
 di "Initial base records (2015-2018): " _N
+di "Base match_year_key distribution:"
+tab match_year_key
 
 * Initialize all matches file (will append to this)
 clear
@@ -786,24 +1369,28 @@ gen match_confidence = .
 save "$CleanDataPath/all_matches_full.dta", replace
 
 *------------------------------------------------------------------------------
-* STEP 5.2: Define matching program (to reuse for each year)
+* STEP 5.3: Define matching program (to reuse for each REPORTING year)
 *------------------------------------------------------------------------------
-capture program drop match_year_to_base
-program define match_year_to_base
-	args source_year
+* NOTE: This program matches by REPORTING YEAR, not source file.
+* It pulls records from the combined 2019+ dataset that have a specific report_year.
+*------------------------------------------------------------------------------
+capture program drop match_reporting_year
+program define match_reporting_year
+	args target_report_year
 
 	di " "
 	di "========================================"
-	di "MATCHING `source_year' DATA"
+	di "MATCHING REPORTING YEAR `target_report_year'"
 	di "========================================"
 
-	* Load records from this source year
-	use "$CleanDataPath/clean_`source_year'.dta", clear
+	* Load all 2019+ records and keep only those for this reporting year
+	use "$CleanDataPath/all_2019plus_records.dta", clear
+	keep if report_year == `target_report_year'
 
-	* Skip if no records or all have IDs already
+	* Skip if no records
 	count
 	if r(N) == 0 {
-		di "No records to match for `source_year'"
+		di "No records for reporting year `target_report_year'"
 		exit
 	}
 
@@ -811,15 +1398,16 @@ program define match_year_to_base
 	keep if id == "" | id == "."
 	count
 	local n_to_match = r(N)
-	di "Records to match: `n_to_match'"
+	di "Records to match for reporting year `target_report_year': `n_to_match'"
 
 	if `n_to_match' == 0 {
-		di "No unmatched records for `source_year'"
+		di "No unmatched records for reporting year `target_report_year'"
 		exit
 	}
 
 	* Prepare for matching - use previous year assets as the key
-	keep filename municipio_name match_year report_year ///
+	* Keep source_file to track which batch the record came from
+	keep filename municipio_name match_year report_year source_file ///
 		fin_pre re_pre bus_pre oth_pre fin_cur re_cur bus_cur oth_cur ///
 		fin_pre_missing re_pre_missing bus_pre_missing oth_pre_missing ///
 		fin_cur_missing re_cur_missing bus_cur_missing oth_cur_missing
@@ -833,8 +1421,6 @@ program define match_year_to_base
 	rename bus_pre_missing bus_new_missing
 	rename oth_pre_missing oth_new_missing
 	rename match_year match_year_key
-
-	gen source_file = "`source_year'"
 
 	tempfile to_match
 	save `to_match'
@@ -1022,38 +1608,70 @@ program define match_year_to_base
 		}
 	}
 
-	* UPDATE THE BASE: Add ALL records from this year (matched AND unmatched)
-	* Their current assets become available for matching future years
-	* This allows chaining: 2020 can match to unmatched 2019 records, etc.
+	* UPDATE THE BASE: Add ALL records from this REPORTING YEAR (matched AND unmatched)
+	* Their current assets become available for matching future reporting years
+	* This allows chaining regardless of which source file records came from
 
-	* First, get matched IDs for this year
+	* First, get matched IDs for this reporting year
 	use "$CleanDataPath/all_matches_full.dta", clear
-	keep if source_file == "`source_year'"
+	keep if report_year == `target_report_year'
 
 	count
 	local n_matched = r(N)
-	di "Matched records from `source_year': `n_matched'"
+	di "Matched records for reporting year `target_report_year': `n_matched'"
 
 	if `n_matched' > 0 {
 		keep filename id
+		* Deduplicate matched_ids (keep first match per filename)
+		duplicates drop filename, force
 		tempfile matched_ids
 		save `matched_ids'
 	}
 
-	* Now load ALL records from this year
-	use "$CleanDataPath/clean_`source_year'.dta", clear
+	* Now load ALL records from this reporting year (from the combined 2019+ file)
+	use "$CleanDataPath/all_2019plus_records.dta", clear
+	keep if report_year == `target_report_year'
 
-	* Merge in IDs for matched records
+	* Check for and handle duplicate filenames in master
+	duplicates tag filename, gen(_dup_fn)
+	count if _dup_fn > 0
+	if r(N) > 0 {
+		di "WARNING: Found " r(N) " duplicate filenames in master data for reporting year `target_report_year'"
+		di "Keeping first observation per filename"
+		bysort filename: keep if _n == 1
+	}
+	drop _dup_fn
+
+	* Merge in IDs for matched records (now safe to use 1:1)
+	* NOTE: The master has id="" for all records. We need to UPDATE id from the using file.
+	* Stata merge won't replace existing values, so we drop id first then merge.
+	drop id
+
 	if `n_matched' > 0 {
 		merge 1:1 filename using `matched_ids', keep(master match) nogen
+	}
+
+	* Ensure id variable exists (for unmatched records or when n_matched=0)
+	capture confirm variable id
+	if _rc != 0 {
+		gen id = ""
 	}
 
 	* For unmatched records, assign filename as temporary ID for chaining
 	replace id = filename if id == "" | id == "."
 
+	* DIAGNOSTIC: Check how many got inherited IDs vs new filename IDs
+	* An inherited ID means id != filename (they matched to someone in the base)
+	gen inherited_id = (id != filename)
+	count if inherited_id == 1
+	di "DIAGNOSTIC: Records that MATCHED (inherited ID from base): " r(N)
+	count if inherited_id == 0
+	di "DIAGNOSTIC: Records that DID NOT MATCH (new chain, id=filename): " r(N)
+	drop inherited_id
+
 	count
 	local n_all = r(N)
-	di "Total records to add to base from `source_year': `n_all'"
+	di "Total records to add to base for reporting year `target_report_year': `n_all'"
 
 	* Prepare for base format
 	rename fin_cur fin_base
@@ -1075,22 +1693,54 @@ program define match_year_to_base
 	append using "$CleanDataPath/matching_base.dta"
 	save "$CleanDataPath/matching_base.dta", replace
 
-	di "Base expanded with ALL `n_all' records from `source_year'"
+	di "Base expanded with ALL `n_all' records for reporting year `target_report_year'"
 	di "New base size: " _N
+
+	* Diagnostic: Show distribution of match_year_key in base
+	di "Base match_year_key distribution:"
+	tab match_year_key
+
+	* DIAGNOSTIC: Check how many unique IDs are in the base
+	preserve
+	keep id
+	duplicates drop
+	count
+	di "DIAGNOSTIC: Unique IDs in base: " r(N)
+	restore
+
+	* DIAGNOSTIC: Show a sample of IDs that came from 2015-2018 to verify chaining
+	di "DIAGNOSTIC: Sample base records with 2015-2018 style IDs:"
+	list id base_filename match_year_key if regexm(id, "^[0-9]+-22-S-") in 1/10
 
 end
 
 *------------------------------------------------------------------------------
-* STEP 5.3: Run matching for each year sequentially
+* STEP 5.4: Run matching for each REPORTING YEAR sequentially
 *------------------------------------------------------------------------------
-match_year_to_base 2019
-match_year_to_base 2020
-match_year_to_base 2021
-match_year_to_base 2022
-match_year_to_base 2023
+* We need to match in order of reporting year, starting from the earliest
+* that appears in the 2019+ data.
+
+* First, find what reporting years exist in the 2019+ data
+use "$CleanDataPath/all_2019plus_records.dta", clear
+levelsof report_year, local(report_years)
+di "Reporting years found in 2019+ data: `report_years'"
+
+* Sort and match each reporting year in sequence (ensure chronological order)
+local sorted_years : list sort report_years
+di "Sorted reporting years: `sorted_years'"
+
+foreach yr of local sorted_years {
+	match_reporting_year `yr'
+
+	* DIAGNOSTIC: Show how many matches we have so far
+	use "$CleanDataPath/all_matches_full.dta", clear
+	count
+	di "DIAGNOSTIC: Total matches so far after year `yr': " r(N)
+	tab report_year
+}
 
 *------------------------------------------------------------------------------
-* STEP 5.4: Summary of all matches
+* STEP 5.5: Summary of all matches
 *------------------------------------------------------------------------------
 di " "
 di "========================================"
@@ -1161,37 +1811,34 @@ bysort filename: keep if _n == 1
 keep filename id
 save "$CleanDataPath/all_matches_dedup.dta", replace
 
-* For each subsequent year, process and add to panel
-foreach year in 2019 2020 2021 2022 2023 {
-	use "$CleanDataPath/clean_`year'.dta", clear
-	keep filename municipio_name report_year decree_year fin_cur re_cur bus_cur oth_cur
+* Load all 2019+ records and merge in matched IDs
+use "$CleanDataPath/all_2019plus_records.dta", clear
+keep filename municipio_name report_year decree_year source_file fin_cur re_cur bus_cur oth_cur
 
-	* Merge in matched IDs (using deduplicated file)
-	merge 1:1 filename using "$CleanDataPath/all_matches_dedup.dta", ///
-		keepusing(id) keep(master match) nogen
+* Merge in matched IDs (using deduplicated file)
+merge 1:1 filename using "$CleanDataPath/all_matches_dedup.dta", ///
+	keepusing(id) keep(master match) nogen
 
-	* For unmatched, use filename as ID (they start their own chain)
-	replace id = filename if id == "" | id == "."
+* For unmatched, use filename as ID (they start their own chain)
+replace id = filename if id == "" | id == "."
 
-	gen source_file = "`year'"
+* Create placeholder filename variables for all source file batches
+gen filename_2015_2018 = ""
+gen filename_2019 = ""
+gen filename_2020 = ""
+gen filename_2021 = ""
+gen filename_2022 = ""
+gen filename_2023 = ""
 
-	* Create year-specific filename variable
-	gen filename_`year' = filename
-	rename filename filename_original
+* Fill in the appropriate filename variable based on source_file
+replace filename_2019 = filename if source_file == "2019"
+replace filename_2020 = filename if source_file == "2020"
+replace filename_2021 = filename if source_file == "2021"
+replace filename_2022 = filename if source_file == "2022" | source_file == "2022_format19" | source_file == "2022_format22"
+replace filename_2023 = filename if source_file == "2023"
 
-	* Create placeholder filename variables for other years
-	gen filename_2015_2018 = ""
-	foreach yr in 2019 2020 2021 2022 2023 {
-		if "`yr'" != "`year'" {
-			gen filename_`yr' = ""
-		}
-	}
-
-	rename filename_original filename
-
-	append using `panel_build'
-	save `panel_build', replace
-}
+append using `panel_build'
+save `panel_build', replace
 
 use `panel_build', clear
 
