@@ -132,14 +132,17 @@ merge m:1 filename_key using `xw2', keepusing(own_home primary_val) ///
 	keep(master match) nogen
 
 * Person-year ownership signals
+* HOMEOWNERSHIP = owns a PRIMARY HOME: explicit "Own" response OR a primary
+*   property value > 0. NOTE: real estate WEALTH (re>0) is NOT used for
+*   homeownership -- it can be investment property, land, etc., not a home.
 gen byte own_home_bin = (own_home == "Own")
 gen byte primary_pos  = (primary_val > 0 & !missing(primary_val))
+gen byte home_py      = (own_home_bin | primary_pos)
 gen byte re_pos       = (re > 0 & !missing(re))
-gen byte owns_any_py  = (own_home_bin | primary_pos | re_pos)
 
-* Collapse to person level: owns if TRUE in ANY report year
-collapse (max) ever_own_home=own_home_bin (max) ever_primary=primary_pos ///
-	(max) ever_re=re_pos (max) ever_any=owns_any_py, by(panel_id)
+* Collapse to person level: TRUE if it holds in ANY report year
+collapse (max) ever_own=own_home_bin (max) ever_primary=primary_pos ///
+	(max) ever_home=home_py (max) ever_re=re_pos, by(panel_id)
 
 count
 local n_people = r(N)
@@ -147,22 +150,26 @@ di "=================================================================="
 di "REPORTS-BASED HOMEOWNERSHIP (person level, N = `n_people' decree"
 di "  holders who filed annual reports -- BOTH Act 22 and Act 60)"
 di "=================================================================="
-foreach m in ever_own_home ever_primary ever_re ever_any {
+di "  HOMEOWNERSHIP measures (owns a primary home):"
+foreach m in ever_own ever_primary ever_home {
 	quietly summarize `m'
-	di "  `m': " %5.1f 100*r(mean) "%  (" r(sum) " of `n_people')"
+	di "    `m': " %5.1f 100*r(mean) "%  (" r(sum) " of `n_people')"
 }
+di "  For context only (NOT homeownership):"
+quietly summarize ever_re
+di "    ever_re (owns real estate ASSETS, may be investment): " %5.1f 100*r(mean) "%"
 
 * Save person-level ownership summary
 save "$Clean/panel_person_ownership.dta", replace
 
 * Stash key numbers
-quietly summarize ever_any
-scalar rep_any = r(mean)
-scalar rep_n   = r(N)
+scalar rep_n   = _N
+quietly summarize ever_home
+scalar rep_home = r(mean)
+quietly summarize ever_own
+scalar rep_own  = r(mean)
 quietly summarize ever_re
-scalar rep_re  = r(mean)
-quietly summarize ever_own_home
-scalar rep_own = r(mean)
+scalar rep_re   = r(mean)
 
 ********************************************************************************
 * PART B: KARIBE NAME-SEARCH IMPLIED OWNERSHIP RATE
@@ -259,21 +266,24 @@ scalar kar60 = kar60_f/kar60_d
 * PART C: WRITE COMPARISON REPORT
 ********************************************************************************
 * Reports panel is a MIXED population (Act 22 + Act 60), so compare against the
-* COMBINED karibe names rate, not Act 22 alone.
-scalar recall_ceiling = 100*kar_all/rep_any
+* COMBINED karibe names rate. Homeownership = owns a primary home (rep_home).
+scalar recall_ceiling = 100*kar_all/rep_home
 
 capture file close fh
 file open fh using "$Out/homeownership_comparison.txt", write replace text
 file write fh "HOMEOWNERSHIP RATE COMPARISON" _n
-file write fh "Reports panel (true ownership) vs. karibe name-search (found)" _n
+file write fh "Reports panel (true homeownership) vs. karibe name-search (found)" _n
 file write fh "=============================================================" _n _n
 
-file write fh "A) REPORTS-BASED  (person level, N=" (rep_n) " report filers)" _n
+file write fh "A) REPORTS-BASED HOMEOWNERSHIP  (person level, N=" (rep_n) " report filers)" _n
 file write fh "   Panel is a MIXED population: BOTH Act 22 and Act 60 decree holders." _n
 file write fh "   Every panel row matched the ownership crosswalk (100%)." _n
-file write fh "   Owns primary home (ever 'Own'):    " %5.1f (100*rep_own) "%" _n
-file write fh "   Owns real estate assets (re>0):    " %5.1f (100*rep_re)  "%" _n
-file write fh "   Owns ANY property (home OR re>0):   " %5.1f (100*rep_any) "%" _n _n
+file write fh "   HOMEOWNER = owns a primary home (explicit 'Own' OR primary value>0):" _n
+file write fh "      ever 'Own' response:            " %5.1f (100*rep_own)  "%" _n
+file write fh "      OWNS A HOME (Own OR value>0):    " %5.1f (100*rep_home) "%" _n
+file write fh "   Context only, NOT homeownership:" _n
+file write fh "      owns real estate ASSETS (re>0): " %5.1f (100*rep_re) ///
+	"%  (may be investment/land, not a home)" _n _n
 
 file write fh "B) KARIBE NAME-SEARCH  (share of decree holders found w/ >=1 property)" _n
 file write fh "   Act 22 names:  " %5.1f (100*kar22)   "%   (" (kar22_f) " of " (kar22_d) ")" _n
@@ -281,23 +291,26 @@ file write fh "   Act 60 names:  " %5.1f (100*kar60)   "%   (" (kar60_f) " of " 
 file write fh "   ALL names (22+60): " %5.1f (100*kar_all) "%   (" (kar22_f+kar60_f) " of " (kar22_d+kar60_d) ")" _n _n
 
 file write fh "INTERPRETATION" _n
-file write fh "Like-for-like (both acts): reports say ~" %2.0f (100*rep_any) ///
-	"% of filers own PR" _n
-file write fh "property, but the name search turned up property for only " ///
-	%2.0f (100*kar_all) "% of" _n
-file write fh "all decree names. Because the search rate is inflated by same-name" _n
-file write fh "false positives (searching 'Gary Smith' returns every Gary Smith)," _n
-file write fh "it is an UPPER bound - yet it still sits below the true ownership rate." _n _n
-file write fh "=> Implied recall CEILING = kar_all / reports_any = " %3.0f (recall_ceiling) "%." _n
+file write fh "Like-for-like (both acts): reports say ~" %2.0f (100*rep_home) ///
+	"% of filers OWN A HOME," _n
+file write fh "but the name search turned up property for only " ///
+	%2.0f (100*kar_all) "% of all decree" _n
+file write fh "names. The search rate is inflated by same-name false positives" _n
+file write fh "(searching 'Gary Smith' returns every Gary Smith), so it is an UPPER" _n
+file write fh "bound - yet it still sits below the true homeownership rate." _n _n
+file write fh "=> Implied recall CEILING = kar_all / reports_home = " %3.0f (recall_ceiling) "%." _n
 file write fh "   The search missed at least ~" %2.0f (100-recall_ceiling) ///
-	"% of property-owning" _n
-file write fh "   decree holders (more once false positives are netted out)." _n _n
+	"% of home-owning decree" _n
+file write fh "   holders (more once false positives are netted out)." _n _n
+file write fh "   (Note: karibe also captures NON-home property, e.g. investment" _n
+file write fh "    lots/timeshares, which pushes its rate UP -- so the true miss" _n
+file write fh "    rate for homeowners is larger than the gap above suggests.)" _n _n
 
 file write fh "CAVEATS" _n
 file write fh "- Reports are redacted (no names): aggregate-rate comparison only." _n
 file write fh "- Populations differ slightly: report FILERS vs. all named decree holders." _n
-file write fh "- Reports = self-reported primary home + RE assets; karibe = any" _n
-file write fh "  registry property (primary, investment, timeshare)." _n
+file write fh "- Homeownership = self-reported primary home; karibe = ANY registry" _n
+file write fh "  property (primary home, investment, timeshare)." _n
 file close fh
 
 type "$Out/homeownership_comparison.txt"
