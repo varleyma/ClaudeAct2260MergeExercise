@@ -137,15 +137,36 @@ merge 1:1 nid using `MATCHED', keep(master match) nogen
 replace found = 0 if found == .
 
 keep if usable == 1 & !missing(ayear)
+
+* Distinctive surname = surname held by only one decree person (namesake-robust)
+bysort L: gen lcount = _N
+gen byte uniqsurn = (lcount == 1)
+
+* (a) cumulative found share, ALL names (raw)
+preserve
+	collapse (sum) tot=one (sum) fnd=found, by(ayear)
+	sort ayear
+	gen ctot = sum(tot)
+	gen cfnd = sum(fnd)
+	gen cum_found = 100*cfnd/ctot
+	rename ayear year
+	keep year cum_found
+	tempfile full
+	save `full'
+restore
+
+* (b) cumulative found share, DISTINCTIVE-surname holders only (FP-deflated)
+keep if uniqsurn == 1
 collapse (sum) tot=one (sum) fnd=found, by(ayear)
 sort ayear
 gen ctot = sum(tot)
 gen cfnd = sum(fnd)
-gen cum_found = 100*cfnd/ctot
+gen cum_found_uniq = 100*cfnd/ctot
 rename ayear year
-gen str6 tag = "SEARCH"
-list year tot fnd cum_found, noobs
-keep year cum_found ctot
+keep year cum_found_uniq
+merge 1:1 year using `full', nogen
+sort year
+list year cum_found cum_found_uniq, noobs
 save "$Clean/ts_search.dta", replace
 
 ********************************************************************************
@@ -154,27 +175,29 @@ save "$Clean/ts_search.dta", replace
 use "$Clean/ts_reports.dta", clear
 keep year own_rate home_rate
 merge 1:1 year using "$Clean/ts_search.dta", nogen
-keep if inrange(year, 2013, 2024)
+keep if inrange(year, 2015, 2022)
 sort year
 save "$Clean/ts_combined.dta", replace
-list year own_rate home_rate cum_found, noobs
+list year own_rate cum_found cum_found_uniq, noobs
 
 twoway ///
 	(connected own_rate year, lcolor(navy) mcolor(navy) ///
 		msymbol(O) lwidth(medthick)) ///
 	(connected cum_found year, lcolor(orange) mcolor(orange) ///
-		msymbol(D) lpattern(dash) lwidth(medthick)), ///
-	ylabel(0(10)70, grid angle(0)) yscale(range(0 72)) ///
+		msymbol(D) lpattern(dash) lwidth(medthick)) ///
+	(connected cum_found_uniq year, lcolor(cranberry) mcolor(cranberry) ///
+		msymbol(T) lpattern(shortdash) lwidth(medthick)), ///
+	ylabel(40(5)65, grid angle(0)) yscale(range(40 65)) ///
 	ytitle("Percent who own a home") ///
-	xlabel(2013(1)2024, angle(45)) xtitle("Year") ///
+	xlabel(2015(1)2022) xtitle("Reporting year (reports) / approval year (search)") ///
 	title("Homeownership over time: reports vs. property search", size(medium)) ///
-	subtitle("Act 22 + Act 60 decree holders", size(small)) ///
-	legend(order(1 "Reports: share who OWN (by reporting year)" ///
-		2 "Search: cumulative homeowner share (by approval year)") ///
-		rows(2) size(small) position(6) region(lstyle(none))) ///
-	note("Search side: karibe has no dates; uses decree approval year plus a" ///
-	     "once-a-homeowner-always assumption (cumulative). Owner status via name match.", ///
-	     size(vsmall)) ///
+	subtitle("Act 22 + Act 60 decree holders, 2015-2022", size(small)) ///
+	legend(order(1 "Reports: share who OWN" ///
+		2 "Search: found w/ property (all names)" ///
+		3 "Search: distinctive surnames only (namesake-robust)") ///
+		rows(3) size(small) position(6) region(lstyle(none))) ///
+	note("Search = cumulative homeowner share by decree approval year (once-a-homeowner-always)." ///
+	     "Distinctive-surname line strips same-name false positives.", size(vsmall)) ///
 	graphregion(color(white)) plotregion(color(white))
 
 graph export "$Out/ownership_timeseries.png", replace width(1700) height(1050)
