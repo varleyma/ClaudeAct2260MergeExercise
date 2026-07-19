@@ -54,6 +54,9 @@ capture mkdir "$OUT"
 *--- toggles ------------------------------------------------------------------
 local CLEAN_ONLY  0   // 1 = keep only events with <=2 other events within 1km
 local MIN_EVYEAR  2012  // drop pre-decree-era "events" (sales before Act 22)
+local HALFYEARS   1   // 1 = half-year time units (4x fewer ATT(g,t) cells,
+                      //     denser cells); 0 = quarters
+local FAST_CS     1   // 1 = csdid2 (much faster) + jwdid; 0 = original csdid
 
 *--- packages (one-time) ------------------------------------------------------
 capture which lpdid
@@ -66,6 +69,10 @@ capture which reghdfe
 if _rc ssc install reghdfe, replace
 capture which ftools
 if _rc ssc install ftools, replace
+capture which csdid2
+if _rc ssc install csdid2, replace
+capture which jwdid
+if _rc ssc install jwdid, replace
 
 /*============================================================================
   1. LOAD PAIRS + FILTERS
@@ -123,14 +130,28 @@ reghdfe lnp, absorb(tract) residuals(lnp_trfe)
 gen near = ring == "near_0_250"
 egen cellid = group(event_id ring)
 
-collapse (mean) lnp lnp_trfe (first) near eqtr (count) nsales = salesamt, ///
-    by(cellid sqtr)
+* time unit: quarters or half-years (HALFYEARS=1 -> 4x fewer ATT(g,t) cells)
+if `HALFYEARS' {
+    gen tt  = hofd(sdate)
+    gen ett = hofd(edate)
+    local PREW  4
+    local POSTW 4
+}
+else {
+    gen tt  = sqtr
+    gen ett = eqtr
+    local PREW  8
+    local POSTW 8
+}
+
+collapse (mean) lnp lnp_trfe (first) near ett (count) nsales = salesamt, ///
+    by(cellid tt)
 
 * treatment structure
-gen treat = near & sqtr >= eqtr        // absorbing 0->1 for near cells
-gen gq    = cond(near, eqtr, 0)        // csdid group var (0 = never treated)
+gen treat = near & tt >= ett           // absorbing 0->1 for near cells
+gen gq    = cond(near, ett, 0)         // csdid group var (0 = never treated)
 
-xtset cellid sqtr
+xtset cellid tt
 
 /*============================================================================
   4. ESTIMATION  (+/- 8 quarters = +/- 2 years)
@@ -138,29 +159,57 @@ xtset cellid sqtr
 log using "$OUT/design1_lpdid_csdid.log", replace text
 
 *---- (a) lpdid, no tract FE -------------------------------------------------
-lpdid lnp, unit(cellid) time(sqtr) treat(treat) ///
-    pre_window(8) post_window(8) nevertreated
+lpdid lnp, unit(cellid) time(tt) treat(treat) ///
+    pre_window(`PREW') post_window(`POSTW') nevertreated
 matrix LP_NOFE = r(results)
 graph export "$OUT/lpdid_noFE.png", replace
 
 *---- (b) lpdid, tract FE ----------------------------------------------------
-lpdid lnp_trfe, unit(cellid) time(sqtr) treat(treat) ///
-    pre_window(8) post_window(8) nevertreated
+lpdid lnp_trfe, unit(cellid) time(tt) treat(treat) ///
+    pre_window(`PREW') post_window(`POSTW') nevertreated
 matrix LP_FE = r(results)
 graph export "$OUT/lpdid_tractFE.png", replace
 
-*---- (c) csdid, no tract FE -------------------------------------------------
-* never-treated (far rings) are the comparison group by construction
-csdid lnp, ivar(cellid) time(sqtr) gvar(gq) method(drimp) notyet
-estat event, window(-8 8)
-csdid_plot
-graph export "$OUT/csdid_noFE.png", replace
+*---- (c)-(d) Callaway-Sant'Anna ---------------------------------------------
+* csdid computes a doubly-robust ATT(g,t) for EVERY cohort x period pair
+* (~50 cohorts x ~50 periods here) -> very slow. FAST_CS=1 uses csdid2
+* (same estimator, compiled, much faster) and cross-checks with jwdid
+* (Wooldridge-Mundlak via reghdfe, near-instant, same never-treated logic).
+* For csdid keep only the +/-2y window (the extra margin is lpdid-only).
+preserve
+keep if inrange(tt - ett, -`PREW'-1, `POSTW') | gq == 0
 
-*---- (d) csdid, tract FE ----------------------------------------------------
-csdid lnp_trfe, ivar(cellid) time(sqtr) gvar(gq) method(drimp) notyet
-estat event, window(-8 8)
-csdid_plot
-graph export "$OUT/csdid_tractFE.png", replace
+if `FAST_CS' {
+    * csdid2: no tract FE
+    csdid2 lnp, ivar(cellid) tvar(tt) gvar(gq) method(dripw) notyet
+    estat event, window(-`PREW' `POSTW') estore(cs_noFE)
+    estat plot
+    graph export "$OUT/csdid_noFE.png", replace
+
+    * csdid2: tract FE
+    csdid2 lnp_trfe, ivar(cellid) tvar(tt) gvar(gq) method(dripw) notyet
+    estat event, window(-`PREW' `POSTW') estore(cs_FE)
+    estat plot
+    graph export "$OUT/csdid_tractFE.png", replace
+
+    * jwdid cross-check (fast; should be close to csdid2)
+    jwdid lnp, ivar(cellid) tvar(tt) gvar(gq) never
+    estat event
+    jwdid lnp_trfe, ivar(cellid) tvar(tt) gvar(gq) never
+    estat event
+}
+else {
+    csdid lnp, ivar(cellid) time(tt) gvar(gq) method(dripw) notyet
+    estat event, window(-`PREW' `POSTW')
+    csdid_plot
+    graph export "$OUT/csdid_noFE.png", replace
+
+    csdid lnp_trfe, ivar(cellid) time(tt) gvar(gq) method(dripw) notyet
+    estat event, window(-`PREW' `POSTW')
+    csdid_plot
+    graph export "$OUT/csdid_tractFE.png", replace
+}
+restore
 
 log close
 
