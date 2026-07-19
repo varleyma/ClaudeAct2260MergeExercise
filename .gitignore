@@ -1,0 +1,5 @@
+
+# Files over GitHub's 100MB limit — kept locally, regenerable via code/python/ scripts
+data/design1/design1_sale_event_pairs.csv
+data/third_party/nearby_sales_1000m_uniquematch_combined.csv
+data/third_party/nearby_sales_250m_all.csv
