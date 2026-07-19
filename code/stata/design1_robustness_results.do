@@ -44,7 +44,9 @@ if _rc ssc install reghdfe, replace
 capture program drop grab
 program define grab
     args test outcome
-    matrix R = r(results)
+    * lpdid stores the event-study matrix in e(results) with columns:
+    * coefficient se t p ci_low ci_high obs   (verified in lpdid.ado v-SSC)
+    matrix R = e(results)
     local rn : rowfullnames R
     local cn : colfullnames R
     local nr = rowsof(R)
@@ -82,7 +84,7 @@ program define run_lpdid
     lpdid y, unit(cellid) time(tt) treat(treat) ///
         pre_window(4) post_window(3) nevertreated
     * show the matrix layout once so the plot file's mapping can be verified
-    if "`tag'" == "T1_baseline" matrix list r(results)
+    if "`tag'" == "T1_baseline" matrix list e(results)
     grab `tag' `yvar'
     graph drop _all
 end

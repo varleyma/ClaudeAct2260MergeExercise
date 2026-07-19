@@ -6,10 +6,8 @@
  (e.g. real vs placebo) with slight x-offsets, and titles/axis labels are
  set per figure below.
 
- !! ONE THING TO VERIFY ONCE: the column mapping block right below. The
- results run prints `matrix list r(results)` for T1_baseline -- check which
- raw columns hold the coefficient, SE, and CI bounds and adjust COL_* if
- needed. Default assumes: c1=coef, c2=se, c3=lower95, c4=upper95.
+ Column mapping: lpdid's e(results) columns are (verified in lpdid.ado):
+   c1=coefficient  c2=se  c3=t  c4=p  c5=ci_low  c6=ci_high  c7=obs
 ==============================================================================*/
 
 version 17
@@ -19,11 +17,11 @@ set more off
 global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
 global OUT  "$REPO/output/design1"
 
-*---- column mapping (verify against the printed matrix; edit here only) -----
+*---- column mapping for lpdid e(results) (edit here only if lpdid changes) --
 local COL_B  c1
 local COL_SE c2
-local COL_LB c3
-local COL_UB c4
+local COL_LB c5
+local COL_UB c6
 
 /*============================================================================
   LOAD + STANDARDIZE
