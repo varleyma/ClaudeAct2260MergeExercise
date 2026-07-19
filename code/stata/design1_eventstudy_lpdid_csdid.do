@@ -54,7 +54,7 @@ capture mkdir "$OUT"
 *--- toggles ------------------------------------------------------------------
 local CLEAN_ONLY  0   // 1 = keep only events with <=2 other events within 1km
 local MIN_EVYEAR  2012  // drop pre-decree-era "events" (sales before Act 22)
-local HALFYEARS   1   // 1 = half-year time units (4x fewer ATT(g,t) cells,
+local HALFYEARS   0   // 1 = half-year time units (4x fewer ATT(g,t) cells,
                       //     denser cells); 0 = quarters
 local FAST_CS     1   // 1 = csdid2 (much faster) + jwdid; 0 = original csdid
 
@@ -69,8 +69,9 @@ capture which reghdfe
 if _rc ssc install reghdfe, replace
 capture which ftools
 if _rc ssc install ftools, replace
+* csdid2 is NOT on SSC — it installs from Fernando Rios-Avila's package site
 capture which csdid2
-if _rc ssc install csdid2, replace
+if _rc capture net install csdid2, from("https://friosavila.github.io/stpackages") replace
 capture which jwdid
 if _rc ssc install jwdid, replace
 
@@ -193,10 +194,11 @@ if `FAST_CS' {
     graph export "$OUT/csdid_tractFE.png", replace
 
     * jwdid cross-check (fast; should be close to csdid2)
-    jwdid lnp, ivar(cellid) tvar(tt) gvar(gq) never
+    qui jwdid lnp, ivar(cellid) tvar(tt) gvar(gq) never
     estat event
-    jwdid lnp_trfe, ivar(cellid) tvar(tt) gvar(gq) never
+    qui jwdid lnp_trfe, ivar(cellid) tvar(tt) gvar(gq) never
     estat event
+
 }
 else {
     csdid lnp, ivar(cellid) time(tt) gvar(gq) method(dripw) notyet
