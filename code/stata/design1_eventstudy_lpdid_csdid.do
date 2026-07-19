@@ -54,8 +54,8 @@ capture mkdir "$OUT"
 *--- toggles ------------------------------------------------------------------
 local CLEAN_ONLY  0   // 1 = keep only events with <=2 other events within 1km
 local MIN_EVYEAR  2012  // drop pre-decree-era "events" (sales before Act 22)
-local HALFYEARS   0   // 1 = half-year time units (4x fewer ATT(g,t) cells,
-                      //     denser cells); 0 = quarters
+local TIMEUNIT "quarter"  // "quarter" | "half" | "year"  (window is always +/-2y:
+                          //  8 quarters / 4 half-years / 2 years each side)
 local FAST_CS     1   // 1 = csdid2 (much faster) + jwdid; 0 = original csdid
 
 *--- packages (one-time) ------------------------------------------------------
@@ -131,8 +131,17 @@ reghdfe lnp, absorb(tract) residuals(lnp_trfe)
 gen near = ring == "near_0_250"
 egen cellid = group(event_id ring)
 
-* time unit: quarters or half-years (HALFYEARS=1 -> 4x fewer ATT(g,t) cells)
-if `HALFYEARS' {
+* time unit: quarter / half / year (coarser -> fewer ATT(g,t) cells, denser
+* cells, but fewer pre-period coefficients and a more contaminated event bin:
+* at yearly resolution the event's own year mixes up to 11 months of pre-event
+* sales into "period g" -- consider anticipation(1) there)
+if "`TIMEUNIT'" == "year" {
+    gen tt  = yofd(sdate)
+    gen ett = yofd(edate)
+    local PREW  2
+    local POSTW 2
+}
+else if "`TIMEUNIT'" == "half" {
     gen tt  = hofd(sdate)
     gen ett = hofd(edate)
     local PREW  4
@@ -157,19 +166,19 @@ xtset cellid tt
 /*============================================================================
   4. ESTIMATION  (+/- 8 quarters = +/- 2 years)
 ============================================================================*/
-log using "$OUT/design1_lpdid_csdid.log", replace text
+*log using "$OUT/design1_lpdid_csdid.log", replace text
 
 *---- (a) lpdid, no tract FE -------------------------------------------------
 lpdid lnp, unit(cellid) time(tt) treat(treat) ///
     pre_window(`PREW') post_window(`POSTW') nevertreated
 matrix LP_NOFE = r(results)
-graph export "$OUT/lpdid_noFE.png", replace
+graph export "$OUT/lpdid_noFE_`TIMEUNIT'.png", replace
 
 *---- (b) lpdid, tract FE ----------------------------------------------------
 lpdid lnp_trfe, unit(cellid) time(tt) treat(treat) ///
     pre_window(`PREW') post_window(`POSTW') nevertreated
 matrix LP_FE = r(results)
-graph export "$OUT/lpdid_tractFE.png", replace
+graph export "$OUT/lpdid_tractFE_`TIMEUNIT'.png", replace
 
 *---- (c)-(d) Callaway-Sant'Anna ---------------------------------------------
 * csdid computes a doubly-robust ATT(g,t) for EVERY cohort x period pair
@@ -185,13 +194,13 @@ if `FAST_CS' {
     csdid2 lnp, ivar(cellid) tvar(tt) gvar(gq) method(dripw) notyet
     estat event, window(-`PREW' `POSTW') estore(cs_noFE)
     estat plot
-    graph export "$OUT/csdid_noFE.png", replace
+    graph export "$OUT/csdid_noFE_`TIMEUNIT'.png", replace
 
     * csdid2: tract FE
     csdid2 lnp_trfe, ivar(cellid) tvar(tt) gvar(gq) method(dripw) notyet
     estat event, window(-`PREW' `POSTW') estore(cs_FE)
     estat plot
-    graph export "$OUT/csdid_tractFE.png", replace
+    graph export "$OUT/csdid_tractFE_`TIMEUNIT'.png", replace
 
     * jwdid cross-check (fast; should be close to csdid2)
     qui jwdid lnp, ivar(cellid) tvar(tt) gvar(gq) never
@@ -204,16 +213,16 @@ else {
     csdid lnp, ivar(cellid) time(tt) gvar(gq) method(dripw) notyet
     estat event, window(-`PREW' `POSTW')
     csdid_plot
-    graph export "$OUT/csdid_noFE.png", replace
+    graph export "$OUT/csdid_noFE_`TIMEUNIT'.png", replace
 
     csdid lnp_trfe, ivar(cellid) time(tt) gvar(gq) method(dripw) notyet
     estat event, window(-`PREW' `POSTW')
     csdid_plot
-    graph export "$OUT/csdid_tractFE.png", replace
+    graph export "$OUT/csdid_tractFE_`TIMEUNIT'.png", replace
 }
 restore
 
-log close
+*log close
 
 /*============================================================================
   NOTES / NEXT STEPS
