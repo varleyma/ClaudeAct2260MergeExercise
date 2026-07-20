@@ -38,10 +38,14 @@ replace lb = b - 1.96*se if missing(lb) & !missing(se)
 replace ub = b + 1.96*se if missing(ub) & !missing(se)
 
 * horizon from rownames (numeric, or embedded number like "t-4"/"pre4")
-gen horizon = real(rowname)
-replace horizon = real(regexs(1)) if missing(horizon) & regexm(rowname, "(-?[0-9]+)")
+gen horizon = "-"+substr(rowname,4,1) if substr(rowname,1,3) == "pre"
+replace horizon = substr(rowname,4,1) if substr(rowname,1,3) == "tau"
+destring horizon, replace force
+// replace horizon = real(regexs(1)) if missing(horizon) & regexm(rowname, "(-?[0-9]+)")
 assert !missing(horizon) if !missing(b)
 drop if missing(b)
+
+
 
 tempfile coefs
 save `coefs'
@@ -78,7 +82,7 @@ program define drawfig
         local legorder `legorder' `= 2*`i'' "`lab'"
     }
     if `n' == 1 local legend legend(off)
-    else        local legend legend(order(`legorder') rows(1) region(lstyle(none)))
+    else        local legend legend(order(`legorder') pos(6) rows(1) region(lstyle(none)))
     twoway `plots', `STYLE' `legend' ///
         title("$FIG_TITLE", size(medium)) ///
         ytitle("$FIG_YT") xtitle("$FIG_XT") ///
@@ -159,4 +163,31 @@ foreach y in lnstru lncab subu vac {
     drawfig, out(fig6_comp_`y')
 }
 
-di as result _n "Figures written to $OUT (fig1..fig6_*)"
+*---- F7: buyer/seller composition (displacement proxy) ----------------------
+* name-based proxy: non-Hispanic-sounding name ~ mainland buyer/seller.
+* Caveat for titles/notes: proxy for NAME origin; Hispanic-named mainlanders
+* (incl. stateside Puerto Ricans) classify as "local" -> understates effects.
+capture confirm file "$OUT/robustness_coefs.dta"
+use `coefs', clear
+count if test == "T7_buy_nh"
+if r(N) > 0 {
+    use `coefs', clear
+    global FIG_TESTS  T7_buy_nh T7_sell_nh
+    global FIG_LABELS `""Buyers" "Sellers""'
+    global FIG_TITLE  Non-Hispanic-named parties in nearby sales
+    global FIG_YT     "Effect on share with non-Hispanic name"
+    global FIG_XT     `XT'
+    global FIG_NOTE   Census 2010 surname classification (pcthispanic <=20 vs >=70); corporate/ambiguous names excluded.
+    drawfig, out(fig7_parties)
+
+    use `coefs', clear
+    global FIG_TESTS  T7_isl2main T7_main2main
+    global FIG_LABELS `""Hispanic seller to non-Hispanic buyer" "non-Hispanic seller to non-Hispanic buyer""'
+    global FIG_TITLE  Who sells to the incoming buyers?
+    global FIG_YT     "Effect on share of transactions"
+    global FIG_XT     `XT'
+    global FIG_NOTE   Among sales where both parties' names classify. Rising islander-to-mainlander = displacement margin; rising mainlander-to-mainlander = churn within the incomer segment.
+    drawfig, out(fig8_transitions)
+}
+
+di as result _n "Figures written to $OUT (fig1..fig8_*)"

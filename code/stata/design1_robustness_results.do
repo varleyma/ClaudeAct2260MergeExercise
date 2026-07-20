@@ -121,6 +121,20 @@ gen lnstru  = ln(structure) if structure > 0
 gen lncab   = ln(cabida)    if cabida > 0
 gen subu    = is_subunit == "True"
 gen vac     = vacant_land == "True"
+
+* name-ethnicity proxy outcomes (requires annotate_name_ethnicity.py run first;
+* "True"/"False" = classified at the 20/70 pcthispanic thresholds, "" = corporate/
+* ambiguous/unmatched -> missing, so cells average over classified sales only)
+capture confirm variable buyer_nonhispanic
+if !_rc {
+    gen buy_nh  = buyer_nonhispanic  == "True" if inlist(buyer_nonhispanic,  "True", "False")
+    gen sell_nh = seller_nonhispanic == "True" if inlist(seller_nonhispanic, "True", "False")
+    gen bothcl  = inlist(buyer_nonhispanic, "True", "False") & ///
+                  inlist(seller_nonhispanic, "True", "False")
+    gen isl2main  = (seller_nonhispanic == "False" & buyer_nonhispanic == "True")  if bothcl
+    gen main2main = (seller_nonhispanic == "True"  & buyer_nonhispanic == "True")  if bothcl
+    drop bothcl
+}
 tempfile sales
 save `sales'
 
@@ -161,6 +175,15 @@ use `sales', clear
 drop if ring == "gap_250_400"
 keep if year(edate) >= 2018
 run_lpdid lnp T5_late
+
+* ---- T7: buyer/seller composition (displacement) ----
+foreach y in buy_nh sell_nh isl2main main2main {
+    use `sales', clear
+    capture confirm variable `y'
+    if _rc continue
+    drop if ring == "gap_250_400"
+    run_lpdid `y' T7_`y'
+}
 
 use `sales', clear
 drop if ring == "gap_250_400"
