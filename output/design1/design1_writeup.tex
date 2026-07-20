@@ -167,6 +167,17 @@ the micro-area (Hurricane Mar\'ia, the 2020--21 in-migration wave) difference
 out by construction, and equations~\eqref{eq:lpdid_pre} provide the testable
 pre-trend restrictions $\beta_{-h} = 0$.
 
+Two scope conditions follow from the ring structure. First, the near--far
+contrast differences out any effect \emph{common to the full 1-km
+neighborhood}: the design identifies the hyper-local increment around a
+purchase site, not the neighborhood-level effect of aggregate investor
+inflows, which requires the complementary tract-level staggered design using
+the tract$\times$month price panel. Second, because purchases cluster at the
+enclave scale, other investor purchases in dense areas fall disproportionately
+inside the near ring itself; the estimated contrast there measures the
+cumulative local dose of investor activity rather than the effect of a single
+purchase (see Figure~\ref{fig:dose}).
+
 In the annual robustness suite $Q = 4$ and $H = 3$; the baseline is also
 estimated at quarterly ($Q=H=8$) and half-yearly resolutions and with the
 Callaway--Sant'Anna (2021) group-time estimator
@@ -222,11 +233,21 @@ boundary.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=.85\textwidth]{fig4_dose.png}
-  \caption{\textbf{Dose response.} Separate event studies for events with
-  0--2, 3--25, and $>$25 other investor events within 1\,km. Larger per-event
-  effects where a single purchase is the entire ``dose'' is the pattern a
-  causal effect predicts; the comparison also bounds the dilution of the
-  pooled estimate from overlapping treatments.}
+  \caption{\textbf{Estimated contrast by local event density.} Separate event
+  studies for events with 0--2, 3--25, and $>$25 other investor events within
+  1\,km. Because purchases cluster at the enclave scale (condo buildings,
+  resort communities), other events in dense areas fall disproportionately
+  \emph{inside} the near ring, so the near--far contrast there reflects
+  cumulative local investor exposure rather than a single purchase. The
+  estimated effect is increasing in density and near zero for isolated
+  events: single-purchase channels (comps entry, one renovation, signaling)
+  appear weak on their own, and the price response is a phenomenon of investor
+  \emph{concentration}. Per-event causal attribution is accordingly not
+  warranted in the dense group, where the coefficient measures the
+  differential appreciation of investor-saturated micro-pockets relative to
+  their 400--1{,}000\,m surroundings --- and where selection of investor waves
+  into already-appreciating pockets is the leading alternative reading (see
+  pre-period coefficients by group).}
   \label{fig:dose}
 \end{figure}
 

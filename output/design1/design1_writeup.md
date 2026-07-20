@@ -97,12 +97,24 @@ Tract fixed effects enter by residualizing sale-level log prices on tract
 dummies before aggregation. The robustness suite runs annually with lpdid
 (pre-window 4, post-window 3 years).
 
+**Scope conditions.** The near–far contrast differences out any effect common
+to the full 1-km neighborhood: the design identifies the hyper-local increment
+around a purchase site, not the neighborhood-level effect of aggregate investor
+inflows (that question belongs to the complementary tract-level staggered
+design using the tract×month price panel). And because purchases cluster at
+the enclave scale, in dense areas the estimated contrast measures the
+cumulative local dose of investor activity, not the effect of a single
+purchase (see fig 4).
+
 **Headline finding so far** (from the baseline runs): sale prices in the near
 ring rise after the investor purchase relative to the far ring — a "near-ring
 price bump" that is similar across quarterly and annual resolutions, across
 estimators, and identical with and without tract fixed effects. Pre-trends look
 clean at quarterly and annual resolution (a half-year anomaly is consistent
-with the low power and binning mechanics of that aggregation).
+with the low power and binning mechanics of that aggregation). The bump is
+increasing in local investor density and near zero for isolated purchases —
+consistent with concentration-driven mechanisms rather than single-purchase
+channels.
 
 ## 4. The eight figures
 
@@ -127,12 +139,20 @@ be strongest in the near ring, intermediate in the gap ring, and (by
 assumption) zero in the far ring; near ≈ gap would instead suggest a
 neighborhood-wide shock the far ring happens to share less of.
 
-**Fig 4 — Dose response** (`fig4_dose`). Separate event studies for events with
-0–2, 3–25, and >25 other investor events within 1 km. *What it shows:* the
-per-event effect by treatment density. Larger effects for isolated events (where
-one purchase is the full "dose") and attenuated effects in saturated areas is
-the pattern a causal per-event effect predicts; it also bounds how much the
-full-sample estimate is diluted by overlapping treatments.
+**Fig 4 — Estimated contrast by local event density** (`fig4_dose`). Separate
+event studies for events with 0–2, 3–25, and >25 other investor events within
+1 km. *What it shows:* because purchases cluster at the enclave scale (condo
+buildings, resort communities), other events in dense areas fall
+disproportionately *inside* the near ring, so the near–far contrast there
+reflects cumulative local investor exposure rather than a single purchase. The
+estimated effect is increasing in density and near zero for isolated events:
+single-purchase channels (comps entry, one renovation, signaling) appear weak
+on their own — the price response is a phenomenon of investor *concentration*.
+Per-event causal attribution is not warranted in the dense group, where the
+coefficient measures the differential appreciation of investor-saturated
+micro-pockets vs. their surroundings, and where selection of investor waves
+into already-appreciating pockets is the leading alternative reading (check
+pre-period coefficients by group).
 
 **Fig 5 — Censoring robustness** (`fig5_late`). Baseline overlaid with events
 from 2018 onward. *What it shows:* whether CRIM's last-sale-only censoring
