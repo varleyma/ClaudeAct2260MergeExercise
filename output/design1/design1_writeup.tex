@@ -1,0 +1,249 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{setspace}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+
+\title{The Local Housing-Market Effects of Act 22/60 Investor Purchases:\\
+Data and Empirical Design}
+\author{}
+\date{July 2026}
+
+\newcommand{\pcth}{\texttt{pcthispanic}}
+
+\begin{document}
+\maketitle
+\onehalfspacing
+
+\section{Research question}
+
+When a tax-incentivized migrant (an Act 22/60 ``Individual Investor'' decree
+holder) buys a residential property in Puerto Rico, what happens to the housing
+market immediately around that property --- to prices, and to who transacts?
+
+\section{Data construction}
+
+\subsection{Identifying investor properties}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Decree holders.} Government lists of individual grantees:
+  3{,}181 (Act 22) and 2{,}672 (Act 60) names; 5{,}770 distinct first--last
+  pairs pooled.
+  \item \textbf{CRIM cadastral registry.} Name searches against the CRIM parcel
+  layer (via its ArcGIS REST service) matched 26{,}673 unique parcels, each with
+  full attributes, centroid coordinates, and the parcel's \emph{most recent}
+  sale (price, date, buyer, seller). CRIM stores only the latest transaction
+  per parcel.
+  \item \textbf{Karibe property registry.} Registry name-search results;
+  cadastral numbers extracted from registral descriptions and resolved in CRIM
+  provide a second, largely non-overlapping source.
+  \item \textbf{Match confidence.} Name$\to$parcel matching is noisy for common
+  names. A name returning \emph{exactly one} property is treated as
+  high-confidence (``unique match''): 810 parcels via CRIM, 755 via Karibe
+  (surname-validated, geocoded), union \textbf{1{,}306 parcels} (259
+  cross-validated in both). The event studies use this base.
+  \item \textbf{Coverage.} High-confidence identification covers 22.5\% of
+  searched names (26.7\% including a validated multi-match recovery tier),
+  versus 49--61\% declared homeownership in the Act 22 annual reports. The gap
+  is dominated by LLC/trust purchases (invisible to name search), name-format
+  failures, and registry availability; the identified sample skews toward
+  single-property, personal-name buyers.
+\end{itemize}
+
+\subsection{Events}
+
+An \textbf{event} is a dated investor purchase: unique-match parcels with a
+valid CRIM sale date, collapsing same-day, same-location purchases (condo units
+bought together) into one event, giving 1{,}256 events (1{,}200 in the decree
+era, $\geq 2012$, used in estimation). Purchases cluster heavily: the median
+event has 25 other events within 1\,km (158 are fully isolated), so
+contamination is measured per event and used in robustness.
+
+\subsection{Outcomes: nearby sales}
+
+For each event, every CRIM parcel within 1{,}000\,m with a recorded sale:
+3.47M sale$\times$event pairs over 328K distinct parcels, each carrying
+distance, sale price/date/parties, property characteristics (lot size, assessed
+structure value, condo-unit and vacant-land indicators), and 2020 census tract.
+\emph{Rings:} 0--250\,m (treated), 250--400\,m (buffer, dropped), 400--1{,}000\,m
+(control). \emph{Filters:} nominal transfers ($<\$10$k), implausible dates, and
+sales of investor-matched parcels are excluded. \emph{Caveat:} CRIM keeps only
+each parcel's last sale, so earlier sales are censored by later resales; the
+within-window, near-versus-far design mitigates this, and Figure~5 tests it.
+
+\subsection{Placebo events}
+
+1{,}500 purchases by non-corporate \emph{individual} buyers in the investor
+price band (\$285K--\$3.9M, the p25--p95 of investor purchases), located within
+250\,m of a real event site (where the sales pool has full coverage) but more
+than three years apart in time. Far rings are truncated at 750\,m for both the
+placebo run and a matched real-event baseline.
+
+\subsection{Buyer/seller origin proxy}
+
+Party names are classified against the Census 2010 surnames file (\pcth),
+taking the maximum across name tokens (robust to CRIM's inconsistent name
+ordering; appropriate under the Puerto Rican two-surname convention). Names
+with $\pcth \leq 20$ are ``non-Hispanic-named'' (mainland proxy), $\geq 70$
+``Hispanic-named'' (local proxy); corporate, ambiguous, and unmatched names are
+left unclassified, and the raw score is retained for re-thresholding.
+\emph{Validity:} 67\% of investor purchases have non-Hispanic-named buyers
+versus 10\% of surrounding market sales. \emph{Caveat:} the proxy captures
+\emph{name} origin --- stateside Puerto Ricans and other Hispanic-named
+mainlanders classify as local, so mainland penetration and displacement effects
+are understated.
+
+\section{Empirical design}
+
+\subsection{Panel construction}
+
+Because CRIM records one (the last) sale per parcel, sales are aggregated into
+an event$\times$ring$\times$period panel. Let $e$ index events, $r \in
+\{\text{near}, \text{far}\}$ rings, and $t$ calendar periods (years in the
+robustness suite). The cell outcome is the mean log price among the
+$N_{ert}$ transactions in cell $(e,r)$ in period $t$:
+\begin{equation}
+  \bar{y}_{ert} \;=\; \frac{1}{N_{ert}} \sum_{j \in (e,r,t)} \ln P_{j},
+\end{equation}
+where $P_j$ is the sale price of transaction $j$. Treatment is absorbing and
+turns on for the near cell in the event period $t_e$:
+\begin{equation}
+  D_{ert} \;=\; \mathbf{1}\{r = \text{near}\}\times \mathbf{1}\{t \geq t_e\},
+\end{equation}
+so far cells are never treated and serve as clean controls. In the
+tract-fixed-effects specification, $\ln P_j$ is first residualized on census
+tract dummies at the sale level ($\ln P_j - \hat{\gamma}_{\tau(j)}$) and the
+residual is aggregated instead; results are unchanged.
+
+\subsection{Local projections difference-in-differences (LP-DiD)}
+
+Following Dube, Girardi, Jord\`a and Taylor (2023), the dynamic effect at each
+horizon $h$ is estimated from a separate long-difference regression on the
+stacked cell panel. For post-treatment horizons $h = 0, 1, \dots, H$:
+\begin{equation}
+  \bar{y}_{er,\,t+h} - \bar{y}_{er,\,t-1}
+  \;=\;
+  \beta_h^{\text{LP-DiD}}\, \Delta D_{ert}
+  \;+\; \delta_t^{h}
+  \;+\; \varepsilon_{ert}^{h},
+  \label{eq:lpdid_post}
+\end{equation}
+and for pre-treatment horizons $h = 2, \dots, Q$ (with $h=1$ the normalization):
+\begin{equation}
+  \bar{y}_{er,\,t-h} - \bar{y}_{er,\,t-1}
+  \;=\;
+  \beta_{-h}^{\text{LP-DiD}}\, \Delta D_{ert}
+  \;+\; \delta_t^{h}
+  \;+\; \varepsilon_{ert}^{h},
+  \label{eq:lpdid_pre}
+\end{equation}
+where $\Delta D_{ert} = D_{ert} - D_{er,t-1}$ indicates that the near cell of
+event $e$ enters treatment in period $t$, and $\delta_t^h$ are
+horizon-specific calendar-period effects.
+
+Each horizon-$h$ regression is estimated on the restricted ``clean'' sample
+\begin{equation}
+  \Big\{\, (e,r,t) : \underbrace{\Delta D_{ert} = 1}_{\text{newly treated near cells}}
+  \;\;\text{or}\;\;
+  \underbrace{D_{er,s} = 0 \;\; \forall s}_{\text{never-treated far cells}} \Big\},
+\end{equation}
+which is the \texttt{nevertreated} option: the counterfactual change
+$\bar{y}_{er,t+h} - \bar{y}_{er,t-1}$ for a newly treated near cell is
+identified from far cells over the same calendar window, and no
+already-treated observation is ever used as a control (the negative-weighting
+problem of two-way fixed effects under staggered timing cannot arise).
+$\beta_h^{\text{LP-DiD}}$ is a variance-weighted average of event-specific
+effects; standard errors are clustered by cell. The identifying assumption is
+within-micro-neighborhood parallel trends: absent the purchase, prices of homes
+transacting 0--250\,m from the site would have evolved like those
+400--1{,}000\,m away, conditional on calendar-time effects --- shocks common to
+the micro-area (Hurricane Mar\'ia, the 2020--21 in-migration wave) difference
+out by construction, and equations~\eqref{eq:lpdid_pre} provide the testable
+pre-trend restrictions $\beta_{-h} = 0$.
+
+In the annual robustness suite $Q = 4$ and $H = 3$; the baseline is also
+estimated at quarterly ($Q=H=8$) and half-yearly resolutions and with the
+Callaway--Sant'Anna (2021) group-time estimator
+$ATT(g,t) = \mathbb{E}[\bar{y}_{t} - \bar{y}_{g-1} \mid G_g = 1] -
+\mathbb{E}[\bar{y}_{t} - \bar{y}_{g-1} \mid \text{never treated}]$,
+aggregated to event time; results are similar across estimators and
+resolutions, and identical with and without tract fixed effects.
+
+\section{The eight figures}
+
+\begin{itemize}[leftmargin=*]
+  \item[\textbf{Fig.~1}] \textbf{Baseline event study} (\texttt{fig1\_baseline}).
+  Near-versus-far log-price coefficients $\{\beta_{-Q},\dots,\beta_H\}$ by year
+  relative to purchase. Shows the headline price bump; flat pre-period
+  coefficients are the design's core credibility check, and the post-period
+  path shows how quickly the premium appears and whether it persists.
+
+  \item[\textbf{Fig.~2}] \textbf{Investor vs.\ placebo purchases}
+  (\texttt{fig2\_real\_vs\_placebo}). The real event study overlaid with the
+  placebo (non-investor luxury purchases, matched rings). Distinguishes a
+  decree-investor-specific effect from a generic response to any high-value
+  transaction; because unmatched investors contaminate the placebo
+  \emph{toward} finding an effect, a null placebo is conservative evidence of
+  investor specificity.
+
+  \item[\textbf{Fig.~3}] \textbf{Spatial gradient} (\texttt{fig3\_gradient}).
+  Near-ring (0--250\,m) and gap-ring (250--400\,m) series against the same far
+  control. A genuine hyper-local spillover should decay with distance
+  ($\text{near} > \text{gap} > 0$); near $\approx$ gap would instead indicate a
+  neighborhood-wide shock partially shared by the control ring.
+
+  \item[\textbf{Fig.~4}] \textbf{Dose response} (\texttt{fig4\_dose}).
+  Separate event studies for events with 0--2, 3--25, and $>$25 other investor
+  events within 1\,km. Larger per-event effects where a single purchase is the
+  entire ``dose'' is the pattern a causal effect predicts; the figure also
+  bounds the dilution of the pooled estimate from overlapping treatments.
+
+  \item[\textbf{Fig.~5}] \textbf{Censoring robustness} (\texttt{fig5\_late}).
+  Baseline overlaid with events from 2018 onward, for which little time exists
+  for post-period sales to be overwritten by resales. Agreement with the full
+  sample indicates last-sale censoring is not manufacturing the bump.
+
+  \item[\textbf{Fig.~6}] \textbf{Composition checks} (\texttt{fig6\_comp\_*},
+  four panels). The identical design with property characteristics as
+  outcomes: log assessed structure value, log lot size, condo-unit share,
+  vacant-land share. Flat lines imply the price bump is appreciation on a
+  stable transaction mix; movements would reveal the stock-upgrading margin of
+  gentrification, changing the interpretation of Figure~1.
+
+  \item[\textbf{Fig.~7}] \textbf{Who transacts: buyers vs.\ sellers}
+  (\texttt{fig7\_parties}). Effects on the share of nearby sales with
+  non-Hispanic-named buyers and, separately, sellers. Buyer share rising
+  faster than seller share means the area is net-importing mainland owners
+  after an investor arrives --- the composition shift price indices cannot see.
+
+  \item[\textbf{Fig.~8}] \textbf{Transition types} (\texttt{fig8\_transitions}).
+  Effects on the shares of transactions that are Hispanic-seller
+  $\to$ non-Hispanic-buyer versus non-Hispanic-seller $\to$
+  non-Hispanic-buyer. Rising islander$\to$mainlander transitions indicate
+  conversion of locally held housing to incomers (the displacement margin);
+  rising mainlander$\to$mainlander indicates churn within an
+  already-converted segment. Together they distinguish ``investors lead
+  conversion'' from ``investors cluster where conversion already occurred.''
+\end{itemize}
+
+\section{Standing caveats}
+
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{Last-sale censoring} (CRIM): pre-period sales are survivors
+  that never resold; addressed by design and Figure~5.
+  \item \textbf{Site selection}: investors choose appreciating micro-areas;
+  estimates are local spillovers \emph{conditional on} location choice, not
+  ``the effect of the Act.''
+  \item \textbf{Match selection}: identified investors skew toward
+  single-property, personal-name buyers; entity (LLC/trust) purchases are
+  missing.
+  \item \textbf{Name proxy}: understates mainland presence; corporate and
+  ambiguous names are excluded from shares.
+  \item \textbf{Assessed values} are on CRIM's 1957 basis --- valid as
+  cross-sectional controls and composition outcomes, never as market values.
+\end{enumerate}
+
+\end{document}
