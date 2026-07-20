@@ -148,11 +148,8 @@ reflects cumulative local investor exposure rather than a single purchase. The
 estimated effect is increasing in density and near zero for isolated events:
 single-purchase channels (comps entry, one renovation, signaling) appear weak
 on their own — the price response is a phenomenon of investor *concentration*.
-Per-event causal attribution is not warranted in the dense group, where the
-coefficient measures the differential appreciation of investor-saturated
-micro-pockets vs. their surroundings. Pre-period coefficients are flat in all
-three density groups — inconsistent with investor waves selecting into
-already-appreciating pockets.
+Pre-period coefficients are flat in all three density groups — inconsistent
+with investor waves selecting into already-appreciating pockets.
 
 **Fig 5 — Censoring robustness** (`fig5_late`). Baseline overlaid with events
 from 2018 onward. *What it shows:* whether CRIM's last-sale-only censoring
