@@ -6,6 +6,9 @@
 \usepackage{setspace}
 \usepackage[hidelinks]{hyperref}
 \usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage[font=small]{caption}
+\graphicspath{{./}}
 
 \title{The Local Housing-Market Effects of Act 22/60 Investor Purchases:\\
 Data and Empirical Design}
@@ -174,60 +177,111 @@ resolutions, and identical with and without tract fixed effects.
 
 \section{The eight figures}
 
-\begin{itemize}[leftmargin=*]
-  \item[\textbf{Fig.~1}] \textbf{Baseline event study} (\texttt{fig1\_baseline}).
-  Near-versus-far log-price coefficients $\{\beta_{-Q},\dots,\beta_H\}$ by year
-  relative to purchase. Shows the headline price bump; flat pre-period
-  coefficients are the design's core credibility check, and the post-period
-  path shows how quickly the premium appears and whether it persists.
+All figures plot LP-DiD event-study coefficients
+$\{\beta_{-Q},\dots,\beta_{H}\}$ from
+equations~\eqref{eq:lpdid_post}--\eqref{eq:lpdid_pre} at annual resolution
+(pre-window 4, post-window 3), with 95\% confidence intervals, cells clustered.
+Period $-1$ is the omitted base; the dashed vertical line marks the treatment
+boundary.
 
-  \item[\textbf{Fig.~2}] \textbf{Investor vs.\ placebo purchases}
-  (\texttt{fig2\_real\_vs\_placebo}). The real event study overlaid with the
-  placebo (non-investor luxury purchases, matched rings). Distinguishes a
-  decree-investor-specific effect from a generic response to any high-value
-  transaction; because unmatched investors contaminate the placebo
-  \emph{toward} finding an effect, a null placebo is conservative evidence of
-  investor specificity.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{fig1_baseline.png}
+  \caption{\textbf{Baseline event study.} Near-ring (0--250\,m) versus
+  far-ring (400--1{,}000\,m) effects on log sale price by year relative to the
+  investor purchase. The headline price bump; flat pre-period coefficients are
+  the design's core credibility check, and the post-period path shows how
+  quickly the premium appears and whether it persists.}
+  \label{fig:baseline}
+\end{figure}
 
-  \item[\textbf{Fig.~3}] \textbf{Spatial gradient} (\texttt{fig3\_gradient}).
-  Near-ring (0--250\,m) and gap-ring (250--400\,m) series against the same far
-  control. A genuine hyper-local spillover should decay with distance
-  ($\text{near} > \text{gap} > 0$); near $\approx$ gap would instead indicate a
-  neighborhood-wide shock partially shared by the control ring.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{fig2_real_vs_placebo.png}
+  \caption{\textbf{Investor vs.\ placebo purchases.} The real event study
+  overlaid with placebo events (non-investor individual buyers in the investor
+  price band, same micro-areas, $>$3 years from the real event; far rings
+  matched at 400--750\,m). A flat placebo says nearby prices respond to
+  \emph{the investor}, not to any high-value transaction; because unmatched
+  investors contaminate the placebo toward finding an effect, a null placebo
+  is conservative evidence of investor specificity.}
+  \label{fig:placebo}
+\end{figure}
 
-  \item[\textbf{Fig.~4}] \textbf{Dose response} (\texttt{fig4\_dose}).
-  Separate event studies for events with 0--2, 3--25, and $>$25 other investor
-  events within 1\,km. Larger per-event effects where a single purchase is the
-  entire ``dose'' is the pattern a causal effect predicts; the figure also
-  bounds the dilution of the pooled estimate from overlapping treatments.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{fig3_gradient.png}
+  \caption{\textbf{Spatial gradient.} Near-ring (0--250\,m) and gap-ring
+  (250--400\,m) series, each against the same far control. A genuine
+  hyper-local spillover should decay with distance
+  ($\text{near} > \text{gap} > 0$); near $\approx$ gap would instead indicate
+  a neighborhood-wide shock partially shared by the control ring.}
+  \label{fig:gradient}
+\end{figure}
 
-  \item[\textbf{Fig.~5}] \textbf{Censoring robustness} (\texttt{fig5\_late}).
-  Baseline overlaid with events from 2018 onward, for which little time exists
-  for post-period sales to be overwritten by resales. Agreement with the full
-  sample indicates last-sale censoring is not manufacturing the bump.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{fig4_dose.png}
+  \caption{\textbf{Dose response.} Separate event studies for events with
+  0--2, 3--25, and $>$25 other investor events within 1\,km. Larger per-event
+  effects where a single purchase is the entire ``dose'' is the pattern a
+  causal effect predicts; the comparison also bounds the dilution of the
+  pooled estimate from overlapping treatments.}
+  \label{fig:dose}
+\end{figure}
 
-  \item[\textbf{Fig.~6}] \textbf{Composition checks} (\texttt{fig6\_comp\_*},
-  four panels). The identical design with property characteristics as
-  outcomes: log assessed structure value, log lot size, condo-unit share,
-  vacant-land share. Flat lines imply the price bump is appreciation on a
-  stable transaction mix; movements would reveal the stock-upgrading margin of
-  gentrification, changing the interpretation of Figure~1.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{fig5_late.png}
+  \caption{\textbf{Censoring robustness.} Baseline overlaid with events from
+  2018 onward, for which little time exists for post-period sales to be
+  overwritten by later resales. Agreement with the full sample indicates that
+  CRIM's last-sale-only censoring is not manufacturing the bump.}
+  \label{fig:late}
+\end{figure}
 
-  \item[\textbf{Fig.~7}] \textbf{Who transacts: buyers vs.\ sellers}
-  (\texttt{fig7\_parties}). Effects on the share of nearby sales with
-  non-Hispanic-named buyers and, separately, sellers. Buyer share rising
-  faster than seller share means the area is net-importing mainland owners
-  after an investor arrives --- the composition shift price indices cannot see.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.48\textwidth]{fig6_comp_lnstru.png}\hfill
+  \includegraphics[width=.48\textwidth]{fig6_comp_lncab.png}\\[2pt]
+  \includegraphics[width=.48\textwidth]{fig6_comp_subu.png}\hfill
+  \includegraphics[width=.48\textwidth]{fig6_comp_vac.png}
+  \caption{\textbf{Composition checks.} The identical design with property
+  characteristics as outcomes: log assessed structure value (top left), log
+  lot size (top right), condo-unit share (bottom left), vacant-land share
+  (bottom right). Flat lines imply the price bump is appreciation on a stable
+  transaction mix; movements would reveal the stock-upgrading margin of
+  gentrification, changing the interpretation of Figure~\ref{fig:baseline}.}
+  \label{fig:composition}
+\end{figure}
 
-  \item[\textbf{Fig.~8}] \textbf{Transition types} (\texttt{fig8\_transitions}).
-  Effects on the shares of transactions that are Hispanic-seller
-  $\to$ non-Hispanic-buyer versus non-Hispanic-seller $\to$
-  non-Hispanic-buyer. Rising islander$\to$mainlander transitions indicate
-  conversion of locally held housing to incomers (the displacement margin);
-  rising mainlander$\to$mainlander indicates churn within an
-  already-converted segment. Together they distinguish ``investors lead
-  conversion'' from ``investors cluster where conversion already occurred.''
-\end{itemize}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{fig7_parties.png}
+  \caption{\textbf{Who transacts: buyers vs.\ sellers.} Effects on the share
+  of nearby sales with non-Hispanic-named buyers and, separately, sellers
+  (Census 2010 surname classification; corporate and ambiguous names
+  excluded). Buyer share rising faster than seller share means the area is
+  net-importing mainland owners after an investor arrives --- the composition
+  shift price indices cannot see.}
+  \label{fig:parties}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{fig8_transitions.png}
+  \caption{\textbf{Transition types.} Effects on the shares of transactions
+  that are Hispanic-seller$\to$non-Hispanic-buyer versus
+  non-Hispanic-seller$\to$non-Hispanic-buyer (among sales where both parties
+  classify). Rising islander$\to$mainlander transitions indicate conversion of
+  locally held housing to incomers (the displacement margin); rising
+  mainlander$\to$mainlander indicates churn within an already-converted
+  segment --- together distinguishing ``investors lead conversion'' from
+  ``investors cluster where conversion already occurred.''}
+  \label{fig:transitions}
+\end{figure}
+
+\clearpage
 
 \section{Standing caveats}
 
