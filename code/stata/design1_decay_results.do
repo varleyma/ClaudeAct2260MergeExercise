@@ -143,7 +143,7 @@ foreach b in 0_250 250_500 500_1000 1000_1750 1750_2500 {
     di as result _n "===== decay bin `b' vs control 2500-5000 ====="
     lpdid y, unit(cellid) time(tt) treat(treat) ///
         pre_window(4) post_window(3) nevertreated
-    * keep each bin's lpdid graph in its own named window
+    * keep the per-bin lpdid graph in its own named window
     capture graph rename Graph des_`b', replace
     matrix E = e(results)
     grabmat E D_`b' event
