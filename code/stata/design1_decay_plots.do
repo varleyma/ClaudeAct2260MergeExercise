@@ -119,17 +119,18 @@ replace mid = 2125 if test == "D_1750_2500"
 drop if missing(mid)
 * offset pre series slightly for visibility
 gen x = mid + cond(post, 0, 40)
+sort post x   // connected() joins in data order -- must be sorted by x
 
 twoway ///
     (rcap ub lb x if post, lcolor(navy) lwidth(medthin)) ///
-    (connected b x if post, color(navy) msymbol(O) lwidth(medthin)) ///
+    (connected b x if post, color(navy) msymbol(O) lwidth(medthin) sort(x)) ///
     (rcap ub lb x if !post, lcolor(gs9) lwidth(thin)) ///
-    (connected b x if !post, color(gs9) msymbol(Oh) lpattern(dash) lwidth(thin)) ///
+    (connected b x if !post, color(gs9) msymbol(Oh) lpattern(dash) lwidth(thin) sort(x)) ///
     , graphregion(color(white)) bgcolor(white) ///
     ylabel(, angle(horizontal) format(%9.2f)) ///
     yline(0, lcolor(gs8) lwidth(thin)) ///
     legend(order(2 "Pooled post-treatment effect" 4 "Pooled pre-period (placebo)") ///
-           rows(1) region(lstyle(none))) ///
+           rows(2) position(6) region(lstyle(none))) ///
     title("Spatial decay of the price effect", size(medium)) ///
     ytitle("Pooled effect on log sale price") ///
     xtitle("Distance from investor purchase (ring midpoint, meters)") ///

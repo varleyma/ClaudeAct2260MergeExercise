@@ -145,10 +145,11 @@ foreach b in 0_250 250_500 500_1000 1000_1750 1750_2500 {
         pre_window(4) post_window(3) nevertreated
     * keep the per-bin lpdid graph in its own named window
     capture graph rename Graph des_`b', replace
+    local tag "D_`b'"
     matrix E = e(results)
-    grabmat E D_`b' event
+    grabmat E `tag' event
     capture matrix P = e(pooled_results)
-    if !_rc grabmat P D_`b' pooled
+    if !_rc grabmat P `tag' pooled
 }
 
 log close
@@ -159,6 +160,9 @@ log close
 use "$COEFTMP", clear
 order test matrix_type row rowname
 sort test matrix_type row
+* sanity: all five bins present with real labels
+tab test matrix_type
+assert !inlist(test, "D_", "")
 save "$OUT/decay_coefs.dta", replace
 export delimited "$OUT/decay_coefs.csv", replace
 capture erase "$COEFTMP"
