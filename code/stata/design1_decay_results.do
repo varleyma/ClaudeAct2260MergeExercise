@@ -1,0 +1,152 @@
+/*==============================================================================
+ design1_decay_results.do
+
+ Spatial-decay event studies from the 5km pairs file (annual, lpdid).
+
+ RING DESIGN (precision-oriented; need not match the 1km files)
+ --------------------------------------------------------------
+ Treated bins:  0-250m | 250-500m | 500-1000m | 1000-1750m | 1750-2500m
+ Control band:  2500-5000m  -- one COMMON control for every bin, with ~19x the
+                area of the entire 0-2.5km disc, so control-side noise is
+                negligible and bins differ only by their treated ring.
+ Rationale: ring area grows with r^2, so outer bins are self-precise; the
+ near bins stay at the baseline's 250m resolution for comparability. The
+ 1000-2500m bins are where effects should be dead -- estimating them
+ precisely is the point of the 5km data.
+
+ For each bin b: panel = event x {bin b, control} x year cells; the bin-b
+ cell adopts treatment at the event year (lpdid, never-treated controls,
+ same conventions as the 1km suite: events >=2012, window -72..+60 months,
+ pre_window 4 / post_window 3).
+
+ Saves BOTH the event-study matrix e(results) and the pooled pre/post matrix
+ e(pooled_results) for every bin into:
+     output/design1/decay_coefs.dta (+ .csv)
+ with matrix_type = "event" | "pooled". The pooled Post row per bin is the
+ maximal-precision decay curve; pooled Pre is its placebo twin.
+
+ Inputs: data/design1/design1_sale_event_pairs_5km.csv (gitignored; regenerate
+         with code/python/build_design1_event_panel_5km.py),
+         data/design1/design1_events_5km_info.csv
+==============================================================================*/
+
+version 17
+clear all
+set more off
+
+global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+global D1   "$REPO/data/design1"
+global OUT  "$REPO/output/design1"
+capture mkdir "$REPO/output"
+capture mkdir "$OUT"
+global COEFTMP "$OUT/_decay_accum.dta"
+capture erase "$COEFTMP"
+
+capture which lpdid
+if _rc ssc install lpdid, replace
+
+/*============================================================================
+  COEFFICIENT CAPTURE (event-study + pooled matrices)
+============================================================================*/
+capture program drop grabmat
+program define grabmat
+    * grabmat <matname> <test> <matrix_type>
+    args M test mtype
+    local rn : rowfullnames `M'
+    local nr = rowsof(`M')
+    preserve
+    clear
+    qui svmat double `M', names(c)
+    qui gen row = _n
+    qui gen str32 rowname = ""
+    forvalues i = 1/`nr' {
+        local r : word `i' of `rn'
+        qui replace rowname = "`r'" in `i'
+    }
+    qui gen str40 test = "`test'"
+    qui gen str10 matrix_type = "`mtype'"
+    capture confirm file "$COEFTMP"
+    if !_rc qui append using "$COEFTMP"
+    qui save "$COEFTMP", replace
+    restore
+end
+
+/*============================================================================
+  LOAD + PREP
+============================================================================*/
+import delimited "$D1/design1_sale_event_pairs_5km.csv", ///
+    varnames(1) encoding(utf8) stringcols(_all) clear
+destring salesamt dist_m, replace force
+
+gen sdate = date(sale_date, "YMD")
+gen edate = date(event_date, "YMD")
+gen etm   = (year(sdate)*12 + month(sdate)) - (year(edate)*12 + month(edate))
+gen tt    = yofd(sdate)
+gen ett   = yofd(edate)
+
+drop if flag_junk_date == "True"
+drop if flag_nominal_price == "True"
+drop if sale_is_investor_parcel == "True"
+drop if year(edate) < 2012
+keep if salesamt > 0 & !missing(salesamt)
+keep if inrange(etm, -72, 60)
+
+* contamination info at these radii (available for subsetting/robustness)
+preserve
+    import delimited "$D1/design1_events_5km_info.csv", varnames(1) clear
+    tempfile evinfo
+    save `evinfo'
+restore
+merge m:1 event_id using `evinfo', keep(master match) nogen
+
+gen lnp = ln(salesamt)
+
+* ring bins
+gen str12 bin = ""
+replace bin = "0_250"     if dist_m <= 250
+replace bin = "250_500"   if dist_m > 250  & dist_m <= 500
+replace bin = "500_1000"  if dist_m > 500  & dist_m <= 1000
+replace bin = "1000_1750" if dist_m > 1000 & dist_m <= 1750
+replace bin = "1750_2500" if dist_m > 1750 & dist_m <= 2500
+replace bin = "control"   if dist_m > 2500
+
+tempfile sales
+save `sales'
+
+/*============================================================================
+  RUN: one lpdid per treated bin vs the common 2.5-5km control
+============================================================================*/
+log using "$OUT/decay_results.log", replace text
+
+foreach b in 0_250 250_500 500_1000 1000_1750 1750_2500 {
+    use `sales', clear
+    keep if inlist(bin, "`b'", "control")
+    gen near = bin == "`b'"
+    egen cellid = group(event_id near)
+    collapse (mean) y = lnp (first) near ett (count) nsales = salesamt, ///
+        by(cellid tt)
+    drop if missing(y)
+    gen treat = near & tt >= ett
+    xtset cellid tt
+    di as result _n "===== decay bin `b' vs control 2500-5000 ====="
+    lpdid y, unit(cellid) time(tt) treat(treat) ///
+        pre_window(4) post_window(3) nevertreated
+    matrix E = e(results)
+    grabmat E D_`b' event
+    capture matrix P = e(pooled_results)
+    if !_rc grabmat P D_`b' pooled
+    graph drop _all
+}
+
+log close
+
+/*============================================================================
+  FINALIZE
+============================================================================*/
+use "$COEFTMP", clear
+order test matrix_type row rowname
+sort test matrix_type row
+save "$OUT/decay_coefs.dta", replace
+export delimited "$OUT/decay_coefs.csv", replace
+capture erase "$COEFTMP"
+di as result _n "Saved: $OUT/decay_coefs.dta (+.csv), " _N " rows"

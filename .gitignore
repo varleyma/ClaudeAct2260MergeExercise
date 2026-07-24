@@ -7,3 +7,4 @@ data/design1/placebo_sale_event_pairs.csv
 data/third_party/crim_parcels_island.csv
 data/third_party/nearby_sales_2500m_uniquematch.csv
 data/third_party/nearby_sales_5000m_uniquematch.csv
+data/design1/design1_sale_event_pairs_5km.csv
