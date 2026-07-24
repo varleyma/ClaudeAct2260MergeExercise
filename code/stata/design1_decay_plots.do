@@ -99,12 +99,12 @@ global FIG_NOTE   Each series: that ring vs the common control band (set in desi
 drawfig, out(figD1_es_inner)
 
 use `es', clear
-global FIG_TESTS  D_1000_1750 D_1750_2500
-global FIG_LABELS `""1,000-1,750m" "1,750-2,500m""'
-global FIG_TITLE  Spatial decay: outer rings vs common control band
+global FIG_TESTS  D_1000_1500
+global FIG_LABELS `""1,000-1,500m""'
+global FIG_TITLE  Spatial decay: outermost treated ring vs common control band
 global FIG_YT     `YT'
 global FIG_XT     `XT'
-global FIG_NOTE   Rings where hyper-local effects should be absent; precise zeros here pin down the decay endpoint.
+global FIG_NOTE   The ring adjacent to the control band; its estimate bounds the gradient at the control boundary.
 drawfig, out(figD2_es_outer)
 
 /*============================================================================
@@ -117,8 +117,7 @@ gen mid = .
 replace mid = 125  if test == "D_0_250"
 replace mid = 375  if test == "D_250_500"
 replace mid = 750  if test == "D_500_1000"
-replace mid = 1375 if test == "D_1000_1750"
-replace mid = 2125 if test == "D_1750_2500"
+replace mid = 1250 if test == "D_1000_1500"
 drop if missing(mid)
 * offset pre series slightly for visibility
 gen x = mid + cond(post, 0, 40)
@@ -137,7 +136,7 @@ twoway ///
     title("Spatial decay of the price effect", size(medium)) ///
     ytitle("Pooled effect on log sale price") ///
     xtitle("Distance from investor purchase (ring midpoint, meters)") ///
-    xlabel(125 "125" 375 "375" 750 "750" 1375 "1,375" 2125 "2,125") ///
+    xlabel(125 "125" 375 "375" 750 "750" 1250 "1,250") ///
     note("Each point: one ring vs the common control band (set in design1_decay_results.do); annual lpdid, pooled across horizons 0-3." ///
          "Gray dashed: the same object for pooled pre-period years -- a distance-profile placebo.", size(vsmall)) ///
     name(figD3_decay, replace)

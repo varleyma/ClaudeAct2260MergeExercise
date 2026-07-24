@@ -5,7 +5,7 @@
 
  RING DESIGN (precision-oriented; need not match the 1km files)
  --------------------------------------------------------------
- Treated bins:  0-250m | 250-500m | 500-1000m | 1000-1750m | 1750-2500m
+ Treated bins:  0-250m | 250-500m | 500-1000m | 1000-1500m
  Control band:  one COMMON control for every bin. MAIN spec = 2500-3500m:
                 beyond where effects decay, but close enough to stay within
                 the event's own housing market (wider bands bleed into other
@@ -44,12 +44,13 @@ capture mkdir "$OUT"
 global COEFTMP "$OUT/_decay_accum.dta"
 capture erase "$COEFTMP"
 
-* Control band (meters). Effects decay by ~2-2.5km, so the control starts at
-* 2500. MAIN spec caps at 3500 to stay within the event's own housing market
-* (wider bands bleed into other markets -> parallel-trends risk);
-* set CTRL_MAX 5000 for the wide-band sensitivity check.
-local CTRL_MIN 2500
-local CTRL_MAX 3500
+* Control band (meters). MAIN spec = 1500-2000m: near enough to share the
+* common pre-period drift of investor territory (restoring parallel trends),
+* at the cost of differencing out the ~+5-6% effect present at that distance
+* -> all estimates are gradients WITHIN 1.5km, conservative by construction.
+* (Earlier specs: 2500-3500 market-safe band; 2500-5000 wide band.)
+local CTRL_MIN 1500
+local CTRL_MAX 2000
 
 capture which lpdid
 if _rc ssc install lpdid, replace
@@ -110,14 +111,13 @@ merge m:1 event_id using `evinfo', keep(master match) nogen
 
 gen lnp = ln(salesamt)
 
-* ring bins
+* ring bins (treated bins must end at CTRL_MIN)
 drop if dist_m > `CTRL_MAX'
 gen str12 bin = ""
 replace bin = "0_250"     if dist_m <= 250
 replace bin = "250_500"   if dist_m > 250  & dist_m <= 500
 replace bin = "500_1000"  if dist_m > 500  & dist_m <= 1000
-replace bin = "1000_1750" if dist_m > 1000 & dist_m <= 1750
-replace bin = "1750_2500" if dist_m > 1750 & dist_m <= 2500
+replace bin = "1000_1500" if dist_m > 1000 & dist_m <= 1500
 replace bin = "control"   if dist_m > `CTRL_MIN'  & dist_m <= `CTRL_MAX'
 
 * on-disk temp (not a tempfile) so the estimation loop below can be re-run
@@ -130,7 +130,7 @@ save "$OUT/_decay_sales.dta", replace
 ============================================================================*/
 log using "$OUT/decay_results.log", replace text
 
-foreach b in 0_250 250_500 500_1000 1000_1750 1750_2500 {
+foreach b in 0_250 250_500 500_1000 1000_1500 {
     use "$OUT/_decay_sales.dta", clear
     keep if inlist(bin, "`b'", "control")
     gen near = bin == "`b'"
@@ -140,7 +140,7 @@ foreach b in 0_250 250_500 500_1000 1000_1750 1750_2500 {
     drop if missing(y)
     gen treat = near & tt >= ett
     xtset cellid tt
-    di as result _n "===== decay bin `b' vs control 2500-5000 ====="
+    di as result _n "===== decay bin `b' vs control `CTRL_MIN'-`CTRL_MAX' ====="
     lpdid y, unit(cellid) time(tt) treat(treat) ///
         pre_window(4) post_window(3) nevertreated
     * keep the per-bin lpdid graph in its own named window
