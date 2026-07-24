@@ -80,8 +80,11 @@ local YT "Effect on log sale price"
 * horizon for event-study rows
 use `coefs', clear
 keep if matrix_type == "event"
-gen horizon = real(rowname)
-replace horizon = real(regexs(1)) if missing(horizon) & regexm(rowname, "(-?[0-9]+)")
+* lpdid rownames: pre4..pre1 (leads; pre1 = base) and tau0..tau3 (lags)
+gen horizon = .
+replace horizon = -real(substr(rowname, 4, .)) if strpos(rowname, "pre") == 1
+replace horizon =  real(substr(rowname, 4, .)) if strpos(rowname, "tau") == 1
+replace horizon = real(rowname) if missing(horizon)
 drop if missing(horizon)
 tempfile es
 save `es'
