@@ -6,13 +6,15 @@
  RING DESIGN (precision-oriented; need not match the 1km files)
  --------------------------------------------------------------
  Treated bins:  0-250m | 250-500m | 500-1000m | 1000-1750m | 1750-2500m
- Control band:  2500-5000m  -- one COMMON control for every bin, with ~19x the
-                area of the entire 0-2.5km disc, so control-side noise is
-                negligible and bins differ only by their treated ring.
- Rationale: ring area grows with r^2, so outer bins are self-precise; the
- near bins stay at the baseline's 250m resolution for comparability. The
- 1000-2500m bins are where effects should be dead -- estimating them
- precisely is the point of the 5km data.
+ Control band:  one COMMON control for every bin. MAIN spec = 2500-3500m:
+                beyond where effects decay, but close enough to stay within
+                the event's own housing market (wider bands bleed into other
+                markets -> parallel-trends risk). Sensitivity: CTRL_MAX 5000.
+ Rationale: ring area grows with r^2, so outer bins are self-precise and the
+ control band dwarfs every treated bin either way; the near bins stay at the
+ baseline's 250m resolution. The 1000-2500m bins are where effects should be
+ dead -- estimating them precisely is the point of the 5km data. Pre-period
+ profiles per bin are the direct test of the control band's validity.
 
  For each bin b: panel = event x {bin b, control} x year cells; the bin-b
  cell adopts treatment at the event year (lpdid, never-treated controls,
@@ -41,6 +43,13 @@ capture mkdir "$REPO/output"
 capture mkdir "$OUT"
 global COEFTMP "$OUT/_decay_accum.dta"
 capture erase "$COEFTMP"
+
+* Control band (meters). Effects decay by ~2-2.5km, so the control starts at
+* 2500. MAIN spec caps at 3500 to stay within the event's own housing market
+* (wider bands bleed into other markets -> parallel-trends risk);
+* set CTRL_MAX 5000 for the wide-band sensitivity check.
+local CTRL_MIN 2500
+local CTRL_MAX 3500
 
 capture which lpdid
 if _rc ssc install lpdid, replace
@@ -102,24 +111,27 @@ merge m:1 event_id using `evinfo', keep(master match) nogen
 gen lnp = ln(salesamt)
 
 * ring bins
+drop if dist_m > `CTRL_MAX'
 gen str12 bin = ""
 replace bin = "0_250"     if dist_m <= 250
 replace bin = "250_500"   if dist_m > 250  & dist_m <= 500
 replace bin = "500_1000"  if dist_m > 500  & dist_m <= 1000
 replace bin = "1000_1750" if dist_m > 1000 & dist_m <= 1750
 replace bin = "1750_2500" if dist_m > 1750 & dist_m <= 2500
-replace bin = "control"   if dist_m > 2500
+replace bin = "control"   if dist_m > `CTRL_MIN'  & dist_m <= `CTRL_MAX'
 
-tempfile sales
-save `sales'
+* on-disk temp (not a tempfile) so the estimation loop below can be re-run
+* on its own within a session without redoing the import
+save "$OUT/_decay_sales.dta", replace
 
 /*============================================================================
-  RUN: one lpdid per treated bin vs the common 2.5-5km control
+  RUN: one lpdid per treated bin vs the common control band
+  (re-runnable alone AFTER the file has run once this session)
 ============================================================================*/
 log using "$OUT/decay_results.log", replace text
 
 foreach b in 0_250 250_500 500_1000 1000_1750 1750_2500 {
-    use `sales', clear
+    use "$OUT/_decay_sales.dta", clear
     keep if inlist(bin, "`b'", "control")
     gen near = bin == "`b'"
     egen cellid = group(event_id near)
@@ -131,11 +143,12 @@ foreach b in 0_250 250_500 500_1000 1000_1750 1750_2500 {
     di as result _n "===== decay bin `b' vs control 2500-5000 ====="
     lpdid y, unit(cellid) time(tt) treat(treat) ///
         pre_window(4) post_window(3) nevertreated
+    * keep each bin's lpdid graph in its own named window
+    capture graph rename Graph des_`b', replace
     matrix E = e(results)
     grabmat E D_`b' event
     capture matrix P = e(pooled_results)
     if !_rc grabmat P D_`b' pooled
-    graph drop _all
 }
 
 log close
@@ -149,4 +162,5 @@ sort test matrix_type row
 save "$OUT/decay_coefs.dta", replace
 export delimited "$OUT/decay_coefs.csv", replace
 capture erase "$COEFTMP"
+capture erase "$OUT/_decay_sales.dta"
 di as result _n "Saved: $OUT/decay_coefs.dta (+.csv), " _N " rows"

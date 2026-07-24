@@ -86,7 +86,8 @@ program define run_lpdid
     * show the matrix layout once so the plot file's mapping can be verified
     if "`tag'" == "T1_baseline" matrix list e(results)
     grab `tag' `yvar'
-    graph drop _all
+    * keep each test's lpdid graph in its own named window
+    capture graph rename Graph g`tag', replace
 end
 
 /*============================================================================

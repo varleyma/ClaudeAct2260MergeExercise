@@ -70,7 +70,7 @@ program define drawfig
         title("$FIG_TITLE", size(medium)) ///
         ytitle("$FIG_YT") xtitle("$FIG_XT") ///
         note("$FIG_NOTE", size(vsmall)) ///
-        xlabel(-4(1)3)
+        xlabel(-4(1)3) name(`out', replace)
     graph export "$OUT/`out'.png", replace width(2000)
 end
 
@@ -89,16 +89,16 @@ save `es'
 use `es', clear
 global FIG_TESTS  D_0_250 D_250_500 D_500_1000
 global FIG_LABELS `""0-250m" "250-500m" "500-1000m""'
-global FIG_TITLE  Spatial decay: inner rings vs 2.5-5km control
+global FIG_TITLE  Spatial decay: inner rings vs common control band
 global FIG_YT     `YT'
 global FIG_XT     `XT'
-global FIG_NOTE   Each series: that ring vs the common 2,500-5,000m control band. Annual lpdid.
+global FIG_NOTE   Each series: that ring vs the common control band (set in design1_decay_results.do). Annual lpdid.
 drawfig, out(figD1_es_inner)
 
 use `es', clear
 global FIG_TESTS  D_1000_1750 D_1750_2500
 global FIG_LABELS `""1,000-1,750m" "1,750-2,500m""'
-global FIG_TITLE  Spatial decay: outer rings vs 2.5-5km control
+global FIG_TITLE  Spatial decay: outer rings vs common control band
 global FIG_YT     `YT'
 global FIG_XT     `XT'
 global FIG_NOTE   Rings where hyper-local effects should be absent; precise zeros here pin down the decay endpoint.
@@ -134,8 +134,9 @@ twoway ///
     ytitle("Pooled effect on log sale price") ///
     xtitle("Distance from investor purchase (ring midpoint, meters)") ///
     xlabel(125 "125" 375 "375" 750 "750" 1375 "1,375" 2125 "2,125") ///
-    note("Each point: one ring vs the common 2,500-5,000m control band; annual lpdid, pooled across horizons 0-3." ///
-         "Gray dashed: the same object for pooled pre-period years -- a distance-profile placebo.", size(vsmall))
+    note("Each point: one ring vs the common control band (set in design1_decay_results.do); annual lpdid, pooled across horizons 0-3." ///
+         "Gray dashed: the same object for pooled pre-period years -- a distance-profile placebo.", size(vsmall)) ///
+    name(figD3_decay, replace)
 graph export "$OUT/figD3_decay.png", replace width(2000)
 
 di as result _n "Decay figures written: figD1_es_inner, figD2_es_outer, figD3_decay"

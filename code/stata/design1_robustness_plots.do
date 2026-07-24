@@ -87,7 +87,7 @@ program define drawfig
         title("$FIG_TITLE", size(medium)) ///
         ytitle("$FIG_YT") xtitle("$FIG_XT") ///
         note("$FIG_NOTE", size(vsmall)) ///
-        xlabel(-4(1)3)
+        xlabel(-4(1)3) name(`out', replace)
     graph export "$OUT/`out'.png", replace width(2000)
 end
 
