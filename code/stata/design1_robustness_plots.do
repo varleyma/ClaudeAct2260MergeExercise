@@ -196,11 +196,11 @@ count if test == "T8_incl_investors"
 if r(N) > 0 {
     use `coefs', clear
     global FIG_TESTS  T1_baseline T8_incl_investors
-    global FIG_LABELS `""Market sales only (baseline)" "Including investor purchases""'
-    global FIG_TITLE  Decomposition: investors' own transactions vs spillover
+    global FIG_LABELS `""Non-investor transactions" "All transactions""'
+    global FIG_TITLE  Price response by buyer margin: all vs non-investor transactions
     global FIG_YT     "Effect on log sale price"
     global FIG_XT     `XT'
-    global FIG_NOTE   The gap between the series is the direct contribution of investor-parcel transactions to nearby price growth; the baseline is the spillover onto everyone else's sales.
+    global FIG_NOTE   Both series are spillover-consistent: subsequent investor purchases are the demand shock's propagation, so the strongest repricing may occur in investor-won transactions. All-transactions is the total repricing of the area; the gap shows how much of it runs through investor-won sales. Note the non-investor sample conditions on buyer type, which is itself post-treatment.
     drawfig, out(fig9_incl_investors)
 }
 
