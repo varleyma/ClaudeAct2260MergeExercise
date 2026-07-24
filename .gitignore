@@ -5,3 +5,5 @@ data/third_party/nearby_sales_1000m_uniquematch_combined.csv
 data/third_party/nearby_sales_250m_all.csv
 data/design1/placebo_sale_event_pairs.csv
 data/third_party/crim_parcels_island.csv
+data/third_party/nearby_sales_2500m_uniquematch.csv
+data/third_party/nearby_sales_5000m_uniquematch.csv
