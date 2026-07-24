@@ -190,4 +190,32 @@ if r(N) > 0 {
     drawfig, out(fig8_transitions)
 }
 
-di as result _n "Figures written to $OUT (fig1..fig8_*)"
+*---- F9: decomposition -- including vs excluding investor transactions ------
+use `coefs', clear
+count if test == "T8_incl_investors"
+if r(N) > 0 {
+    use `coefs', clear
+    global FIG_TESTS  T1_baseline T8_incl_investors
+    global FIG_LABELS `""Market sales only (baseline)" "Including investor purchases""'
+    global FIG_TITLE  Decomposition: investors' own transactions vs spillover
+    global FIG_YT     "Effect on log sale price"
+    global FIG_XT     `XT'
+    global FIG_NOTE   The gap between the series is the direct contribution of investor-parcel transactions to nearby price growth; the baseline is the spillover onto everyone else's sales.
+    drawfig, out(fig9_incl_investors)
+}
+
+*---- F10: locals' prices -- Hispanic-named buyers only ----------------------
+use `coefs', clear
+count if test == "T8_hisp_buyers"
+if r(N) > 0 {
+    use `coefs', clear
+    global FIG_TESTS  T1_baseline T8_hisp_buyers
+    global FIG_LABELS `""All market sales (baseline)" "Hispanic-named buyers only""'
+    global FIG_TITLE  Do local buyers face the price increase?
+    global FIG_YT     "Effect on log sale price"
+    global FIG_XT     `XT'
+    global FIG_NOTE   Restricting to sales won by Hispanic-named buyers: a surviving bump means locals pay the higher prices (affordability); a shrinking bump means the average partly reflects incomers buying pricier stock. Also guards against unmatched/LLC investors in the market sample.
+    drawfig, out(fig10_hisp_buyers)
+}
+
+di as result _n "Figures written to $OUT (fig1..fig10_*)"

@@ -101,7 +101,7 @@ gen tt    = yofd(sdate)
 gen ett   = yofd(edate)
 drop if flag_junk_date == "True"
 drop if flag_nominal_price == "True"
-drop if sale_is_investor_parcel == "True"
+gen inv_sale = sale_is_investor_parcel == "True"   // kept for T8; dropped below
 drop if year(edate) < 2012
 keep if salesamt > 0 & !missing(salesamt)
 keep if inrange(event_time_months, -72, 60)
@@ -135,7 +135,11 @@ if !_rc {
     gen main2main = (seller_nonhispanic == "True"  & buyer_nonhispanic == "True")  if bothcl
     drop bothcl
 }
-tempfile sales
+* `salesall' keeps investor-parcel sales (for the T8 decomposition);
+* `sales' is the default market-only estimation sample used by T1-T7.
+tempfile salesall sales
+save `salesall'
+drop if inv_sale
 save `sales'
 
 /*============================================================================
@@ -183,6 +187,26 @@ foreach y in buy_nh sell_nh isl2main main2main {
     if _rc continue
     drop if ring == "gap_250_400"
     run_lpdid `y' T7_`y'
+}
+
+* ---- T8: role of investor transactions themselves ----
+* (a) INCLUDING investor-parcel sales: the gap vs T1 decomposes the local
+*     price rise into investors' own transactions vs spillover onto others'
+use `salesall', clear
+drop if ring == "gap_250_400"
+run_lpdid lnp T8_incl_investors
+
+* (b) Hispanic-named buyers only: prices in transactions locals actually won.
+*     Bump surviving here = locals face higher prices (affordability);
+*     bump shrinking = the average partly reflects incomers buying pricier stock.
+*     (Also the best available guard against unmatched/LLC investors hiding
+*     in the "market" sample.)
+use `sales', clear
+capture confirm variable buyer_nonhispanic
+if !_rc {
+    drop if ring == "gap_250_400"
+    keep if buyer_nonhispanic == "False"
+    run_lpdid lnp T8_hisp_buyers
 }
 
 use `sales', clear
