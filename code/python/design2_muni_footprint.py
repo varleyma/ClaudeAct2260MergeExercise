@@ -149,30 +149,27 @@ def main():
         m = fips_muni.get(r["tract_geoid"][:5], "")
         muni_conc[m] += float(r["uplift_d2_dose"]) - float(r["uplift_ring_central"])
 
-    # ---- muni price growth 2019 -> 2024 from Red Atlas (fips from geoTractId) ----
-    pw = defaultdict(float); pn = defaultdict(float)
-    with open(REDATLAS, newline="", encoding="utf-8") as fh:
-        for r in csv.DictReader(fh):
-            yr = r["month"][:4]
-            if yr not in ("2019", "2024"):
-                continue
-            try:
-                p = float(r["meanTransactionPricePerTract"])
-                n = float(r["NumberOfTransactions"])
-            except ValueError:
-                continue
-            if n <= 0:
-                continue
-            m = fips_muni.get(r["geoTractId"][:5], "")
-            pw[(m, yr)] += p * n
-            pn[(m, yr)] += n
+    # ---- muni price growth 2019 -> 2024 from the REPEAT-SALES index ----
+    # (cumulative log index, base 2000; growth = exp(v2024 - v2019) - 1)
+    HPI = (r"C:\Users\mva284\Dropbox\Ley60PR\data\raw\data v2\data v2\year"
+           r"\not_inflated\Base=2000&Freq=year&geoDivision=city&inflated=False.csv")
+    hpi = defaultdict(dict)
+    for r in csv.DictReader(open(HPI, newline="", encoding="utf-8")):
+        try:
+            hpi[r["geoCityId"].strip()][r["year"][:4]] = float(r["repSalesPerCity"])
+        except ValueError:
+            continue
+    # muni name -> fips via the events-derived map (invert)
+    muni_fips = {}
+    for f5, m in fips_muni.items():
+        muni_fips[m] = f5
     growth = {}
     for m in muni_stock:
-        try:
-            p19 = pw[(m, "2019")] / pn[(m, "2019")]
-            p24 = pw[(m, "2024")] / pn[(m, "2024")]
-            growth[m] = p24 / p19 - 1
-        except ZeroDivisionError:
+        f5 = muni_fips.get(m, "")
+        s = hpi.get(f5, {})
+        if "2019" in s and "2024" in s:
+            growth[m] = math.exp(s["2024"] - s["2019"]) - 1
+        else:
             growth[m] = float("nan")
 
     # ---- assemble ----
