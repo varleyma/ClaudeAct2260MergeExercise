@@ -1,0 +1,346 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/design2_results.log
+  log type:  text
+ opened on:  30 Jul 2026, 09:17:09
+
+. 
+. * headline: weighted price, base and county-FE
+. use "$OUT/_d2_panel.dta", clear
+
+. runspec lnhp   T_lnhp_base
+
+===== lpdid [T_lnhp_base] outcome=lnhp  =====
+lpdid lnhp, unit(tract_num) time(year) treat(treat) pre_window(4) post_window(3
+> ) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -1.181133   2.046063       -.58      .5639  -5.196678 
+        pre3 | -1.266767   1.723079       -.74      .4624  -4.648433 
+        pre2 | -1.417344   1.920522       -.74      .4607  -5.186505 
+        pre1 |         0          .          .          .          . 
+        tau0 |  7.208973   1.956025       3.69      .0002   3.370145 
+        tau1 |   5.20748   2.186532       2.38      .0174   .9162545 
+        tau2 |  5.017877   2.067771       2.43      .0154   .9597288 
+        tau3 |  10.31624   2.724383       3.79      .0002   4.969432 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  2.834412      11518 
+        pre3 |  2.114899      12422 
+        pre2 |  2.351817      13325 
+        pre1 |         .          . 
+        tau0 |   11.0478      14266 
+        tau1 |  9.498704      13307 
+        tau2 |  9.076025      12380 
+        tau3 |  15.66304      11444 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -1.400501   1.607606       -.87      .3839  -4.555557 
+        Post |  7.550336   1.810287       4.17          0   3.997502 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  1.754554      11467 
+        Post |  11.10317      11402 
+
+. use "$OUT/_d2_panel.dta", clear
+
+. runspec lnhp   T_lnhp_fips  fips
+
+===== lpdid [T_lnhp_fips] outcome=lnhp absorb(fips) =====
+lpdid lnhp, unit(tract_num) time(year) treat(treat) pre_window(4) post_window(3
+> ) nograph absorb(fips)
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -1.311583    2.13232       -.62      .5386  -5.496414 
+        pre3 | -1.336118   1.774334       -.75      .4516  -4.818375 
+        pre2 | -1.487053   1.937663       -.77       .443  -5.289855 
+        pre1 |         0          .          .          .          . 
+        tau0 |  7.175461   1.952288       3.68      .0003   3.343967 
+        tau1 |  5.233919   2.222128       2.36      .0187   .8728341 
+        tau2 |  5.041702   2.101056        2.4      .0166   .9182293 
+        tau3 |  10.21167   2.727059       3.74      .0002   4.859611 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  2.873248      11518 
+        pre3 |  2.146138      12422 
+        pre2 |  2.315749      13325 
+        pre1 |         .          . 
+        tau0 |  11.00695      14266 
+        tau1 |  9.595004      13307 
+        tau2 |  9.165175      12380 
+        tau3 |  15.56372      11444 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -1.533207   1.665979       -.92      .3577  -4.802824 
+        Post |  7.507327   1.824972       4.11          0   3.925673 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   1.73641      11467 
+        Post |  11.08898      11402 
+
+. * simple-mean robustness (their original construction)
+. use "$OUT/_d2_panel.dta", clear
+
+. runspec lnhp_s T_lnhpsimple_base
+
+===== lpdid [T_lnhpsimple_base] outcome=lnhp_s  =====
+lpdid lnhp_s, unit(tract_num) time(year) treat(treat) pre_window(4) post_window
+> (3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -2.682274   1.911285       -1.4      .1608  -6.433308 
+        pre3 | -1.511466   1.858084       -.81      .4162   -5.15809 
+        pre2 |  -1.94983   1.901351      -1.03      .3054  -5.681366 
+        pre1 |         0          .          .          .          . 
+        tau0 |  4.974854   1.851515       2.69      .0073   1.341135 
+        tau1 |   4.57196   2.262392       2.02      .0436   .1318535 
+        tau2 |  3.338372   2.180174       1.53      .1261   -.940375 
+        tau3 |  9.159603   2.706395       3.38      .0007   3.848102 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |   1.06876      11518 
+        pre3 |  2.135157      12422 
+        pre2 |  1.781706      13325 
+        pre1 |         .          . 
+        tau0 |  8.608574      14266 
+        tau1 |  9.012067      13307 
+        tau2 |  7.617119      12380 
+        tau3 |   14.4711      11444 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -2.107671   1.565883      -1.35      .1786  -5.180842 
+        Post |   6.04714   1.763335       3.43      .0006   2.586455 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .9655005      11467 
+        Post |  9.507826      11402 
+
+. * volume
+. use "$OUT/_d2_panel.dta", clear
+
+. runspec lnsales T_lnsales_base
+
+===== lpdid [T_lnsales_base] outcome=lnsales  =====
+lpdid lnsales, unit(tract_num) time(year) treat(treat) pre_window(4) post_windo
+> w(3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -9.433287   2.784736      -3.39      .0007  -14.89853 
+        pre3 | -9.943078   2.587118      -3.84      .0001  -15.02048 
+        pre2 | -4.004453   2.363518      -1.69      .0906  -8.643025 
+        pre1 |         0          .          .          .          . 
+        tau0 | -.0901992   2.506714       -.04      .9713  -5.009789 
+        tau1 | -10.42779   2.983188       -3.5      .0005  -16.28251 
+        tau2 | -6.626191   2.934529      -2.26      .0242  -12.38541 
+        tau3 | -10.86353   3.315608      -3.28      .0011  -17.37065 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 | -3.968044      11518 
+        pre3 | -4.865673      12422 
+        pre2 |  .6341188      13325 
+        pre1 |         .          . 
+        tau0 |  4.829391      14266 
+        tau1 | -4.573072      13307 
+        tau2 | -.8669687      12380 
+        tau3 | -4.356399      11444 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -7.729011   2.232043      -3.46      .0006  -12.10957 
+        Post | -5.852131   2.410151      -2.43      .0154  -10.58225 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre | -3.348448      11467 
+        Post | -1.122017      11402 
+
+. * dose: high-dose treated (>=5 events) vs never-treated only
+. use "$OUT/_d2_panel.dta", clear
+
+. keep if n_events >= 5 | missing(first_event_year)
+(3,432 observations deleted)
+
+. runspec lnhp   T_lnhp_dose5
+
+===== lpdid [T_lnhp_dose5] outcome=lnhp  =====
+lpdid lnhp, unit(tract_num) time(year) treat(treat) pre_window(4) post_window(3
+> ) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  5.318717   4.545314       1.17      .2423  -3.604936 
+        pre3 |  1.047383   4.677649        .22      .8229  -8.136079 
+        pre2 |  5.069648   3.890141        1.3      .1929  -2.567727 
+        pre1 |         0          .          .          .          . 
+        tau0 |  17.85739   4.353942        4.1          0   9.309494 
+        tau1 |    17.274   3.074202       5.62          0   11.23853 
+        tau2 |   19.1484   4.221241       4.54          0   10.86099 
+        tau3 |  21.37861   3.392086        6.3          0   14.71904 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  14.24237       9604 
+        pre3 |  10.23084      10317 
+        pre2 |  12.70702      11029 
+        pre1 |         .          . 
+        tau0 |  26.40529      11777 
+        tau1 |  23.30947      11029 
+        tau2 |  27.43581      10315 
+        tau3 |  28.03819       9594 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  3.844194   3.807366       1.01       .313  -3.630725 
+        Post |  18.30637   2.876952       6.36          0   12.65811 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  11.31911       9557 
+        Post |  23.95463       9556 
+
+. * low-dose treated (1-4 events) vs never-treated
+. use "$OUT/_d2_panel.dta", clear
+
+. keep if inrange(n_events, 1, 4) | missing(first_event_year)
+(792 observations deleted)
+
+. runspec lnhp   T_lnhp_dose14
+
+===== lpdid [T_lnhp_dose14] outcome=lnhp  =====
+lpdid lnhp, unit(tract_num) time(year) treat(treat) pre_window(4) post_window(3
+> ) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -2.729971   2.265542       -1.2      .2285  -7.176559 
+        pre3 | -1.815287   1.812425         -1      .3168  -5.372541 
+        pre2 | -2.959267   2.171553      -1.36      .1733  -7.221383 
+        pre1 |         0          .          .          .          . 
+        tau0 |  4.695985   2.142223       2.19      .0286   .4914491 
+        tau1 |  2.063719   2.581371         .8      .4242  -3.002749 
+        tau2 |  .7700871   2.246203        .34      .7318  -3.638545 
+        tau3 |  6.447679   3.409657       1.89       .059  -.2444785 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  1.716617      11259 
+        pre3 |  1.741968      12119 
+        pre2 |  1.302849      12978 
+        pre1 |         .          . 
+        tau0 |  8.900522      13875 
+        tau1 |  7.130187      12960 
+        tau2 |  5.178719      12077 
+        tau3 |  13.13984      11186 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -2.648733   1.753412      -1.51      .1313  -6.090178 
+        Post |  3.759395   2.121964       1.77      .0768  -.4054115 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .7927127      11208 
+        Post |  7.924203      11144 
+
+. 
+. /*===========================================================================
+> =
+>   RECONCILIATION: tract DiD vs ring-implied prediction
+> ============================================================================*
+> /
+. use "$OUT/_d2_panel.dta", clear
+
+. keep if !missing(first_event_year)
+(12,120 observations deleted)
+
+. collapse (first) pred_central_vw pred_conserv_vw n_events, by(tract_geoid)
+
+. qui su pred_central_vw
+
+. local pc = 100 * r(mean)
+
+. qui su pred_conserv_vw
+
+. local pk = 100 * r(mean)
+
+. di as result _n "===== RECONCILIATION BENCHMARK ====="
+
+===== RECONCILIATION BENCHMARK =====
+
+. di as result "Ring-implied predicted tract effect (mean over treated tracts):
+> "
+Ring-implied predicted tract effect (mean over treated tracts):
+
+. di as result "  central profile:      " %5.2f `pc' " log points"
+  central profile:       5.76 log points
+
+. di as result "  conservative profile: " %5.2f `pk' " log points"
+  conservative profile:  5.13 log points
+
+. di as result "Compare to the pooled Post estimates for T_lnhp_base / T_lnhp_f
+> ips above."
+Compare to the pooled Post estimates for T_lnhp_base / T_lnhp_fips above.
+
+. di as result "Tract estimate >> prediction  => market-level channel beyond pr
+> oximity."
+Tract estimate >> prediction  => market-level channel beyond proximity.
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/design2_results.log
+  log type:  text
+ closed on:  30 Jul 2026, 09:18:21
+-------------------------------------------------------------------------------
