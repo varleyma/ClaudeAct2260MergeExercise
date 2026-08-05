@@ -46,28 +46,33 @@ program define grab
     args test outcome
     * lpdid stores the event-study matrix in e(results) with columns:
     * coefficient se t p ci_low ci_high obs   (verified in lpdid.ado v-SSC)
+    * Also captures e(pooled_results) (rows Pre/Post) with matrix_type="pooled".
     matrix R = e(results)
-    local rn : rowfullnames R
-    local cn : colfullnames R
-    local nr = rowsof(R)
-    preserve
-    clear
-    qui svmat double R, names(c)
-    qui gen row = _n
-    qui gen str32 rowname = ""
-    forvalues i = 1/`nr' {
-        local r : word `i' of `rn'
-        qui replace rowname = "`r'" in `i'
+    capture matrix P = e(pooled_results)
+    local haveP = (_rc == 0)
+    foreach M in R P {
+        if "`M'" == "P" & !`haveP' continue
+        local rn : rowfullnames `M'
+        local nr = rowsof(`M')
+        preserve
+        clear
+        qui svmat double `M', names(c)
+        qui gen row = _n
+        qui gen str32 rowname = ""
+        forvalues i = 1/`nr' {
+            local r : word `i' of `rn'
+            qui replace rowname = "`r'" in `i'
+        }
+        qui gen str40 test     = "`test'"
+        qui gen str20 outcome  = "`outcome'"
+        qui gen str10 matrix_type = cond("`M'" == "R", "event", "pooled")
+        qui gen prew  = 4
+        qui gen postw = 3
+        capture confirm file "$COEFTMP"
+        if !_rc qui append using "$COEFTMP"
+        qui save "$COEFTMP", replace
+        restore
     }
-    qui gen str40 test     = "`test'"
-    qui gen str20 outcome  = "`outcome'"
-    qui gen str200 colnames = `"`cn'"'
-    qui gen prew  = 4
-    qui gen postw = 3
-    capture confirm file "$COEFTMP"
-    if !_rc qui append using "$COEFTMP"
-    qui save "$COEFTMP", replace
-    restore
 end
 
 capture program drop run_lpdid

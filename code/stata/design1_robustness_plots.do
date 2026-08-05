@@ -42,7 +42,7 @@ gen horizon = "-"+substr(rowname,4,1) if substr(rowname,1,3) == "pre"
 replace horizon = substr(rowname,4,1) if substr(rowname,1,3) == "tau"
 destring horizon, replace force
 // replace horizon = real(regexs(1)) if missing(horizon) & regexm(rowname, "(-?[0-9]+)")
-assert !missing(horizon) if !missing(b)
+drop if missing(horizon)   // drops pooled (Pre/Post) rows now also stored in the coefs file
 drop if missing(b)
 
 
