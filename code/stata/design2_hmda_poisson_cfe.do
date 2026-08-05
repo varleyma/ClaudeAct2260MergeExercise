@@ -64,12 +64,13 @@ foreach v in purch_oo_n purch_nonoo_n refi_n cashout_n total_n {
     capture noisily ppmlhdfe `v' Dm3 Dm2 D0 D1 D2 D3, ///
         absorb(tract_num fips_year) vce(cluster tract_num)
     if !_rc {
-        foreach spec in "Dm3 -3" "Dm2 -2" "D0 0" "D1 1" "D2 2" "D3 3" {
-            local nm : word 1 of `spec'
-            local hh : word 2 of `spec'
-            post `pf' ("`v'") (`hh') (_b[`nm']) (_se[`nm'])
-        }
+        post `pf' ("`v'") (-3) (_b[Dm3]) (_se[Dm3])
+        post `pf' ("`v'") (-2) (_b[Dm2]) (_se[Dm2])
         post `pf' ("`v'") (-1) (0) (.)
+        post `pf' ("`v'") (0)  (_b[D0]) (_se[D0])
+        post `pf' ("`v'") (1)  (_b[D1]) (_se[D1])
+        post `pf' ("`v'") (2)  (_b[D2]) (_se[D2])
+        post `pf' ("`v'") (3)  (_b[D3]) (_se[D3])
     }
     capture noisily ppmlhdfe `v' treat, absorb(tract_num fips_year) vce(cluster tract_num)
     if !_rc post `pf' ("`v'") (99) (_b[treat]) (_se[treat])

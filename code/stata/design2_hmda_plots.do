@@ -24,6 +24,7 @@ replace lb = 100 * lb
 replace ub = 100 * ub
 rename h horizon
 rename outcome test
+sort test horizon    // connected() joins in data order -- must be sorted
 tempfile coefs
 save `coefs'
 
