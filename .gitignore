@@ -9,3 +9,4 @@ data/third_party/nearby_sales_2500m_uniquematch.csv
 data/third_party/nearby_sales_5000m_uniquematch.csv
 data/design1/design1_sale_event_pairs_5km.csv
 output/design1/_decay_sales.dta
+data/hmda_raw/
