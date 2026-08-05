@@ -1,0 +1,23 @@
+\begin{table}[htbp]\centering
+\caption{HMDA purchase originations (county-adjusted) (fig.\ H1cfe)}
+\begin{tabular}{lcc}
+\toprule
+ & (1) & (2) \\
+ & Owner-occ.\ purch. & Non-owner purch. \\
+\midrule
+Pooled pre & -11.68** & +9.40 \\
+ & (4.53) & (7.45) \\
+Pooled post & +1.30 & +3.07 \\
+ & (5.40) & (12.43) \\
+Post $-$ pre & +12.98* & -6.33 \\
+ & (7.05) & (14.49) \\
+\midrule
+Tract FE & Y & Y \\
+Year FE & -- & -- \\
+County$\times$Year FE & Y & Y \\
+R$^2$ & -- & 0.595 \\
+Observations & -- & 6,613 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported.\end{minipage}
+\end{table}

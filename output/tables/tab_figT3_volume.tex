@@ -1,0 +1,23 @@
+\begin{table}[htbp]\centering
+\caption{Tract transaction volume (fig.\ T3)}
+\begin{tabular}{lc}
+\toprule
+ & (1) \\
+ & ln sales \\
+\midrule
+Pooled pre & -7.73*** \\
+ & (2.23) \\
+Pooled post & -5.85** \\
+ & (2.41) \\
+Post $-$ pre & -0.48 \\
+ & (2.13) \\
+\midrule
+Tract differencing (LP-DiD) & Y \\
+Calendar-year effects & Y \\
+County FE & N \\
+R$^2$ & 0.720 \\
+Observations & 11,714 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Pre-trends fail for this outcome; descriptive only.\end{minipage}
+\end{table}

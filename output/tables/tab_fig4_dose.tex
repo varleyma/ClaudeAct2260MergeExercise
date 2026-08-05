@@ -1,0 +1,23 @@
+\begin{table}[htbp]\centering
+\caption{By local event density (fig.\ 4)}
+\begin{tabular}{lccc}
+\toprule
+ & (1) & (2) & (3) \\
+ & 0--2 events & 3--25 & $>$25 \\
+\midrule
+Pooled pre & -3.52 & -3.02 & +3.07 \\
+ & (4.15) & (2.37) & (2.54) \\
+Pooled post & +2.56 & +2.37 & +8.99*** \\
+ & (4.64) & (3.46) & (2.87) \\
+Post $-$ pre & -2.61 & +3.88* & +7.31*** \\
+ & (4.13) & (2.20) & (1.91) \\
+\midrule
+Calendar-year effects & Y & Y & Y \\
+Event$\times$ring cell differencing & Y & Y & Y \\
+Hedonic controls & N & N & N \\
+R$^2$ & 0.054 & 0.237 & 0.225 \\
+Observations & 2,333 & 3,635 & 6,411 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract).\end{minipage}
+\end{table}

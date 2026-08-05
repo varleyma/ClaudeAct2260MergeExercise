@@ -1,0 +1,23 @@
+\begin{table}[htbp]\centering
+\caption{Composition outcomes (fig.\ 6)}
+\begin{tabular}{lcccc}
+\toprule
+ & (1) & (2) & (3) & (4) \\
+ & ln structure & ln lot size & Sub-unit share & Vacant share \\
+\midrule
+Pooled pre & +1.17 & +1.22 & -0.19 & -0.17 \\
+ & (1.02) & (1.46) & (0.46) & (0.37) \\
+Pooled post & +2.32* & +2.94* & +0.48 & -0.03 \\
+ & (1.29) & (1.66) & (0.52) & (0.47) \\
+Post $-$ pre & +1.69* & -0.31 & +0.44 & -0.34 \\
+ & (0.92) & (1.22) & (0.40) & (0.38) \\
+\midrule
+Calendar-year effects & Y & Y & Y & Y \\
+Event$\times$ring cell differencing & Y & Y & Y & Y \\
+Hedonic controls & N & N & N & N \\
+R$^2$ & 0.012 & 0.011 & 0.009 & 0.014 \\
+Observations & 12,252 & 12,358 & 12,379 & 12,379 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract).\end{minipage}
+\end{table}

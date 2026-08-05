@@ -1,0 +1,23 @@
+\begin{table}[htbp]\centering
+\caption{HMDA refinancing originations (fig.\ H2)}
+\begin{tabular}{lcc}
+\toprule
+ & (1) & (2) \\
+ & Rate/term refi & Cash-out refi \\
+\midrule
+Pooled pre & -17.51*** & -23.34*** \\
+ & (5.25) & (6.23) \\
+Pooled post & +11.12 & +8.95 \\
+ & (6.87) & (7.33) \\
+Post $-$ pre & +28.64*** & +32.28*** \\
+ & (8.65) & (9.62) \\
+\midrule
+Tract FE & Y & Y \\
+Year FE & Y & Y \\
+County$\times$Year FE & N & N \\
+R$^2$ & 0.498 & 0.554 \\
+Observations & 5,873 & 6,118 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported.\end{minipage}
+\end{table}

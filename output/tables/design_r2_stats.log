@@ -1,0 +1,962 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign_r2_stats.do 
+
+. /*===========================================================================
+> ===
+>  design_r2_stats.do
+> 
+>  R2 and N for every lpdid-based specification, from the EQUIVALENT stacked
+>  TWFE regression on the same estimation panel:
+> 
+>      reghdfe y treat, absorb(cellid tt)   (cells)  /  absorb(tract year) (D2)
+> 
+>  LP-DiD itself estimates separate long-difference regressions and returns no
+>  single R2; these statistics describe the fit of the analogous two-way FE
+>  model on identical data and are footnoted as such in the tables.
+> 
+>  Output: output/tables/r2_stats.csv  (test, r2, nobs)
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global D1   "$REPO/data/design1"
+
+. global D2   "$REPO/data/design2"
+
+. global OUT  "$REPO/output/tables"
+
+. capture mkdir "$OUT"
+
+. 
+. capture which reghdfe
+
+. if _rc ssc install reghdfe, replace
+
+. 
+. tempname pf
+
+. postfile `pf' str24 test double r2 nobs using "$OUT/_r2_stats.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/tables
+    > /_r2_stats.dta not found)
+
+. 
+. capture program drop r2cell
+
+. program define r2cell
+  1.     * r2cell <yvar> <test>  -- collapse in-memory sale rows to cells, run 
+> TWFE
+.     args yvar test
+  2.     preserve
+  3.     egen cellid = group(event_id ring)
+  4.     gen near = ring == "near_0_250"
+  5.     collapse (mean) y = `yvar' (first) near ett (count) nsales = salesamt,
+>  ///
+>         by(cellid tt)
+  6.     drop if missing(y)
+  7.     gen treat = near & tt >= ett
+  8.     reghdfe y treat, absorb(cellid tt) vce(cluster cellid)
+  9.     global R2 = e(r2)
+ 10.     global NN = e(N)
+ 11.     restore
+ 12. end
+
+. 
+. /*===========================================================================
+> =
+>   A. 1km robustness specs (T1-T8)
+> ============================================================================*
+> /
+. import delimited "$D1/design1_sale_event_pairs.csv", ///
+>     varnames(1) encoding(utf8) stringcols(_all) clear
+(28 vars, 3,472,651 obs)
+
+. destring salesamt dist_m event_time_months cabida structure, replace force
+salesamt: all characters numeric; replaced as double
+dist_m: all characters numeric; replaced as double
+event_time_months: all characters numeric; replaced as int
+(7852 missing values generated)
+cabida: all characters numeric; replaced as double
+(141631 missing values generated)
+structure: all characters numeric; replaced as double
+
+. gen sdate = date(sale_date, "YMD")
+(7,795 missing values generated)
+
+. gen edate = date(event_date, "YMD")
+
+. gen tt    = yofd(sdate)
+(7,795 missing values generated)
+
+. gen ett   = yofd(edate)
+
+. drop if flag_junk_date == "True"
+(7,852 observations deleted)
+
+. drop if flag_nominal_price == "True"
+(694,412 observations deleted)
+
+. gen inv_sale = sale_is_investor_parcel == "True"
+
+. drop if year(edate) < 2012
+(73,973 observations deleted)
+
+. keep if salesamt > 0 & !missing(salesamt)
+(0 observations deleted)
+
+. keep if inrange(event_time_months, -72, 60)
+(1,511,641 observations deleted)
+
+. preserve
+
+.     import delimited "$D1/design1_events.csv", varnames(1) ///
+>         encoding(utf8) stringcols(_all) clear
+(20 vars, 1,256 obs)
+
+.     keep event_id n_other_events_within_1000m
+
+.     destring n_other_events_within_1000m, replace force
+n_other_events_within_1000m: all characters numeric; replaced as int
+
+.     tempfile evinfo
+
+.     save `evinfo'
+file C:\Users\mva284\AppData\Local\Temp\ST_7cac_000002.tmp saved as .dta
+    format
+
+. restore
+
+. merge m:1 event_id using `evinfo', keep(master match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                         1,184,773  
+    -----------------------------------------
+
+. gen lnp     = ln(salesamt)
+
+. gen lnstru  = ln(structure) if structure > 0
+(37,427 missing values generated)
+
+. gen lncab   = ln(cabida)    if cabida > 0
+(74,653 missing values generated)
+
+. gen subu    = is_subunit == "True"
+
+. gen vac     = vacant_land == "True"
+
+. capture confirm variable buyer_nonhispanic
+
+. if !_rc {
+.     gen buy_nh  = buyer_nonhispanic  == "True" if inlist(buyer_nonhispanic,  
+> "True", "False")
+(367,330 missing values generated)
+.     gen sell_nh = seller_nonhispanic == "True" if inlist(seller_nonhispanic, 
+> "True", "False")
+(355,388 missing values generated)
+.     gen bothcl  = inlist(buyer_nonhispanic, "True", "False") & ///
+>                   inlist(seller_nonhispanic, "True", "False")
+.     gen isl2main  = (seller_nonhispanic == "False" & buyer_nonhispanic == "Tr
+> ue")  if bothcl
+(563,084 missing values generated)
+.     gen main2main = (seller_nonhispanic == "True"  & buyer_nonhispanic == "Tr
+> ue")  if bothcl
+(563,084 missing values generated)
+.     drop bothcl
+. }
+
+. tempfile salesall sales
+
+. save `salesall'
+file C:\Users\mva284\AppData\Local\Temp\ST_7cac_000003.tmp saved as .dta
+    format
+
+. drop if inv_sale
+(75,113 observations deleted)
+
+. save `sales'
+file C:\Users\mva284\AppData\Local\Temp\ST_7cac_000004.tmp saved as .dta
+    format
+
+. 
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(137,940 observations deleted)
+
+. r2cell lnp T1_baseline
+(0 observations deleted)
+(dropped 12 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     23,452
+Absorbing 2 HDFE groups                           F(   1,   2377) =      13.88
+Statistics robust to heteroskedasticity           Prob > F        =     0.0002
+                                                  R-squared       =     0.7833
+                                                  Adj R-squared   =     0.7586
+                                                  Within R-sq.    =     0.0010
+Number of clusters (cellid)  =      2,378         Root MSE        =     0.4511
+
+                             (Std. err. adjusted for 2,378 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0505062   .0135574     3.73   0.000     .0239206    .0770918
+       _cons |   12.45786   .0028436  4380.96   0.000     12.45229    12.46344
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2378        2378           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("T1_baseline") ($R2) ($NN)
+
+. 
+. foreach y in lnstru lncab subu vac {
+  2.     use `sales', clear
+  3.     drop if ring == "gap_250_400"
+  4.     r2cell `y' T2_comp_`y'
+  5.     post `pf' ("T2_comp_`y'") ($R2) ($NN)
+  6. }
+(137,940 observations deleted)
+(362 observations deleted)
+(dropped 21 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     23,081
+Absorbing 2 HDFE groups                           F(   1,   2363) =       5.31
+Statistics robust to heteroskedasticity           Prob > F        =     0.0213
+                                                  R-squared       =     0.7691
+                                                  Adj R-squared   =     0.7425
+                                                  Within R-sq.    =     0.0003
+Number of clusters (cellid)  =      2,364         Root MSE        =     0.3084
+
+                             (Std. err. adjusted for 2,364 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0185748   .0080622     2.30   0.021      .002765    .0343846
+       _cons |   9.613045   .0016683  5762.30   0.000     9.609773    9.616316
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2364        2364           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(137,940 observations deleted)
+(79 observations deleted)
+(dropped 15 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     23,370
+Absorbing 2 HDFE groups                           F(   1,   2374) =       0.18
+Statistics robust to heteroskedasticity           Prob > F        =     0.6692
+                                                  R-squared       =     0.8980
+                                                  Adj R-squared   =     0.8864
+                                                  Within R-sq.    =     0.0000
+Number of clusters (cellid)  =      2,375         Root MSE        =     0.4383
+
+                             (Std. err. adjusted for 2,375 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |  -.0049506   .0115841    -0.43   0.669    -.0276667    .0177654
+       _cons |    5.52115   .0024239  2277.81   0.000     5.516397    5.525903
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2375        2375           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(137,940 observations deleted)
+(0 observations deleted)
+(dropped 12 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     23,452
+Absorbing 2 HDFE groups                           F(   1,   2377) =       0.23
+Statistics robust to heteroskedasticity           Prob > F        =     0.6351
+                                                  R-squared       =     0.9016
+                                                  Adj R-squared   =     0.8904
+                                                  Within R-sq.    =     0.0000
+Number of clusters (cellid)  =      2,378         Root MSE        =     0.1322
+
+                             (Std. err. adjusted for 2,378 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0017564   .0037011     0.47   0.635    -.0055014    .0090141
+       _cons |   .6531365   .0007763   841.35   0.000     .6516142    .6546588
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2378        2378           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(137,940 observations deleted)
+(0 observations deleted)
+(dropped 12 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     23,452
+Absorbing 2 HDFE groups                           F(   1,   2377) =       2.36
+Statistics robust to heteroskedasticity           Prob > F        =     0.1250
+                                                  R-squared       =     0.5566
+                                                  Adj R-squared   =     0.5061
+                                                  Within R-sq.    =     0.0002
+Number of clusters (cellid)  =      2,378         Root MSE        =     0.1202
+
+                             (Std. err. adjusted for 2,378 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |  -.0053183   .0034652    -1.53   0.125    -.0121134    .0014769
+       _cons |   .0709998   .0007268    97.69   0.000     .0695746    .0724251
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2378        2378           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. use `sales', clear
+
+. drop if ring == "near_0_250"
+(149,066 observations deleted)
+
+. replace ring = "near_0_250" if ring == "gap_250_400"
+(137,940 real changes made)
+
+. r2cell lnp T3_gradient_gap
+(0 observations deleted)
+(dropped 28 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     22,863
+Absorbing 2 HDFE groups                           F(   1,   2339) =       7.92
+Statistics robust to heteroskedasticity           Prob > F        =     0.0049
+                                                  R-squared       =     0.7576
+                                                  Adj R-squared   =     0.7298
+                                                  Within R-sq.    =     0.0007
+Number of clusters (cellid)  =      2,340         Root MSE        =     0.4731
+
+                             (Std. err. adjusted for 2,340 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0434733   .0154489     2.81   0.005     .0131784    .0737682
+       _cons |    12.4152   .0031407  3952.98   0.000     12.40904    12.42136
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2340        2340           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("T3_gradient_gap") ($R2) ($NN)
+
+. 
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(137,940 observations deleted)
+
+. keep if n_other_events_within_1000m <= 2
+(911,553 observations deleted)
+
+. r2cell lnp T4_dose_low
+(0 observations deleted)
+(dropped 12 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =      4,089
+Absorbing 2 HDFE groups                           F(   1,    463) =       0.13
+Statistics robust to heteroskedasticity           Prob > F        =     0.7221
+                                                  R-squared       =     0.6186
+                                                  Adj R-squared   =     0.5673
+                                                  Within R-sq.    =     0.0000
+Number of clusters (cellid)  =        464         Root MSE        =     0.4997
+
+                               (Std. err. adjusted for 464 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0117695   .0330683     0.36   0.722     -.053213    .0767519
+       _cons |   11.64836   .0062109  1875.47   0.000     11.63615    11.66056
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |       464         464           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("T4_dose_low") ($R2) ($NN)
+
+. 
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(137,940 observations deleted)
+
+. keep if inrange(n_other_events_within_1000m, 3, 25)
+(793,932 observations deleted)
+
+. r2cell lnp T4_dose_mid
+(0 observations deleted)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =      6,947
+Absorbing 2 HDFE groups                           F(   1,    701) =       8.22
+Statistics robust to heteroskedasticity           Prob > F        =     0.0043
+                                                  R-squared       =     0.8200
+                                                  Adj R-squared   =     0.7991
+                                                  Within R-sq.    =     0.0019
+Number of clusters (cellid)  =        702         Root MSE        =     0.3963
+
+                               (Std. err. adjusted for 702 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0604135   .0210721     2.87   0.004     .0190414    .1017855
+       _cons |   12.46819    .004468  2790.55   0.000     12.45942    12.47696
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |       702         702           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("T4_dose_mid") ($R2) ($NN)
+
+. 
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(137,940 observations deleted)
+
+. keep if n_other_events_within_1000m > 25
+(237,955 observations deleted)
+
+. r2cell lnp T4_dose_high
+(0 observations deleted)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     12,416
+Absorbing 2 HDFE groups                           F(   1,   1211) =       5.98
+Statistics robust to heteroskedasticity           Prob > F        =     0.0146
+                                                  R-squared       =     0.7216
+                                                  Adj R-squared   =     0.6909
+                                                  Within R-sq.    =     0.0009
+Number of clusters (cellid)  =      1,212         Root MSE        =     0.4569
+
+                             (Std. err. adjusted for 1,212 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0475611   .0194523     2.45   0.015     .0093971    .0857251
+       _cons |   12.72054   .0041957  3031.83   0.000     12.71231    12.72877
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      1212        1212           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("T4_dose_high") ($R2) ($NN)
+
+. 
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(137,940 observations deleted)
+
+. keep if year(edate) >= 2018
+(63,413 observations deleted)
+
+. r2cell lnp T5_late
+(0 observations deleted)
+(dropped 10 singleton observations)
+(MWFE estimator converged in 7 iterations)
+
+HDFE Linear regression                            Number of obs   =     21,159
+Absorbing 2 HDFE groups                           F(   1,   2158) =      15.26
+Statistics robust to heteroskedasticity           Prob > F        =     0.0001
+                                                  R-squared       =     0.7915
+                                                  Adj R-squared   =     0.7677
+                                                  Within R-sq.    =     0.0012
+Number of clusters (cellid)  =      2,159         Root MSE        =     0.4435
+
+                             (Std. err. adjusted for 2,159 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0540868   .0138456     3.91   0.000     .0269346    .0812389
+       _cons |   12.47767   .0028641  4356.52   0.000     12.47205    12.48329
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2159        2159           0    *|
+          tt |        15           1          14     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("T5_late") ($R2) ($NN)
+
+. 
+. foreach y in buy_nh sell_nh isl2main main2main {
+  2.     use `sales', clear
+  3.     capture confirm variable `y'
+  4.     if _rc continue
+  5.     drop if ring == "gap_250_400"
+  6.     r2cell `y' T7_`y'
+  7.     post `pf' ("T7_`y'") ($R2) ($NN)
+  8. }
+(137,940 observations deleted)
+(664 observations deleted)
+(dropped 22 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     22,778
+Absorbing 2 HDFE groups                           F(   1,   2364) =      10.73
+Statistics robust to heteroskedasticity           Prob > F        =     0.0011
+                                                  R-squared       =     0.4223
+                                                  Adj R-squared   =     0.3548
+                                                  Within R-sq.    =     0.0008
+Number of clusters (cellid)  =      2,365         Root MSE        =     0.1822
+
+                             (Std. err. adjusted for 2,365 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0185603   .0056667     3.28   0.001     .0074482    .0296724
+       _cons |   .1898524   .0011431   166.08   0.000     .1876108    .1920941
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2365        2365           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(137,940 observations deleted)
+(815 observations deleted)
+(dropped 18 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     22,631
+Absorbing 2 HDFE groups                           F(   1,   2365) =       0.68
+Statistics robust to heteroskedasticity           Prob > F        =     0.4099
+                                                  R-squared       =     0.3542
+                                                  Adj R-squared   =     0.2781
+                                                  Within R-sq.    =     0.0001
+Number of clusters (cellid)  =      2,366         Root MSE        =     0.1830
+
+                             (Std. err. adjusted for 2,366 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0047681   .0057851     0.82   0.410    -.0065762    .0161125
+       _cons |   .1818475   .0011871   153.18   0.000     .1795196    .1841754
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2366        2366           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(137,940 observations deleted)
+(1,479 observations deleted)
+(dropped 25 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     21,960
+Absorbing 2 HDFE groups                           F(   1,   2344) =       7.94
+Statistics robust to heteroskedasticity           Prob > F        =     0.0049
+                                                  R-squared       =     0.2469
+                                                  Adj R-squared   =     0.1560
+                                                  Within R-sq.    =     0.0006
+Number of clusters (cellid)  =      2,345         Root MSE        =     0.1623
+
+                             (Std. err. adjusted for 2,345 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0146552   .0052017     2.82   0.005     .0044547    .0248557
+       _cons |   .1172454   .0010283   114.02   0.000      .115229    .1192619
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2345        2345           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(137,940 observations deleted)
+(1,479 observations deleted)
+(dropped 25 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     21,960
+Absorbing 2 HDFE groups                           F(   1,   2344) =       4.46
+Statistics robust to heteroskedasticity           Prob > F        =     0.0348
+                                                  R-squared       =     0.3463
+                                                  Adj R-squared   =     0.2674
+                                                  Within R-sq.    =     0.0004
+Number of clusters (cellid)  =      2,345         Root MSE        =     0.1327
+
+                             (Std. err. adjusted for 2,345 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0088648   .0041982     2.11   0.035     .0006322    .0170975
+       _cons |   .0641175   .0008299    77.26   0.000     .0624901    .0657449
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2345        2345           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. use `salesall', clear
+
+. drop if ring == "gap_250_400"
+(147,514 observations deleted)
+
+. r2cell lnp T8_incl_investors
+(0 observations deleted)
+(dropped 11 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     23,605
+Absorbing 2 HDFE groups                           F(   1,   2378) =      12.20
+Statistics robust to heteroskedasticity           Prob > F        =     0.0005
+                                                  R-squared       =     0.8068
+                                                  Adj R-squared   =     0.7849
+                                                  Within R-sq.    =     0.0009
+Number of clusters (cellid)  =      2,379         Root MSE        =     0.4355
+
+                             (Std. err. adjusted for 2,379 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0453449   .0129838     3.49   0.000     .0198842    .0708055
+       _cons |   12.50179   .0027409  4561.26   0.000     12.49641    12.50716
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2379        2379           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("T8_incl_investors") ($R2) ($NN)
+
+. 
+. use `sales', clear
+
+. capture confirm variable buyer_nonhispanic
+
+. if !_rc {
+.     drop if ring == "gap_250_400"
+(137,940 observations deleted)
+.     keep if buyer_nonhispanic == "False"
+(422,807 observations deleted)
+.     r2cell lnp T8_hisp_buyers
+(0 observations deleted)
+(dropped 39 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     21,952
+Absorbing 2 HDFE groups                           F(   1,   2341) =       1.68
+Statistics robust to heteroskedasticity           Prob > F        =     0.1956
+                                                  R-squared       =     0.7150
+                                                  Adj R-squared   =     0.6806
+                                                  Within R-sq.    =     0.0001
+Number of clusters (cellid)  =      2,342         Root MSE        =     0.4610
+
+                             (Std. err. adjusted for 2,342 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0172846   .0133516     1.29   0.196    -.0088977    .0434669
+       _cons |   12.26087   .0025758  4760.00   0.000     12.25582    12.26592
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2342        2342           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+.     post `pf' ("T8_hisp_buyers") ($R2) ($NN)
+. }
+
+. 
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(137,940 observations deleted)
+
+. drop if ring == "far_400_1000" & dist_m > 750
+(389,370 observations deleted)
+
+. r2cell lnp T6_real_far750
+(0 observations deleted)
+(dropped 13 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     23,103
+Absorbing 2 HDFE groups                           F(   1,   2372) =       6.44
+Statistics robust to heteroskedasticity           Prob > F        =     0.0112
+                                                  R-squared       =     0.7585
+                                                  Adj R-squared   =     0.7306
+                                                  Within R-sq.    =     0.0004
+Number of clusters (cellid)  =      2,373         Root MSE        =     0.4949
+
+                             (Std. err. adjusted for 2,373 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |    .036267    .014288     2.54   0.011     .0082487    .0642853
+       _cons |   12.49761   .0030422  4108.15   0.000     12.49165    12.50358
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2373        2373           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("T6_real_far750") ($R2) ($NN)
+
+. 
+. * placebo
+. import delimited "$D1/placebo_sale_event_pairs.csv", ///
+>     varnames(1) encoding(utf8) stringcols(_all) clear
+(28 vars, 5,575,533 obs)
+
+. destring salesamt dist_m event_time_months, replace force
+salesamt: all characters numeric; replaced as double
+dist_m: all characters numeric; replaced as double
+event_time_months: all characters numeric; replaced as int
+(10357 missing values generated)
+
+. gen sdate = date(sale_date, "YMD")
+(10,305 missing values generated)
+
+. gen edate = date(event_date, "YMD")
+
+. gen tt    = yofd(sdate)
+(10,305 missing values generated)
+
+. gen ett   = yofd(edate)
+
+. drop if flag_junk_date == "True"
+(10,357 observations deleted)
+
+. drop if flag_nominal_price == "True"
+(1,095,248 observations deleted)
+
+. drop if sale_is_investor_parcel == "True"
+(157,820 observations deleted)
+
+. keep if salesamt > 0 & !missing(salesamt)
+(0 observations deleted)
+
+. keep if inrange(event_time_months, -72, 60)
+(2,486,682 observations deleted)
+
+. preserve
+
+.     import delimited "$D1/placebo_events.csv", varnames(1) ///
+>         encoding(utf8) stringcols(_all) clear
+(14 vars, 1,500 obs)
+
+.     keep event_id months_to_nearest_event
+
+.     destring months_to_nearest_event, replace force
+months_to_nearest_event: all characters numeric; replaced as int
+
+.     tempfile pinfo
+
+.     save `pinfo'
+file C:\Users\mva284\AppData\Local\Temp\ST_7cac_000006.tmp saved as .dta
+    format
+
+. restore
+
+. merge m:1 event_id using `pinfo', keep(master match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                         1,825,426  
+    -----------------------------------------
+
+. drop if abs(months_to_nearest_event) <= 36
+(953,462 observations deleted)
+
+. gen lnp = ln(salesamt)
+
+. drop if ring == "gap_250_400"
+(110,352 observations deleted)
+
+. drop if ring == "far_400_1000" & dist_m > 750
+(302,195 observations deleted)
+
+. r2cell lnp T6_placebo
+(0 observations deleted)
+(dropped 2 singleton observations)
+(MWFE estimator converged in 7 iterations)
+
+HDFE Linear regression                            Number of obs   =     15,421
+Absorbing 2 HDFE groups                           F(   1,   1387) =       0.72
+Statistics robust to heteroskedasticity           Prob > F        =     0.3957
+                                                  R-squared       =     0.6354
+                                                  Adj R-squared   =     0.5988
+                                                  Within R-sq.    =     0.0001
+Number of clusters (cellid)  =      1,388         Root MSE        =     0.3972
+
+                             (Std. err. adjusted for 1,388 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+           y | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0119943    .014119     0.85   0.396    -.0157026    .0396912
+       _cons |    12.3865   .0034709  3568.65   0.000     12.37969    12.39331
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      1388        1388           0    *|
+          tt |        20           1          19     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("T6_placebo") ($R2) ($NN)
+
+. 
+. /*===========================================================================
+> =
+>   B. 5km decay / ladder specs
+> ============================================================================*
+> /
+. import delimited "$D1/design1_sale_event_pairs_5km.csv", ///
+>     varnames(1) encoding(utf8) stringcols(_all) clear
+(12 vars, 31,851,974 obs)
+
+. destring salesamt dist_m, replace force
+salesamt: all characters numeric; replaced as double

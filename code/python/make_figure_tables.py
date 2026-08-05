@@ -164,7 +164,8 @@ def parse_log_stats(path, marker_re, n_re, r2_re):
     out = []
     cur = None
     for line in open(path, encoding="utf-8", errors="replace"):
-        if re.search(marker_re, line):
+        # skip the command-echo line (". di ...") -- only count the printed banner
+        if re.search(marker_re, line) and not line.lstrip().startswith(". di"):
             cur = [None, None]
             out.append(cur)
         if cur is not None:
@@ -309,6 +310,7 @@ def main():
                   post_se=p["post_se"], nobs=p["nobs"],
                   fe={"Event$\\times$ring FE": "(diff.)", "Event$\\times$year FE": "(diff.)",
                       "Hedonic controls": "N"})
+        apply_r2(sp, "T1_baseline")
         specs.append(sp)
     for i, (spec_id, lab, hed) in enumerate([("S1_pooled", "Sale-level OLS", "N"),
                                              ("S2_hedonic", "Sale-level OLS", "Y")]):
@@ -330,8 +332,8 @@ def main():
                 setattr(sp, a + "_se", getattr(sp, a + "_se") * 100)
     emit_table("tab_figD12_salelevel.tex",
                "Estimation-approach robustness (fig.\\ D12)", specs, FE_SL,
-               "Column (1): cell-level LP-DiD (unit differencing subsumes the FE; no pooled pre/post "
-               "R$^2$ available). Columns (2)-(3): stacked sale-level OLS, near$\\times$post coefficient, "
+               "Column (1): cell-level LP-DiD (unit differencing subsumes the FE); its "
+               "R$^2$/N are from the pre-mean-differenced pooled regression. Columns (2)-(3): stacked sale-level OLS, near$\\times$post coefficient, "
                "SEs clustered by event; sale-level pre coefficients are in the event-study "
                "specification, not the pooled regression. 100$\\times$log points.")
 
@@ -396,7 +398,7 @@ def main():
         hm = load_csv(os.path.join(O2, coefs_csv))
         stats = parse_log_stats(os.path.join(O2, log_name),
                                 r"===== POISSON pooled post|===== POISSON county x year FE",
-                                r"Number of obs\s*=\s*([\d,]+)", r"Pseudo R2\s*=\s*([0-9.]+)")
+                                r"(?:Number of obs|No\. of obs)\s*=\s*([\d,]+)", r"Pseudo R2\s*=\s*([0-9.]+)")
         # base log: markers alternate ES/pooled per outcome for the base file;
         # cfe log: one marker per outcome (ES), pooled unmarked -> fall back to obs from ES.
         FE_H = ["Tract FE", "Year FE", "County$\\times$Year FE"]
