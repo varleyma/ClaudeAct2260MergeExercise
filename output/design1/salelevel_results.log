@@ -1,0 +1,219 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/salelevel_results.log
+  log type:  text
+ opened on:   5 Aug 2026, 09:40:36
+
+. di as result "stacked sale-level sample: " _N " sale-event rows"
+stacked sale-level sample: 777772 sale-event rows
+
+. 
+. tempname pf
+
+. postfile `pf' str12 spec double h b se using "$OUT/_sl_coefs.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/_sl_coefs.dta not found)
+
+. 
+. * ---- S1: pooled, no controls ----
+. di as result _n "===== S1: pooled near x post ====="
+
+===== S1: pooled near x post =====
+
+. reghdfe lnp nearpost, absorb(evring evyear) vce(cluster evnum)
+(dropped 106 singleton observations)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    777,666
+Absorbing 2 HDFE groups                           F(   1,   1197) =      20.11
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.1718
+                                                  Adj R-squared   =     0.1596
+                                                  Within R-sq.    =     0.0001
+Number of clusters (evnum)   =      1,198         Root MSE        =     1.1670
+
+                              (Std. err. adjusted for 1,198 clusters in evnum)
+------------------------------------------------------------------------------
+             |               Robust
+         lnp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    nearpost |   .0709286   .0158149     4.48   0.000     .0399005    .1019566
+       _cons |   12.35578   .0011786  1.0e+04   0.000     12.35347    12.35809
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      evring |      2371        2371           0    *|
+      evyear |      8916        8916           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("S1_pooled") (99) (_b[nearpost]) (_se[nearpost])
+
+. 
+. * ---- S2: pooled + hedonics ----
+. di as result _n "===== S2: pooled + hedonics ====="
+
+===== S2: pooled + hedonics =====
+
+. reghdfe lnp nearpost lncab subu vac, absorb(evring evyear) vce(cluster evnum)
+(dropped 112 singleton observations)
+(MWFE estimator converged in 10 iterations)
+
+HDFE Linear regression                            Number of obs   =    730,276
+Absorbing 2 HDFE groups                           F(   4,   1197) =    2077.13
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3444
+                                                  Adj R-squared   =     0.3342
+                                                  Within R-sq.    =     0.1952
+Number of clusters (evnum)   =      1,198         Root MSE        =     1.0199
+
+                              (Std. err. adjusted for 1,198 clusters in evnum)
+------------------------------------------------------------------------------
+             |               Robust
+         lnp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+    nearpost |   .0672031    .013178     5.10   0.000     .0413485    .0930577
+       lncab |   .4095195   .0051262    79.89   0.000     .3994622    .4195769
+        subu |  -.1711189   .0180585    -9.48   0.000    -.2065488   -.1356891
+         vac |  -1.036403   .0152063   -68.16   0.000    -1.066237   -1.006569
+       _cons |   10.63283   .0307273   346.04   0.000     10.57254    10.69311
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      evring |      2370        2370           0    *|
+      evyear |      8908        8908           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. post `pf' ("S2_hedonic") (99) (_b[nearpost]) (_se[nearpost])
+
+. 
+. * ---- S3/S4 event studies ----
+. * NOTE: with BOTH event x ring and event x year FE absorbed, the full set of
+. * near x relf dummies is collinear (it sums to the absorbed near main effect)
+. * and Stata silently imposes a second normalization. Literature convention
+. * instead: absorb event x year FE, include the near MAIN EFFECT, interactions
+. * relative to the -1 base only.
+. di as result _n "===== S3: event study ====="
+
+===== S3: event study =====
+
+. reghdfe lnp near ib4.relf#c.near, absorb(evyear) vce(cluster evnum)
+(dropped 89 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =    777,683
+Absorbing 1 HDFE group                            F(   8,   1197) =      20.11
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.1603
+                                                  Adj R-squared   =     0.1505
+                                                  Within R-sq.    =     0.0029
+Number of clusters (evnum)   =      1,198         Root MSE        =     1.1733
+
+                              (Std. err. adjusted for 1,198 clusters in evnum)
+------------------------------------------------------------------------------
+             |               Robust
+         lnp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        near |    .161644   .0253382     6.38   0.000     .1119317    .2113563
+             |
+ relf#c.near |
+          1  |   .0004456   .0316266     0.01   0.989    -.0616041    .0624953
+          2  |  -.0058339   .0329699    -0.18   0.860     -.070519    .0588513
+          3  |  -.0339001   .0263255    -1.29   0.198    -.0855494    .0177491
+          5  |   .0483343   .0348456     1.39   0.166    -.0200309    .1166995
+          6  |   .0302465   .0298588     1.01   0.311    -.0283349     .088828
+          7  |   .0647084   .0289423     2.24   0.026     .0079251    .1214918
+          8  |   .0668421   .0417574     1.60   0.110    -.0150837    .1487678
+             |
+       _cons |   12.33342   .0023062  5347.83   0.000      12.3289    12.33795
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      evyear |      8919        8919           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. forvalues f = 1/8 {
+  2.     local h = `f' - 5
+  3.     if `f' == 4 post `pf' ("S3_es") (-1) (0) (.)
+  4.     else post `pf' ("S3_es") (`h') (_b[`f'.relf#c.near]) (_se[`f'.relf#c.n
+> ear])
+  5. }
+
+. 
+. di as result _n "===== S4: event study + hedonics ====="
+
+===== S4: event study + hedonics =====
+
+. reghdfe lnp near ib4.relf#c.near lncab subu vac, absorb(evyear) vce(cluster e
+> vnum)
+(dropped 95 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =    730,293
+Absorbing 1 HDFE group                            F(  11,   1197) =     801.19
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3338
+                                                  Adj R-squared   =     0.3256
+                                                  Within R-sq.    =     0.1980
+Number of clusters (evnum)   =      1,198         Root MSE        =     1.0264
+
+                              (Std. err. adjusted for 1,198 clusters in evnum)
+------------------------------------------------------------------------------
+             |               Robust
+         lnp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        near |   .2278595   .0196546    11.59   0.000     .1892983    .2664208
+             |
+ relf#c.near |
+          1  |  -.0041258   .0297593    -0.14   0.890     -.062512    .0542604
+          2  |   -.022169   .0201971    -1.10   0.273    -.0617947    .0174567
+          3  |  -.0407085   .0184606    -2.21   0.028    -.0769272   -.0044897
+          5  |   .0369484   .0321067     1.15   0.250    -.0260434    .0999402
+          6  |   .0374875   .0212004     1.77   0.077    -.0041065    .0790815
+          7  |   .0466985   .0207374     2.25   0.025     .0060128    .0873842
+          8  |   .0182772   .0318639     0.57   0.566     -.044238    .0807925
+             |
+       lncab |   .4081801   .0051544    79.19   0.000     .3980675    .4182926
+        subu |  -.1759498    .018421    -9.55   0.000    -.2120908   -.1398088
+         vac |  -1.044448   .0151803   -68.80   0.000    -1.074231   -1.014665
+       _cons |   10.61308   .0313816   338.19   0.000     10.55151    10.67465
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      evyear |      8911        8911           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. forvalues f = 1/8 {
+  2.     local h = `f' - 5
+  3.     if `f' == 4 post `pf' ("S4_es_hed") (-1) (0) (.)
+  4.     else post `pf' ("S4_es_hed") (`h') (_b[`f'.relf#c.near]) (_se[`f'.relf
+> #c.near])
+  5. }
+
+. 
+. postclose `pf'
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/salelevel_results.log
+  log type:  text
+ closed on:   5 Aug 2026, 09:40:56
+-------------------------------------------------------------------------------
