@@ -8,12 +8,12 @@
 \usepackage{enumitem}
 \usepackage{graphicx}
 \usepackage[font=small]{caption}
-\graphicspath{{./}}
+\graphicspath{{./}{../design2/}}
 
 \title{The Local Housing-Market Effects of Act 22/60 Investor Purchases:\\
 Data and Empirical Design}
 \author{}
-\date{July 2026}
+\date{August 2026}
 
 \newcommand{\pcth}{\texttt{pcthispanic}}
 
@@ -172,11 +172,41 @@ contrast differences out any effect \emph{common to the full 1-km
 neighborhood}: the design identifies the hyper-local increment around a
 purchase site, not the neighborhood-level effect of aggregate investor
 inflows, which requires the complementary tract-level staggered design using
-the tract$\times$month price panel. Second, because purchases cluster at the
-enclave scale, other investor purchases in dense areas fall disproportionately
-inside the near ring itself; the estimated contrast there measures the
-cumulative local dose of investor activity rather than the effect of a single
-purchase (see Figure~\ref{fig:dose}).
+the tract$\times$month price panel (Section~\ref{sec:design2}). Second,
+because purchases cluster at the enclave scale, other investor purchases in
+dense areas fall disproportionately inside the near ring itself; the
+estimated contrast there measures the cumulative local dose of investor
+activity rather than the effect of a single purchase (see
+Figure~\ref{fig:dose}).
+
+\subsection{Robustness to the estimation approach}
+
+The cell-mean panel is a construction choice; the ring literature
+(Linden and Rockoff 2008; Campbell, Giglio and Pathak 2011) instead estimates
+on individual transactions: stacked sale-level regressions of log price on
+near$\times$post (or near$\times$event-time dummies) with event$\times$ring
+and event$\times$calendar-year fixed effects, standard errors clustered by
+event. The two implementations also weight differently --- transactions
+versus events --- so agreement is informative rather than mechanical.
+Re-estimating the baseline this way yields a pooled near$\times$post effect
+of $+7.09$ log points (s.e.\ $1.58$), and $+6.72$ ($1.32$) with hedonic
+controls (log lot size, sub-unit and vacant-land indicators), against the
+cell-level LP-DiD baseline of $+6.95$ ($1.81$); the event-study paths
+coincide horizon by horizon (Figure~\ref{fig:salelevel}).
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{figD12_salelevel_robustness.png}
+  \caption{\textbf{Estimation-approach robustness.} The near-ring event study
+  estimated three ways: the cell-level LP-DiD baseline; sale-level stacked
+  OLS with event$\times$ring and event$\times$calendar-year fixed effects
+  (the ring literature's convention), clustered by event; and the sale-level
+  specification with hedonic controls. Rings 0--250\,m vs 400--1{,}000\,m.
+  The three series coincide within sampling error at every horizon, and the
+  agreement of transaction-weighted and event-weighted estimates indicates
+  the pooled effect is not driven by a few high-volume events.}
+  \label{fig:salelevel}
+\end{figure}
 
 In the annual robustness suite $Q = 4$ and $H = 3$; the baseline is also
 estimated at quarterly ($Q=H=8$) and half-yearly resolutions and with the
@@ -300,6 +330,129 @@ boundary.
 \end{figure}
 
 \clearpage
+
+\section{The tract-level design and reconciliation (Design 2)}
+\label{sec:design2}
+
+\subsection{Data and specification}
+
+The tract-level design asks what the ring design structurally cannot: whether
+investor purchases move \emph{whole neighborhoods}, including the component
+common to treated areas that near--far contrasts difference out. The outcome
+panel is the Red Atlas tract$\times$month transaction file (918 of 981
+2020-vintage tracts, 2008--2025), aggregated to tract$\times$year with the
+annual price defined as the transaction-count-weighted mean of monthly tract
+means (composition-noise reduction; the simple mean is a robustness
+variant). Treatment timing comes from the dated decree-era events: a tract is
+treated from the year of its first identified investor purchase (235 treated
+tracts; 1{,}200 events), with never-treated tracts as controls. Estimation is
+annual LP-DiD (pre-window 4, post-window 3) on $100 \times \ln(\text{price})$,
+with and without county fixed effects.
+
+\subsection{Results}
+
+Prices in treated tracts rise by a pooled $+7.6$ log points
+(s.e.\ $1.8$) after the first investor purchase, with flat pre-period
+coefficients; adding county fixed effects leaves the estimate unchanged
+($+7.5$), and the simple-mean construction gives $+6.1$
+(Figure~\ref{fig:tract_es}). Splitting treated tracts by investor
+concentration reproduces the dose pattern at tract scale: tracts with five or
+more identified purchases (44 tracts) show $+18.3$ ($2.9$), tracts with one
+to four show $+3.8$ ($2.1$) (Figure~\ref{fig:tract_dose}). Transaction
+\emph{volume} falls in treated tracts, but its pre-period coefficients are
+significantly negative, so parallel trends fails for that outcome and we
+treat it as descriptive only.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{figT1_lnhp_es.png}
+  \caption{\textbf{Tract-level event study: log house price.} Annual LP-DiD on
+  the Red Atlas panel, 235 treated tracts vs never-treated controls; base and
+  county-FE series are indistinguishable and pre-trends are flat.}
+  \label{fig:tract_es}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{figT2_dose_es.png}
+  \caption{\textbf{Tract-level event study by investor concentration.} Tracts
+  with 5+ identified purchases versus tracts with 1--4, each against
+  never-treated controls: the concentration result at tract scale.}
+  \label{fig:tract_dose}
+\end{figure}
+
+\subsection{Reconciliation: the whole vs the sum of the parts}
+
+Because the ring design delivers a distance gradient, it implies a
+\emph{prediction} for each treated tract: the stock-value-weighted average of
+$\beta(d)$ over the tract's parcels --- the tract-level effect if
+micro-spillovers were the whole story. Comparing observed tract-DiD estimates
+to these predictions decomposes the aggregate
+(Figure~\ref{fig:reconciliation}): tracts with 1--4 purchases sit at or below
+their prediction (observed $+3.8$ vs predicted $+5.4$) --- micro-spillovers
+fully account for them --- while the 44 concentration tracts exceed their
+prediction by roughly 11 log points (observed $+18.3$ vs predicted $+7.5$).
+A market-level channel beyond proximity operates only where investors
+concentrate.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{figT4_reconciliation.png}
+  \caption{\textbf{Observed tract effects vs ring-implied predictions.}
+  Observed: LP-DiD pooled post estimates by dose group. Predictions:
+  stock-value-weighted distance-gradient effects over each treated tract's
+  parcels. The all-treated and 1--4-purchase groups sit on their predictions;
+  the 5+ group's excess ($\approx$11 log points) is the concentration
+  channel.}
+  \label{fig:reconciliation}
+\end{figure}
+
+\subsection{Aggregation}
+
+Integrating the estimated gradient over the exposure distribution of the
+island's improved housing stock (60.0\% of parcels, 63.1\% of assessed value,
+lie within 2.5\,km of an identified event) yields an island-wide average
+price effect of $+2.1$ to $+3.0$\%, or \$6.3--8.0B of housing value at
+band-specific market/assessed ratios --- roughly 6--8\% of Puerto Rico's
+post-2019 boom (FHFA purchase-only index: $+64$\% 2019--2024). Adding the
+concentration excess in the 44 high-dose tracts ($\approx$\$4.3B) raises the
+identified program footprint to $\approx$\$11--12B, about 10--11\% of the
+boom. At municipio level, using municipio repeat-sales indices as the local
+boom denominators, footprints in the top investor municipios are much larger:
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Municipio & Local boom '19--'24 & Uplift & Share of boom \\
+\midrule
+Rinc\'on     & $+148\%$ & \$0.27B & 44.9\% \\
+Dorado       & $+177\%$ & \$0.82B & 32.2\% \\
+R\'io Grande & $+115\%$ & \$0.47B & 25.6\% \\
+San Juan     & $+89\%$  & \$4.13B & 24.6\% \\
+Carolina     & $+91\%$  & \$1.28B & 17.6\% \\
+Guaynabo     & $+124\%$ & \$0.85B & 15.5\% \\
+Humacao      & $+121\%$ & \$0.38B & 14.2\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All aggregates are lower bounds: exposure counts only the 1{,}200
+name-identified purchases, excluding LLC and unmatched investors; the
+capitalization step applies transaction-price effects to the full stock; and
+event effects predating 2019 enter the numerator while the boom clock starts
+in 2019.
+
+\subsection{Mortgage originations: a convincing null}
+
+HMDA loan-level data for Puerto Rico (2018--2024; 105{,}559 originations,
+aggregated to 2020-vintage tract$\times$year) show no detectable response of
+mortgage lending in treated tracts: Poisson (PPML) estimates with tract and
+year fixed effects are statistically zero for owner-occupied purchases
+($-0.5$\%, s.e.\ $5.4$), non-owner-occupied purchases ($+3.0$\%, $11.3$),
+rate/term and cash-out refinancings, and total originations, and are
+unchanged with county$\times$year fixed effects. Consistent with decree
+investors transacting predominantly in cash, the program's effects appear in
+prices and buyer composition rather than local credit expansion.
 
 \section{Standing caveats}
 
