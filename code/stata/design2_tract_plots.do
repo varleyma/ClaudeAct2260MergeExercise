@@ -67,7 +67,7 @@ program define drawfig
         local legorder `legorder' `= 2*`i'' "`lab'"
     }
     if `n' == 1 local legend legend(off)
-    else        local legend legend(order(`legorder') rows(1) region(lstyle(none)))
+    else        local legend legend(order(`legorder') rows(1) position(6) region(lstyle(none)))
     twoway `plots', `STYLE' `legend' ///
         title("$FIG_TITLE", size(medium)) ///
         ytitle("$FIG_YT") xtitle("$FIG_XT") ///

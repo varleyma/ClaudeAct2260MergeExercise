@@ -1,0 +1,231 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign1_withinevent_pmd.do 
+
+. /*===========================================================================
+> ===
+>  design1_withinevent_pmd.do
+> 
+>  One-regression post-minus-pre for the WITHIN-EVENT ring LP-DiD, via
+>  pre-mean differencing (Dube-Girardi-Jorda-Taylor): outcome
+>      (1/4) sum_{h=0..3} y_{t+h}  -  (1/4) sum_{tau=t-4..t-1} y_tau
+>  on treatment entry, absorbing EVENT x CALENDAR-YEAR effects, so each near
+>  ring's long difference is contrasted only with its own event's far ring.
+>  Clean sample: newly treated cells + never-treated cells. Delivers the
+>  post-pre coefficient with a proper single-regression SE, R2, and N.
+> 
+>  Kept separate from design_pmd_stats.do so it can rerun alone; the table
+>  generator reads both CSVs.
+> 
+>  Output: output/tables/pmd_stats_withinevent.csv  (test, b, se, r2, nobs)
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global D1   "$REPO/data/design1"
+
+. global OUT  "$REPO/output/tables"
+
+. 
+. capture which reghdfe
+
+. if _rc ssc install reghdfe, replace
+
+. 
+. *---- cell panel, identical to design1_withinevent_lpdid.do -----------------
+> -
+. import delimited "$D1/design1_sale_event_pairs.csv", ///
+>     varnames(1) encoding(utf8) stringcols(_all) clear
+(28 vars, 3,472,651 obs)
+
+. destring salesamt dist_m event_time_months, replace force
+salesamt: all characters numeric; replaced as double
+dist_m: all characters numeric; replaced as double
+event_time_months: all characters numeric; replaced as int
+(7852 missing values generated)
+
+. gen sdate = date(sale_date, "YMD")
+(7,795 missing values generated)
+
+. gen edate = date(event_date, "YMD")
+
+. gen tt    = yofd(sdate)
+(7,795 missing values generated)
+
+. gen ett   = yofd(edate)
+
+. drop if ring == "gap_250_400"
+(426,392 observations deleted)
+
+. drop if flag_junk_date == "True"
+(7,165 observations deleted)
+
+. drop if flag_nominal_price == "True"
+(614,231 observations deleted)
+
+. drop if sale_is_investor_parcel == "True"
+(98,296 observations deleted)
+
+. drop if year(edate) < 2012
+(62,825 observations deleted)
+
+. keep if salesamt > 0 & !missing(salesamt)
+(0 observations deleted)
+
+. keep if inrange(event_time_months, -72, 60)
+(1,292,022 observations deleted)
+
+. gen lnp = ln(salesamt)
+
+. egen cellid = group(event_id ring)
+
+. gen near = ring == "near_0_250"
+
+. collapse (mean) y = lnp (first) near ett (firstnm) event_id ///
+>     (count) nsales = salesamt, by(cellid tt)
+
+. drop if missing(y)
+(0 observations deleted)
+
+. gen treat = near & tt >= ett
+
+. egen evyear = group(event_id tt)
+
+. 
+. *---- PMD outcome and clean sample (as pmdreg in design_pmd_stats.do) -------
+> -
+. xtset cellid tt
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+. gen y0  = y
+
+. gen yf1 = F1.y
+(2,862 missing values generated)
+
+. gen yf2 = F2.y
+(5,064 missing values generated)
+
+. gen yf3 = F3.y
+(7,287 missing values generated)
+
+. gen yl1 = L1.y
+(2,862 missing values generated)
+
+. gen yl2 = L2.y
+(5,064 missing values generated)
+
+. gen yl3 = L3.y
+(7,287 missing values generated)
+
+. gen yl4 = L4.y
+(9,470 missing values generated)
+
+. egen postm = rowmean(y0 yf1 yf2 yf3)
+
+. egen prem  = rowmean(yl1 yl2 yl3 yl4)
+(2,411 missing values generated)
+
+. gen pmd = postm - prem
+(2,411 missing values generated)
+
+. gen dD = treat == 1 & L1.treat == 0
+
+. egen evertr = max(treat), by(cellid)
+
+. keep if dD == 1 | evertr == 0
+(9,852 observations deleted)
+
+. 
+. * event x year FE nest calendar-year FE, so absorb(evyear) alone suffices
+. reghdfe pmd dD, absorb(evyear) vce(cluster cellid)
+(dropped 10215 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =      2,164
+Absorbing 1 HDFE group                            F(   1,   1081) =       4.87
+Statistics robust to heteroskedasticity           Prob > F        =     0.0276
+                                                  R-squared       =     0.6501
+                                                  Adj R-squared   =     0.2998
+                                                  Within R-sq.    =     0.0042
+Number of clusters (cellid)  =      2,092         Root MSE        =     0.3345
+
+                             (Std. err. adjusted for 2,092 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0316213   .0143336     2.21   0.028     .0034966    .0597461
+       _cons |   .3027027   .0101628    29.79   0.000     .2827617    .3226437
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      evyear |      1082           0        1082     |
+-----------------------------------------------------+
+
+. 
+. tempname pf
+
+. postfile `pf' str24 test double b se r2 nobs using "$OUT/_pmd_we.dta", replac
+> e
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/tables
+    > /_pmd_we.dta not found)
+
+. post `pf' ("T1_withinevent") (_b[dD]) (_se[dD]) (e(r2)) (e(N))
+
+. postclose `pf'
+
+. use "$OUT/_pmd_we.dta", clear
+
+. export delimited using "$OUT/pmd_stats_withinevent.csv", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/tables
+    > /pmd_stats_withinevent.csv not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/tables/
+> pmd_stats_withinevent.csv saved
+
+. erase "$OUT/_pmd_we.dta"
+
+. di as result "Saved: $OUT/pmd_stats_withinevent.csv"
+Saved: C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/table
+> s/pmd_stats_withinevent.csv
+
+. 
+end of do-file

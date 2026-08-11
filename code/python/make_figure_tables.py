@@ -130,11 +130,12 @@ NOTE_LPDID = ("LP-DiD pooled estimates; pre and post pooled coefficients are rel
               "(shares in pp). SEs clustered by unit (cell/tract).")
 
 R2MAP = {}
-_r2path = os.path.join(OUT, "pmd_stats.csv")
-if os.path.exists(_r2path):
-    for _r in load_csv(_r2path):
-        R2MAP[_r["test"]] = (f(_r["b"]), f(_r["se"]), f(_r["r2"]),
-                             int(f(_r["nobs"])) if f(_r["nobs"]) else None)
+for _r2file in ("pmd_stats.csv", "pmd_stats_withinevent.csv"):
+    _r2path = os.path.join(OUT, _r2file)
+    if os.path.exists(_r2path):
+        for _r in load_csv(_r2path):
+            R2MAP[_r["test"]] = (f(_r["b"]), f(_r["se"]), f(_r["r2"]),
+                                 int(f(_r["nobs"])) if f(_r["nobs"]) else None)
 
 def apply_r2(sp, key):
     if sp is None or key not in R2MAP:
@@ -326,23 +327,30 @@ def main():
             pol = [l for l in seg.splitlines() if re.match(r"\s*Post\s", l)]
             if len(prl) >= 2 and len(pol) >= 2:
                 pr1, po1, po2 = _nums(prl[0]), _nums(pol[0]), _nums(pol[1])
-                specs.append(Spec("LP-DiD within-event",
-                                  pre=pr1[0], pre_se=pr1[1],
-                                  post=po1[0], post_se=po1[1],
-                                  nobs=f"{int(po2[-1]):,}",
-                                  fe={"Event$\\times$ring FE": "(diff.)",
-                                      "Event$\\times$year FE": "Y",
-                                      "Hedonic controls": "N"}))
+                sp = Spec("LP-DiD within-event",
+                          pre=pr1[0], pre_se=pr1[1],
+                          post=po1[0], post_se=po1[1],
+                          nobs=f"{int(po2[-1]):,}",
+                          fe={"Event$\\times$ring FE": "(diff.)",
+                              "Event$\\times$year FE": "Y",
+                              "Hedonic controls": "N"})
+                # single-regression PMD post-pre with absorb(event x year)
+                # (design1_withinevent_pmd.do) -> proper SE, R2, N
+                apply_r2(sp, "T1_withinevent")
+                specs.append(sp)
     for i, (spec_id, lab, hed) in enumerate([("S1_pooled", "Sale-level OLS", "N"),
                                              ("S2_hedonic", "Sale-level OLS", "Y")]):
         r = next(x for x in sl if x["spec"] == spec_id and f(x["h"]) == 99)
         n, r2 = (stats[i] if i < len(stats) else (None, None))
-        specs.append(Spec(lab, pre=None, pre_se=None, post=f(r["b"]) * 100,
-                          post_se=f(r["se"]) * 100,
-                          r2=f"{r2:.3f}" if r2 else "--",
-                          nobs=f"{n:,}" if n else "--",
-                          fe={"Event$\\times$ring FE": "Y", "Event$\\times$year FE": "Y",
-                              "Hedonic controls": hed}))
+        sp = Spec(lab, pre=None, pre_se=None, post=None, post_se=None,
+                  r2=f"{r2:.3f}" if r2 else "--",
+                  nobs=f"{n:,}" if n else "--",
+                  fe={"Event$\\times$ring FE": "Y", "Event$\\times$year FE": "Y",
+                      "Hedonic controls": hed})
+        # near x post is itself the post-pre differential: report it in the
+        # same row as the LP-DiD post-pre estimates
+        sp.pmd = (f(r["b"]) * 100, f(r["se"]) * 100)
+        specs.append(sp)
     # scale: lpdid columns are in natural-log units -> x100 for display
     # (including the PMD post-pre tuple where present)
     for sp in specs:
@@ -357,12 +365,14 @@ def main():
             sp.pmd = (sp.pmd[0] * 100, sp.pmd[1] * 100 if sp.pmd[1] else None)
     emit_table("tab_figD12_salelevel.tex",
                "Estimation-approach robustness (fig.\\ D12)", specs, FE_SL,
-               "Column (1): cell-level LP-DiD, pooled never-treated controls; its "
-               "R$^2$/N are from the pre-mean-differenced pooled regression. Column (2): LP-DiD with "
-               "event$\\times$calendar-year effects absorbed (within-event identification: each near ring "
-               "vs its own far ring); its post$-$pre is the arithmetic difference (independence-approx.\\ SE). "
-               "Columns (3)-(4): stacked sale-level OLS, near$\\times$post coefficient, SEs clustered by "
-               "event. Long-differencing subsumes event$\\times$ring FE in the LP-DiD columns. "
+               "The Post$-$pre row is the comparable differential across estimators. "
+               "Column (1): cell-level LP-DiD, pooled never-treated controls; post$-$pre, R$^2$ and N "
+               "from the single pre-mean-differenced regression (Dube et al.\\ 2023). Column (2): the same "
+               "PMD regression with event$\\times$calendar-year effects absorbed (within-event "
+               "identification: each near ring vs its own event's far ring); pooled pre/post are the "
+               "corresponding lpdid coefficients. Columns (3)-(4): stacked sale-level OLS; the "
+               "near$\\times$post coefficient is itself the differential, SEs clustered by event. "
+               "Long-differencing subsumes event$\\times$ring FE in the LP-DiD columns. "
                "100$\\times$log points.")
 
     # ================= Design 2 tract tables =================

@@ -1,0 +1,685 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign2_hmda_results.do 
+
+. /*===========================================================================
+> ===
+>  design2_hmda_results.do
+> 
+>  Tract-level DiD on HMDA mortgage originations (2018-2024), same treatment
+>  as design2_tract_results.do (first identified decree-era purchase in tract).
+> 
+>  Outcomes (counts _n and dollar volume _v), each as 100 x asinh(x) so
+>  zero-origination tract-years are retained:
+>    purch_oo    home purchases, owner-occupied
+>    purch_nonoo home purchases, second home / investment
+>    refi        rate/term refinancings
+>    cashout     cash-out refinancings
+>    total       all originations
+> 
+>  Panel: balanced 981 tracts x 2018-2024, zeros filled. lpdid pre 3 / post 3
+>  (the 7-year span cannot support deeper windows). NOTE: tracts first treated
+>  before 2018 are already-treated for the whole panel and identify nothing;
+>  estimation leans on 2018+ adopters, never-treated as controls.
+> 
+>  Interpretation note: decree investors are predominantly cash buyers, so HMDA
+>  originations proxy the FINANCED (largely local) side of the market.
+> 
+>  Output: output/design2/hmda_coefs.dta (+.csv), hmda_results.log
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global D2   "$REPO/data/design2"
+
+. global OUT  "$REPO/output/design2"
+
+. capture mkdir "$OUT"
+
+. global COEFTMP "$OUT/_hmda_accum.dta"
+
+. capture erase "$COEFTMP"
+
+. 
+. capture which lpdid
+
+. if _rc ssc install lpdid, replace
+
+. 
+. capture program drop grabmat
+
+. program define grabmat
+  1.     args M test mtype
+  2.     local rn : rowfullnames `M'
+  3.     local nr = rowsof(`M')
+  4.     preserve
+  5.     clear
+  6.     qui svmat double `M', names(c)
+  7.     qui gen row = _n
+  8.     qui gen str32 rowname = ""
+  9.     forvalues i = 1/`nr' {
+ 10.         local r : word `i' of `rn'
+ 11.         qui replace rowname = "`r'" in `i'
+ 12.     }
+ 13.     qui gen str40 test = "`test'"
+ 14.     qui gen str10 matrix_type = "`mtype'"
+ 15.     capture confirm file "$COEFTMP"
+ 16.     if !_rc qui append using "$COEFTMP"
+ 17.     qui save "$COEFTMP", replace
+ 18.     restore
+ 19. end
+
+. 
+. /*===========================================================================
+> =
+>   BALANCED PANEL WITH ZEROS
+> ============================================================================*
+> /
+. * universe: all 2020 PR tracts
+. import delimited "$REPO/data/cleaned/pr_tract_zcta_crosswalk.csv", varnames(1
+> ) clear
+(encoding automatically selected: ISO-8859-1)
+(7 vars, 1,286 obs)
+
+. keep tract_geoid
+
+. duplicates drop
+
+Duplicates in terms of all variables
+
+(305 observations deleted)
+
+. expand 7
+(5,886 observations created)
+
+. bysort tract_geoid: gen year = 2017 + _n
+
+. tempfile frame
+
+. save `frame'
+file C:\Users\mva284\AppData\Local\Temp\ST_2f54_000001.tmp saved as .dta
+    format
+
+. 
+. import delimited "$D2/hmda_tract_year.csv", varnames(1) clear
+(encoding automatically selected: ISO-8859-2)
+(12 vars, 6,187 obs)
+
+. merge 1:1 tract_geoid year using `frame', nogen
+(variable year was int, now float to accommodate using data's values)
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           680
+        from master                         0  
+        from using                        680  
+
+    Matched                             6,187  
+    -----------------------------------------
+
+. foreach v in purch_oo_n purch_oo_v purch_nonoo_n purch_nonoo_v ///
+>              refi_n refi_v cashout_n cashout_v total_n total_v {
+  2.     replace `v' = 0 if missing(`v')
+  3. }
+(680 real changes made)
+(680 real changes made)
+(680 real changes made)
+(680 real changes made)
+(680 real changes made)
+(680 real changes made)
+(680 real changes made)
+(680 real changes made)
+(680 real changes made)
+(680 real changes made)
+
+. 
+. preserve
+
+.     import delimited "$D2/design2_tract_treatment.csv", varnames(1) clear
+(encoding automatically selected: ISO-8859-1)
+(3 vars, 235 obs)
+
+.     tempfile trt
+
+.     save `trt'
+file C:\Users\mva284\AppData\Local\Temp\ST_2f54_000003.tmp saved as .dta
+    format
+
+. restore
+
+. merge m:1 tract_geoid using `trt', keep(master match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         5,222
+        from master                     5,222  
+        from using                          0  
+
+    Matched                             1,645  
+    -----------------------------------------
+
+. gen treat = !missing(first_event_year) & year >= first_event_year
+
+. 
+. foreach v in purch_oo_n purch_oo_v purch_nonoo_n purch_nonoo_v ///
+>              refi_n refi_v cashout_n cashout_v total_n total_v {
+  2.     gen ihs_`v' = 100 * asinh(`v')
+  3. }
+
+. egen tract_num = group(tract_geoid)
+
+. xtset tract_num year
+
+Panel variable: tract_num (strongly balanced)
+ Time variable: year, 2018 to 2024
+         Delta: 1 unit
+
+. save "$OUT/_hmda_panel.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/_hmda_panel.dta not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/_hmda_panel.dta saved
+
+. 
+. /*===========================================================================
+> =
+>   ESTIMATION
+> ============================================================================*
+> /
+. log using "$OUT/hmda_results.log", replace text
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/hmda_results.log not found)
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/hmda_results.log
+  log type:  text
+ opened on:   5 Aug 2026, 09:01:04
+
+. 
+. foreach v in purch_oo_n purch_oo_v purch_nonoo_n purch_nonoo_v ///
+>              refi_n refi_v cashout_n cashout_v total_n total_v {
+  2.     use "$OUT/_hmda_panel.dta", clear
+  3.     di as result _n "===== HMDA outcome `v' ====="
+  4.     lpdid ihs_`v', unit(tract_num) time(year) treat(treat) ///
+>         pre_window(3) post_window(3) nograph
+  5.     matrix E = e(results)
+  6.     grabmat E H_`v' event
+  7.     capture matrix P = e(pooled_results)
+  8.     if !_rc grabmat P H_`v' pooled
+  9. }
+
+===== HMDA outcome purch_oo_n =====
+lpdid ihs_purch_oo_n, unit(tract_num) time(year) treat(treat) pre_window(3) pos
+> t_window(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 | -6.927161   7.067016       -.98      .3273  -20.79729 
+        pre2 | -.9608887   5.073696       -.19      .8498  -10.91856 
+        pre1 |         0          .          .          .          . 
+        tau0 |  2.163261   7.098865         .3      .7606  -11.76869 
+        tau1 | -1.875758   8.898292       -.21      .8331  -19.33919 
+        tau2 | -1.866912   11.29957       -.17      .8688    -24.043 
+        tau3 | -16.82824   10.02818      -1.68      .0937  -36.51008 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 |  6.942968       3332 
+        pre2 |  8.996779       4232 
+        pre1 |         .          . 
+        tau0 |  16.09521       5148 
+        tau1 |  15.58767       4228 
+        tau2 |  20.30918       3317 
+        tau3 |  2.853597       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -4.411281   5.789428       -.76      .4463  -15.77394 
+        Post | -9.849657   7.860109      -1.25      .2105  -25.27633 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  6.951383       3332 
+        Post |  5.577018       2438 
+
+===== HMDA outcome purch_oo_v =====
+lpdid ihs_purch_oo_v, unit(tract_num) time(year) treat(treat) pre_window(3) pos
+> t_window(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 | -25.51394   32.88097       -.78       .438  -90.04801 
+        pre2 | -3.597114   21.75997       -.17      .8687  -46.30337 
+        pre1 |         0          .          .          .          . 
+        tau0 |  10.28126   26.64474        .39      .6997  -42.01063 
+        tau1 |  32.14562   31.36652       1.02      .3057  -29.41305 
+        tau2 |  19.88374   43.04674        .46      .6443  -64.59807 
+        tau3 | -44.38961   32.70804      -1.36      .1751  -108.5842 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 |  39.02012       3332 
+        pre2 |  39.10914       4232 
+        pre1 |         .          . 
+        tau0 |  62.57316       5148 
+        tau1 |  93.70429       4228 
+        tau2 |  104.3655       3317 
+        tau3 |  19.80497       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -14.55415   27.05972       -.54      .5908   -67.6631 
+        Post | -21.23996   24.52747       -.87      .3867   -69.3789 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   38.5548       3332 
+        Post |  26.89898       2438 
+
+===== HMDA outcome purch_nonoo_n =====
+lpdid ihs_purch_nonoo_n, unit(tract_num) time(year) treat(treat) pre_window(3) 
+> post_window(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 | -3.329896   7.241548       -.46      .6458  -17.54257 
+        pre2 |  11.32952   7.802618       1.45      .1468  -3.983947 
+        pre1 |         0          .          .          .          . 
+        tau0 |  7.415558   7.519206        .99      .3243  -7.341336 
+        tau1 |  13.97525   8.059754       1.73      .0833  -1.842497 
+        tau2 |  1.973297     8.9483        .22      .8255  -15.58828 
+        tau3 |  20.64323   9.822241        2.1      .0359   1.365563 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 |  10.88278       3332 
+        pre2 |  26.64299       4232 
+        pre1 |         .          . 
+        tau0 |  22.17245       5148 
+        tau1 |  29.79301       4228 
+        tau2 |  19.53487       3317 
+        tau3 |  39.92089       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  3.858687   7.088829        .54      .5863  -10.05425 
+        Post |  11.87904   7.370997       1.61      .1074  -2.587678 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  17.77163       3332 
+        Post |  26.34576       2438 
+
+===== HMDA outcome purch_nonoo_v =====
+lpdid ihs_purch_nonoo_v, unit(tract_num) time(year) treat(treat) pre_window(3) 
+> post_window(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 | -4.032801   65.11031       -.06      .9506   -131.822 
+        pre2 |  88.74575   70.31878       1.26      .2073  -49.26233 
+        pre1 |         0          .          .          .          . 
+        tau0 |  63.10779   62.49906       1.01      .3129  -59.55036 
+        tau1 |  140.2213   65.32316       2.15      .0321   12.02068 
+        tau2 |  19.05257   77.80061        .24      .8066  -133.6358 
+        tau3 |  154.1159   77.97457       1.98      .0484   1.078766 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 |  123.7564       3332 
+        pre2 |  226.7538       4232 
+        pre1 |         .          . 
+        tau0 |  185.7659       5148 
+        tau1 |  268.4219       4228 
+        tau2 |  171.7409       3317 
+        tau3 |   307.153       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  45.77659   62.36649        .73      .4631  -76.62746 
+        Post |  101.3393   66.50458       1.52      .1279  -29.18619 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  168.1806       3332 
+        Post |  231.8648       2438 
+
+===== HMDA outcome refi_n =====
+lpdid ihs_refi_n, unit(tract_num) time(year) treat(treat) pre_window(3) post_wi
+> ndow(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 | -7.764628   9.675567        -.8      .4225  -26.75445 
+        pre2 | -14.02446   7.656394      -1.83      .0673  -29.05094 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .7955244   7.706091         .1      .9178  -14.32814 
+        tau1 | -4.984848   9.922066        -.5      .6155   -24.4575 
+        tau2 | -25.96875   11.07858      -2.34      .0193  -47.71113 
+        tau3 | -43.25187   13.56715      -3.19      .0015  -69.87948 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 |  11.22519       3332 
+        pre2 |  1.002031       4232 
+        pre1 |         .          . 
+        tau0 |  15.91919       5148 
+        tau1 |   14.4878       4228 
+        tau2 | -4.226378       3317 
+        tau3 | -16.62425       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -10.21664   8.061551      -1.27      .2054   -26.0387 
+        Post | -10.81032   9.225679      -1.17      .2416  -28.91714 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  5.605423       3332 
+        Post |  7.296499       2438 
+
+===== HMDA outcome refi_v =====
+lpdid ihs_refi_v, unit(tract_num) time(year) treat(treat) pre_window(3) post_wi
+> ndow(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 |  124.1023   60.77138       2.04      .0414   4.828953 
+        pre2 |  32.04365   55.00407        .58      .5603  -75.90769 
+        pre1 |         0          .          .          .          . 
+        tau0 |  73.28118   56.90028       1.29      .1981  -38.38904 
+        tau1 |  67.09045   60.50988       1.11      .2678  -51.66382 
+        tau2 |  18.89222   70.73006        .27      .7894  -119.9198 
+        tau3 | -78.78691   96.57738       -.82      .4148  -268.3349 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 |  243.3757       3332 
+        pre2 |   139.995       4232 
+        pre1 |         .          . 
+        tau0 |  184.9514       5148 
+        tau1 |  185.8447       4228 
+        tau2 |  157.7042       3317 
+        tau3 |  110.7611       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  87.06757   52.40649       1.66       .097   -15.7884 
+        Post | -4.626931   62.98484       -.07      .9415  -128.2444 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  189.9235       3332 
+        Post |  118.9905       2438 
+
+===== HMDA outcome cashout_n =====
+lpdid ihs_cashout_n, unit(tract_num) time(year) treat(treat) pre_window(3) post
+> _window(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 | -28.21947   8.575261      -3.29       .001  -45.04976 
+        pre2 | -13.63808   6.993684      -1.95      .0515  -27.36393 
+        pre1 |         0          .          .          .          . 
+        tau0 | -9.139228   6.681823      -1.37      .1717  -22.25271 
+        tau1 |  5.266533   7.873773        .67      .5037  -10.18622 
+        tau2 | -13.19822   9.771989      -1.35      .1772  -32.37633 
+        tau3 |  -13.3706   11.65058      -1.15      .2514  -36.23667 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 | -11.38917       3332 
+        pre2 |  .0877724       4232 
+        pre1 |         .          . 
+        tau0 |   3.97425       5148 
+        tau1 |  20.71928       4228 
+        tau2 |  5.979896       3317 
+        tau3 |  9.495465       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -23.80054   6.845344      -3.48      .0005   -37.2356 
+        Post | -5.204779   8.282567       -.63      .5299  -21.46059 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre | -10.36547       3332 
+        Post |  11.05104       2438 
+
+===== HMDA outcome cashout_v =====
+lpdid ihs_cashout_v, unit(tract_num) time(year) treat(treat) pre_window(3) post
+> _window(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 | -146.9418   67.87493      -2.16      .0307   -280.157 
+        pre2 | -56.81144   57.29803       -.99      .3217  -169.2649 
+        pre1 |         0          .          .          .          . 
+        tau0 |  -38.3217   49.25491       -.78      .4368  -134.9874 
+        tau1 |  55.22789   60.65405        .91      .3628  -63.80933 
+        tau2 | -6.763889   72.75852       -.09       .926  -149.5568 
+        tau3 |  -82.7624   80.34515      -1.03      .3033  -240.4521 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 | -13.72658       3332 
+        pre2 |  55.64204       4232 
+        pre1 |         .          . 
+        tau0 |  58.34402       5148 
+        tau1 |  174.2651       4228 
+        tau2 |  136.0291       3317 
+        tau3 |  74.92734       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -127.0006   53.22884      -2.39      .0172  -231.4706 
+        Post | -47.55373   58.33453       -.82      .4152  -162.0442 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre | -22.53065       3332 
+        Post |  66.93678       2438 
+
+===== HMDA outcome total_n =====
+lpdid ihs_total_n, unit(tract_num) time(year) treat(treat) pre_window(3) post_w
+> indow(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 | -6.113602   6.987403       -.87      .3818  -19.82748 
+        pre2 | -1.067569   5.102948       -.21      .8343  -11.08265 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .9021207   7.284259        .12      .9015  -13.39367 
+        tau1 |  3.316063   8.862058        .37      .7084  -14.07626 
+        tau2 | -.7519232   11.72645       -.06      .9489  -23.76578 
+        tau3 | -15.84361   9.776763      -1.62      .1055  -35.03201 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 |  7.600275       3332 
+        pre2 |  8.947509       4232 
+        pre1 |         .          . 
+        tau0 |  15.19792       5148 
+        tau1 |  20.70838       4228 
+        tau2 |  22.26193       3317 
+        tau3 |  3.344799       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -4.245802   5.771249       -.74      .4621  -15.57279 
+        Post | -8.183518   7.032583      -1.16      .2449  -21.98605 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  7.081182       3332 
+        Post |   5.61901       2438 
+
+===== HMDA outcome total_v =====
+lpdid ihs_total_v, unit(tract_num) time(year) treat(treat) pre_window(3) post_w
+> indow(3) nograph
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre3 | -9.010665   23.73734       -.38      .7043  -55.59892 
+        pre2 | -6.288783   16.72738       -.38       .707  -39.11805 
+        pre1 |         0          .          .          .          . 
+        tau0 |  6.048957   25.49147        .24      .8125  -43.97958 
+        tau1 |  36.42714   29.71712       1.23      .2206   -21.8945 
+        tau2 |  40.37493   41.62296        .97      .3323  -41.31262 
+        tau3 | -34.11281    32.8834      -1.04      .2998  -98.65154 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre3 |  37.57759       3332 
+        pre2 |  26.54048       4232 
+        pre1 |         .          . 
+        tau0 |  56.07749       5148 
+        tau1 |  94.74877       4228 
+        tau2 |  122.0625       3317 
+        tau3 |  30.42593       2438 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |    -8.578   20.10907       -.43      .6698  -48.04521 
+        Post | -12.62165   24.14178       -.52      .6012  -60.00361 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  30.88921       3332 
+        Post |  34.76031       2438 
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/hmda_results.log
+  log type:  text
+ closed on:   5 Aug 2026, 09:03:43
+-------------------------------------------------------------------------------
+
+. 
+. use "$COEFTMP", clear
+
+. order test matrix_type row rowname
+
+. sort test matrix_type row
+
+. tab test matrix_type
+
+                      |      matrix_type
+                 test |     event     pooled |     Total
+----------------------+----------------------+----------
+          H_cashout_n |         7          2 |         9 
+          H_cashout_v |         7          2 |         9 
+      H_purch_nonoo_n |         7          2 |         9 
+      H_purch_nonoo_v |         7          2 |         9 
+         H_purch_oo_n |         7          2 |         9 
+         H_purch_oo_v |         7          2 |         9 
+             H_refi_n |         7          2 |         9 
+             H_refi_v |         7          2 |         9 
+            H_total_n |         7          2 |         9 
+            H_total_v |         7          2 |         9 
+----------------------+----------------------+----------
+                Total |        70         20 |        90 
+
+. save "$OUT/hmda_coefs.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/hmda_coefs.dta not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/hmda_coefs.dta saved
+
+. export delimited "$OUT/hmda_coefs.csv", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/hmda_coefs.csv not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design2
+> /hmda_coefs.csv saved
+
+. capture erase "$COEFTMP"
+
+. capture erase "$OUT/_hmda_panel.dta"
+
+. di as result _n "Saved: $OUT/hmda_coefs.dta"
+
+Saved: C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/desig
+> n2/hmda_coefs.dta
+
+. 
+end of do-file

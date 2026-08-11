@@ -1,0 +1,400 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign2_tract_plots.do 
+
+. /*===========================================================================
+> ===
+>  design2_tract_plots.do
+> 
+>  Figures for the tract-level DiD (design2_coefs.dta from
+>  design2_tract_results.do):
+> 
+>    figT1_lnhp_es          event study, ln price: base vs county-FE overlay
+>    figT2_dose_es          event study, ln price: >=5-event vs 1-4-event tract
+> s
+>    figT3_volume_es        event study, ln sales volume (pre-trends violated -
+> -
+>                           descriptive only, note says so)
+>    figT4_reconciliation   observed tract-DiD pooled Post vs ring-implied
+>                           prediction, by dose group -- the whole-vs-sum-of-
+>                           parts exhibit
+> 
+>  lpdid matrix columns: c1=coefficient c2=se c3=t c4=p c5=ci_low c6=ci_high c7
+> =obs
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global D2   "$REPO/data/design2"
+
+. global OUT  "$REPO/output/design2"
+
+. 
+. local COL_B  c1
+
+. local COL_SE c2
+
+. local COL_LB c5
+
+. local COL_UB c6
+
+. 
+. use "$OUT/design2_coefs.dta", clear
+
+. gen b  = `COL_B'
+
+. gen se = `COL_SE'
+(6 missing values generated)
+
+. gen lb = `COL_LB'
+(6 missing values generated)
+
+. gen ub = `COL_UB'
+(6 missing values generated)
+
+. replace lb = b - 1.96*se if missing(lb) & !missing(se)
+(0 real changes made)
+
+. replace ub = b + 1.96*se if missing(ub) & !missing(se)
+(0 real changes made)
+
+. drop if missing(b)
+(0 observations deleted)
+
+. tempfile coefs
+
+. save `coefs'
+file C:\Users\mva284\AppData\Local\Temp\ST_15c_000001.tmp saved as .dta
+    format
+
+. 
+. /*===========================================================================
+> =
+>   EVENT-STUDY OVERLAYS (drawfig pattern, horizons from pre/tau rownames)
+> ============================================================================*
+> /
+. capture program drop drawfig
+
+. program define drawfig
+  1.     syntax, out(string)
+  2.     local STYLE  graphregion(color(white)) bgcolor(white) ///
+>                  ylabel(, angle(horizontal) format(%9.0f)) ///
+>                  yline(0, lcolor(gs8) lwidth(thin)) ///
+>                  xline(-0.5, lcolor(gs11) lpattern(dash))
+  3.     local colors navy cranberry dkorange
+  4.     local n : word count $FIG_TESTS
+  5.     local plots
+  6.     local legorder
+  7.     local i = 0
+  8.     foreach t of global FIG_TESTS {
+  9.         local ++i
+ 10.         local col : word `i' of `colors'
+ 11.         local off = cond(`n'==1, 0, (`i' - (`n'+1)/2) * 0.12)
+ 12.         capture drop x`i'
+ 13.         gen x`i' = horizon + `off' if test == "`t'"
+ 14.         local lab : word `i' of $FIG_LABELS
+ 15.         local plots `plots' ///
+>             (rcap ub lb x`i' if test == "`t'", lcolor(`col') lwidth(medthin))
+>  ///
+>             (connected b x`i' if test == "`t'", color(`col') msymbol(O) lwidt
+> h(medthin))
+ 16.         local legorder `legorder' `= 2*`i'' "`lab'"
+ 17.     }
+ 18.     if `n' == 1 local legend legend(off)
+ 19.     else        local legend legend(order(`legorder') rows(1) position(6) 
+> region(lstyle(none)))
+ 20.     twoway `plots', `STYLE' `legend' ///
+>         title("$FIG_TITLE", size(medium)) ///
+>         ytitle("$FIG_YT") xtitle("$FIG_XT") ///
+>         note("$FIG_NOTE", size(vsmall)) ///
+>         xlabel(-4(1)3) name(`out', replace)
+ 21.     graph export "$OUT/`out'.png", replace width(2000)
+ 22. end
+
+. 
+. local XT "Years since first investor purchase in tract"
+
+. 
+. use `coefs', clear
+
+. keep if matrix_type == "event"
+(12 observations deleted)
+
+. gen horizon = .
+(48 missing values generated)
+
+. replace horizon = -real(substr(rowname, 4, .)) if strpos(rowname, "pre") == 1
+(24 real changes made)
+
+. replace horizon =  real(substr(rowname, 4, .)) if strpos(rowname, "tau") == 1
+(24 real changes made)
+
+. drop if missing(horizon)
+(0 observations deleted)
+
+. tempfile es
+
+. save `es'
+file C:\Users\mva284\AppData\Local\Temp\ST_15c_000002.tmp saved as .dta
+    format
+
+. 
+. use `es', clear
+
+. global FIG_TESTS  T_lnhp_base T_lnhp_fips
+
+. global FIG_LABELS `""Base" "+ County FE""'
+
+. global FIG_TITLE  Tract-level DiD: log house price
+
+. global FIG_YT     "Effect on 100 x ln(price)"
+
+. global FIG_XT     `XT'
+
+. global FIG_NOTE   Annual lpdid on the Red Atlas tract panel (count-weighted m
+> ean price); never-treated tracts as controls; 235 treated tracts.
+
+. drawfig, out(figT1_lnhp_es)
+(40 missing values generated)
+(40 missing values generated)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/figT1_lnhp_es.png saved as PNG format
+
+. 
+. use `es', clear
+
+. global FIG_TESTS  T_lnhp_dose5 T_lnhp_dose14
+
+. global FIG_LABELS `""Tracts with 5+ purchases" "Tracts with 1-4 purchases""'
+
+. global FIG_TITLE  Tract-level DiD by investor concentration
+
+. global FIG_YT     "Effect on 100 x ln(price)"
+
+. global FIG_XT     `XT'
+
+. global FIG_NOTE   Each series: that treated group vs never-treated tracts. Th
+> e concentration result at tract scale.
+
+. drawfig, out(figT2_dose_es)
+(40 missing values generated)
+(40 missing values generated)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/figT2_dose_es.png saved as PNG format
+
+. 
+. use `es', clear
+
+. global FIG_TESTS  T_lnsales_base
+
+. global FIG_LABELS `""Sales volume""'
+
+. global FIG_TITLE  Tract-level DiD: log transaction volume
+
+. global FIG_YT     "Effect on 100 x ln(sales)"
+
+. global FIG_XT     `XT'
+
+. global FIG_NOTE   DESCRIPTIVE ONLY: pre-period coefficients are significantly
+>  nonzero (declining volume precedes treatment) -- parallel trends fails for t
+> his outcome.
+
+. drawfig, out(figT3_volume_es)
+(40 missing values generated)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/figT3_volume_es.png saved as PNG format
+
+. 
+. /*===========================================================================
+> =
+>   RECONCILIATION FIGURE: observed vs ring-implied, by dose group
+> ============================================================================*
+> /
+. * group means of ring-implied predictions (grp 1 = all treated, 2 = 1-4, 3 = 
+> 5+)
+. import delimited "$D2/design2_tract_treatment.csv", varnames(1) clear
+(encoding automatically selected: ISO-8859-1)
+(3 vars, 235 obs)
+
+. tempfile trt
+
+. save `trt'
+file C:\Users\mva284\AppData\Local\Temp\ST_15c_000003.tmp saved as .dta
+    format
+
+. import delimited "$D2/design2_ring_prediction.csv", varnames(1) clear
+(encoding automatically selected: ISO-8859-1)
+(6 vars, 937 obs)
+
+. merge 1:1 tract_geoid using `trt', keep(match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                               235  
+    -----------------------------------------
+
+. gen pred_c = pred_central_vw
+
+. gen pred_k = pred_conserv_vw
+
+. preserve
+
+.     collapse (mean) pred_c pred_k
+
+.     gen grp = 1
+
+.     tempfile g1
+
+.     save `g1'
+file C:\Users\mva284\AppData\Local\Temp\ST_15c_000005.tmp saved as .dta
+    format
+
+. restore
+
+. preserve
+
+.     keep if inrange(n_events, 1, 4)
+(44 observations deleted)
+
+.     collapse (mean) pred_c pred_k
+
+.     gen grp = 2
+
+.     tempfile g2
+
+.     save `g2'
+file C:\Users\mva284\AppData\Local\Temp\ST_15c_000007.tmp saved as .dta
+    format
+
+. restore
+
+. keep if n_events >= 5
+(191 observations deleted)
+
+. collapse (mean) pred_c pred_k
+
+. gen grp = 3
+
+. append using `g1'
+
+. append using `g2'
+
+. replace pred_c = 100 * pred_c
+(3 real changes made)
+
+. replace pred_k = 100 * pred_k
+(3 real changes made)
+
+. tempfile predgrp
+
+. save `predgrp'
+file C:\Users\mva284\AppData\Local\Temp\ST_15c_000008.tmp saved as .dta
+    format
+
+. 
+. * observed pooled Post per group
+. use `coefs', clear
+
+. keep if matrix_type == "pooled" & lower(rowname) == "post"
+(54 observations deleted)
+
+. keep if inlist(test, "T_lnhp_base", "T_lnhp_dose14", "T_lnhp_dose5")
+(3 observations deleted)
+
+. gen grp = 1
+
+. replace grp = 2 if test == "T_lnhp_dose14"
+(1 real change made)
+
+. replace grp = 3 if test == "T_lnhp_dose5"
+(1 real change made)
+
+. merge 1:1 grp using `predgrp', nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                                 3  
+    -----------------------------------------
+
+. 
+. gen xo = grp - 0.12
+
+. gen xp = grp + 0.08
+
+. gen xk = grp + 0.20
+
+. 
+. twoway ///
+>     (rcap ub lb xo, lcolor(navy) lwidth(medthin)) ///
+>     (scatter b xo, color(navy) msymbol(O) msize(medium)) ///
+>     (scatter pred_c xp, color(cranberry) msymbol(D) msize(medium)) ///
+>     (scatter pred_k xk, color(cranberry*.55) msymbol(Dh) msize(medium)) ///
+>     , graphregion(color(white)) bgcolor(white) ///
+>     ylabel(0(5)25, angle(horizontal)) ///
+>     yline(0, lcolor(gs8) lwidth(thin)) ///
+>     xlabel(1 `""All treated" "tracts""' 2 `""1-4" "purchases""' 3 `""5+" "pur
+> chases""', noticks) ///
+>     xscale(range(0.6 3.4)) ///
+>     legend(order(2 "Observed tract-DiD effect (95% CI)" ///
+>                  3 "Ring-implied prediction (central)" ///
+>                  4 "Ring-implied prediction (conservative)") ///
+>            rows(3) position(6) region(lstyle(none))) ///
+>     title("The whole vs the sum of the parts", size(medium)) ///
+>     ytitle("Pooled post effect on 100 x ln(price)") ///
+>     xtitle("") ///
+>     note("Observed: lpdid pooled post estimate (that group vs never-treated t
+> racts). Prediction: stock-value-weighted mean of the" ///
+>          "estimated distance gradient over each treated tract's parcels -- th
+> e tract effect if micro-spillovers were the whole story." ///
+>          "Excess of observed over predicted in 5+ tracts = the market-level c
+> hannel operating only under concentration.", size(vsmall)) ///
+>     name(figT4_reconciliation, replace)
+
+. graph export "$OUT/figT4_reconciliation.png", replace width(2000)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/figT4_reconciliation.png saved as PNG format
+
+. 
+. di as result _n "Design 2 figures: figT1..figT4"
+
+Design 2 figures: figT1..figT4
+
+. 
+end of do-file
