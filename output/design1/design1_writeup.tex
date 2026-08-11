@@ -421,20 +421,31 @@ boom. At municipio level, using municipio repeat-sales indices as the local
 boom denominators, footprints in the top investor municipios are much larger:
 
 \begin{center}
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrrr}
 \toprule
-Municipio & Local boom '19--'24 & Uplift & Share of boom \\
+ & & & \multicolumn{3}{c}{Share of boom} \\
+\cmidrule(lr){4-6}
+Municipio & Local boom '19--'24 & Uplift & Synthesis & Ring only & Tract DiD only \\
 \midrule
-Rinc\'on     & $+148\%$ & \$0.27B & 44.9\% \\
-Dorado       & $+177\%$ & \$0.82B & 32.2\% \\
-R\'io Grande & $+115\%$ & \$0.47B & 25.6\% \\
-San Juan     & $+89\%$  & \$4.13B & 24.6\% \\
-Carolina     & $+91\%$  & \$1.28B & 17.6\% \\
-Guaynabo     & $+124\%$ & \$0.85B & 15.5\% \\
-Humacao      & $+121\%$ & \$0.38B & 14.2\% \\
+Rinc\'on     & $+148\%$ & \$0.27B & 44.9\% & 13.3\% & 54.8\% \\
+Dorado       & $+177\%$ & \$0.82B & 32.2\% & 11.0\% & 36.6\% \\
+R\'io Grande & $+115\%$ & \$0.47B & 25.6\% &  8.5\% & 25.7\% \\
+San Juan     & $+89\%$  & \$4.13B & 24.6\% & 15.1\% & 18.9\% \\
+Carolina     & $+91\%$  & \$1.28B & 17.6\% & 10.4\% & 12.8\% \\
+Guaynabo     & $+124\%$ & \$0.85B & 15.5\% & 13.2\% &  8.5\% \\
+Humacao      & $+121\%$ & \$0.38B & 14.2\% &  7.4\% & 12.9\% \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\noindent The synthesis column applies the ring gradient to every parcel and adds
+the concentration excess in 5+-purchase tracts; the design-by-design columns use
+each design's treatment effects alone --- ring only: the distance gradient over
+all parcels; tract DiD only: the dose-specific tract effects applied to treated
+tracts' market stock (zero outside treated tracts). The two bracket the
+synthesis in the hotspots: the ring design misses the tract-wide repricing
+under concentration, while the tract DiD assigns the whole tract effect to
+tract stock but nothing to spillovers beyond treated-tract borders.
 
 All aggregates are lower bounds: exposure counts only the 1{,}200
 name-identified purchases, excluding LLC and unmatched investors; the

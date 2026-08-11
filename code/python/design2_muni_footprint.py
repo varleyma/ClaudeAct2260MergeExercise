@@ -142,11 +142,15 @@ def main():
         muni_ring[m] += ur
 
     # ---- concentration excess per muni (5+ tracts, from D2 aggregation) ----
+    # also: tract-design-only uplift (dose-specific D2 effect x tract stock,
+    # summed over ALL treated tracts) for the design-by-design footprint columns
     muni_conc = defaultdict(float)
+    muni_d2 = defaultdict(float)
     for r in csv.DictReader(open(D2AGG, newline="", encoding="utf-8")):
+        m = fips_muni.get(r["tract_geoid"][:5], "")
+        muni_d2[m] += float(r["uplift_d2_dose"])
         if r["group"] != "hi5":
             continue
-        m = fips_muni.get(r["tract_geoid"][:5], "")
         muni_conc[m] += float(r["uplift_d2_dose"]) - float(r["uplift_ring_central"])
 
     # ---- muni price growth 2019 -> 2024 from the REPEAT-SALES index ----
@@ -181,12 +185,16 @@ def main():
         up = muni_ring[m] + muni_conc[m]
         gm = growth.get(m, float("nan"))
         boom = st * (1 - 1/(1+gm)) if gm and not math.isnan(gm) and gm > -0.9 else float("nan")
+        okboom = boom and not math.isnan(boom)
         rows.append({"municipio": m, "stock_B": st/1e9, "uplift_ring_B": muni_ring[m]/1e9,
-                     "uplift_conc_B": muni_conc[m]/1e9, "uplift_total_B": up/1e9,
+                     "uplift_conc_B": muni_conc[m]/1e9, "uplift_d2_B": muni_d2[m]/1e9,
+                     "uplift_total_B": up/1e9,
                      "uplift_pct_of_stock": 100*up/st if st else float("nan"),
                      "growth_2019_2024_pct": 100*gm if not math.isnan(gm) else float("nan"),
                      "boom_B": boom/1e9 if not math.isnan(boom) else float("nan"),
-                     "footprint_pct_of_boom": 100*up/boom if boom and not math.isnan(boom) else float("nan")})
+                     "footprint_pct_of_boom": 100*up/boom if okboom else float("nan"),
+                     "footprint_ring_pct_of_boom": 100*muni_ring[m]/boom if okboom else float("nan"),
+                     "footprint_d2_pct_of_boom": 100*muni_d2[m]/boom if okboom else float("nan")})
 
     with open(OUT, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
@@ -194,12 +202,13 @@ def main():
         for r in rows:
             w.writerow({k: (round(v, 3) if isinstance(v, float) else v) for k, v in r.items()})
 
-    print(f"\n{'municipio':>12} | {'stock $B':>8} | {'uplift $B':>9} | {'% stock':>7} | {'growth19-24':>11} | {'boom $B':>7} | {'% of boom':>9}")
+    print(f"\n{'municipio':>12} | {'stock $B':>8} | {'uplift $B':>9} | {'% stock':>7} | {'growth19-24':>11} | {'boom $B':>7} | {'% of boom':>9} | {'ring only':>9} | {'tract DiD':>9}")
     for r in rows:
         if r["municipio"] in FOCUS:
             print(f"{r['municipio']:>12} | {r['stock_B']:>8.1f} | {r['uplift_total_B']:>9.2f} | "
                   f"{r['uplift_pct_of_stock']:>6.1f}% | {r['growth_2019_2024_pct']:>10.1f}% | "
-                  f"{r['boom_B']:>7.1f} | {r['footprint_pct_of_boom']:>8.1f}%")
+                  f"{r['boom_B']:>7.1f} | {r['footprint_pct_of_boom']:>8.1f}% | "
+                  f"{r['footprint_ring_pct_of_boom']:>8.1f}% | {r['footprint_d2_pct_of_boom']:>8.1f}%")
     print(f"\ntable (all municipios): {OUT}")
 
 
