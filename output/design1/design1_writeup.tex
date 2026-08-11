@@ -421,24 +421,26 @@ boom. At municipio level, using municipio repeat-sales indices as the local
 boom denominators, footprints in the top investor municipios are much larger:
 
 \begin{center}
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrrrr}
 \toprule
- & & & \multicolumn{3}{c}{Share of boom} \\
-\cmidrule(lr){4-6}
-Municipio & Local boom '19--'24 & Uplift & Synthesis & Ring only & Tract DiD only \\
+ & \multicolumn{2}{c}{Local boom '19--'24} & & \multicolumn{3}{c}{Share of boom} \\
+\cmidrule(lr){2-3} \cmidrule(lr){5-7}
+Municipio & Growth & \$ & Uplift & Synthesis & Ring only & Tract DiD only \\
 \midrule
-Rinc\'on     & $+148\%$ & \$0.27B & 44.9\% & 13.3\% & 54.8\% \\
-Dorado       & $+177\%$ & \$0.82B & 32.2\% & 11.0\% & 36.6\% \\
-R\'io Grande & $+115\%$ & \$0.47B & 25.6\% &  8.5\% & 25.7\% \\
-San Juan     & $+89\%$  & \$4.13B & 24.6\% & 15.1\% & 18.9\% \\
-Carolina     & $+91\%$  & \$1.28B & 17.6\% & 10.4\% & 12.8\% \\
-Guaynabo     & $+124\%$ & \$0.85B & 15.5\% & 13.2\% &  8.5\% \\
-Humacao      & $+121\%$ & \$0.38B & 14.2\% &  7.4\% & 12.9\% \\
+Rinc\'on     & $+148\%$ & \$0.6B  & \$0.27B & 44.9\% & 13.3\% & 54.8\% \\
+Dorado       & $+177\%$ & \$2.5B  & \$0.82B & 32.2\% & 11.0\% & 36.6\% \\
+R\'io Grande & $+115\%$ & \$1.8B  & \$0.47B & 25.6\% &  8.5\% & 25.7\% \\
+San Juan     & $+89\%$  & \$16.7B & \$4.13B & 24.6\% & 15.1\% & 18.9\% \\
+Carolina     & $+91\%$  & \$7.3B  & \$1.28B & 17.6\% & 10.4\% & 12.8\% \\
+Guaynabo     & $+124\%$ & \$5.5B  & \$0.85B & 15.5\% & 13.2\% &  8.5\% \\
+Humacao      & $+121\%$ & \$2.7B  & \$0.38B & 14.2\% &  7.4\% & 12.9\% \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\noindent The synthesis column applies the ring gradient to every parcel and adds
+\noindent The dollar boom is the municipio's market stock value times
+$1-1/(1+g)$, the portion of current value attributable to repeat-sales growth
+$g$ since 2019. The synthesis column applies the ring gradient to every parcel and adds
 the concentration excess in 5+-purchase tracts; the design-by-design columns use
 each design's treatment effects alone --- ring only: the distance gradient over
 all parcels; tract DiD only: the dose-specific tract effects applied to treated
