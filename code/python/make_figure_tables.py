@@ -312,6 +312,27 @@ def main():
                       "Hedonic controls": "N"})
         apply_r2(sp, "T1_baseline")
         specs.append(sp)
+    # within-event LP-DiD column (absorb(event x year)), parsed from its log
+    _wlog = os.path.join(O1, "withinevent_results.log")
+    if os.path.exists(_wlog):
+        seg = open(_wlog, encoding="utf-8", errors="replace").read()
+        # "WITHIN-EVENT" appears twice (command echo + printed banner): take the
+        # last segment, which follows the banner and contains the matrices
+        if "WITHIN-EVENT" in seg and "e(pooled_results)[2,7]" in seg.split("WITHIN-EVENT")[-1]:
+            seg = seg.split("WITHIN-EVENT")[-1].split("e(pooled_results)[2,7]")[1]
+            def _nums(l):
+                return [float(x) for x in re.findall(r"-?\d*\.\d+|-?\d+", l)]
+            prl = [l for l in seg.splitlines() if re.match(r"\s*Pre\s", l)]
+            pol = [l for l in seg.splitlines() if re.match(r"\s*Post\s", l)]
+            if len(prl) >= 2 and len(pol) >= 2:
+                pr1, po1, po2 = _nums(prl[0]), _nums(pol[0]), _nums(pol[1])
+                specs.append(Spec("LP-DiD within-event",
+                                  pre=pr1[0], pre_se=pr1[1],
+                                  post=po1[0], post_se=po1[1],
+                                  nobs=f"{int(po2[-1]):,}",
+                                  fe={"Event$\\times$ring FE": "(diff.)",
+                                      "Event$\\times$year FE": "Y",
+                                      "Hedonic controls": "N"}))
     for i, (spec_id, lab, hed) in enumerate([("S1_pooled", "Sale-level OLS", "N"),
                                              ("S2_hedonic", "Sale-level OLS", "Y")]):
         r = next(x for x in sl if x["spec"] == spec_id and f(x["h"]) == 99)
@@ -322,20 +343,27 @@ def main():
                           nobs=f"{n:,}" if n else "--",
                           fe={"Event$\\times$ring FE": "Y", "Event$\\times$year FE": "Y",
                               "Hedonic controls": hed}))
-    # scale: lpdid col already in log points x1? lpdid ran on lnp (natural logs) ->
-    # coefficients are log points; multiply by 100 for display consistency.
-    for sp in specs[:1]:
+    # scale: lpdid columns are in natural-log units -> x100 for display
+    # (including the PMD post-pre tuple where present)
+    for sp in specs:
+        if not sp.label.startswith("LP-DiD"):
+            continue
         for a in ("pre", "post"):
             v = getattr(sp, a)
             if v is not None:
                 setattr(sp, a, v * 100)
                 setattr(sp, a + "_se", getattr(sp, a + "_se") * 100)
+        if sp.pmd is not None:
+            sp.pmd = (sp.pmd[0] * 100, sp.pmd[1] * 100 if sp.pmd[1] else None)
     emit_table("tab_figD12_salelevel.tex",
                "Estimation-approach robustness (fig.\\ D12)", specs, FE_SL,
-               "Column (1): cell-level LP-DiD (unit differencing subsumes the FE); its "
-               "R$^2$/N are from the pre-mean-differenced pooled regression. Columns (2)-(3): stacked sale-level OLS, near$\\times$post coefficient, "
-               "SEs clustered by event; sale-level pre coefficients are in the event-study "
-               "specification, not the pooled regression. 100$\\times$log points.")
+               "Column (1): cell-level LP-DiD, pooled never-treated controls; its "
+               "R$^2$/N are from the pre-mean-differenced pooled regression. Column (2): LP-DiD with "
+               "event$\\times$calendar-year effects absorbed (within-event identification: each near ring "
+               "vs its own far ring); its post$-$pre is the arithmetic difference (independence-approx.\\ SE). "
+               "Columns (3)-(4): stacked sale-level OLS, near$\\times$post coefficient, SEs clustered by "
+               "event. Long-differencing subsumes event$\\times$ring FE in the LP-DiD columns. "
+               "100$\\times$log points.")
 
     # ================= Design 2 tract tables =================
     d2 = load_csv(os.path.join(O2, "design2_coefs.csv"))

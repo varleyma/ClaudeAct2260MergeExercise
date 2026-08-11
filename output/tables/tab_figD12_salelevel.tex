@@ -1,23 +1,23 @@
 \begin{table}[htbp]\centering
 \caption{Estimation-approach robustness (fig.\ D12)}
-\begin{tabular}{lccc}
+\begin{tabular}{lcccc}
 \toprule
- & (1) & (2) & (3) \\
- & LP-DiD cells & Sale-level OLS & Sale-level OLS \\
+ & (1) & (2) & (3) & (4) \\
+ & LP-DiD cells & LP-DiD within-event & Sale-level OLS & Sale-level OLS \\
 \midrule
-Pooled pre & +0.34 & -- & -- \\
- & (1.71) &  &  \\
-Pooled post & +6.95*** & +7.09*** & +6.72*** \\
- & (2.03) & (1.58) & (1.32) \\
-Post $-$ pre & +0.05*** & -- & -- \\
- & (0.01) &  &  \\
+Pooled pre & +0.34 & -2.57 & -- & -- \\
+ & (1.71) & (1.84) &  &  \\
+Pooled post & +6.95*** & +5.10** & +7.09*** & +6.72*** \\
+ & (2.03) & (2.15) & (1.58) & (1.32) \\
+Post $-$ pre & +5.32*** & +7.67*** & -- & -- \\
+ & (1.40) & (2.83) &  &  \\
 \midrule
-Event$\times$ring FE & (diff.) & Y & Y \\
-Event$\times$year FE & (diff.) & Y & Y \\
-Hedonic controls & N & N & Y \\
-R$^2$ & 0.154 & 0.172 & 0.344 \\
-Observations & 12,379 & 777,666 & 730,276 \\
+Event$\times$ring FE & (diff.) & (diff.) & Y & Y \\
+Event$\times$year FE & (diff.) & Y & Y & Y \\
+Hedonic controls & N & N & N & Y \\
+R$^2$ & 0.154 & -- & 0.172 & 0.344 \\
+Observations & 12,379 & 1,350 & 777,666 & 730,276 \\
 \bottomrule
 \end{tabular}
-\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize Column (1): cell-level LP-DiD (unit differencing subsumes the FE); its R$^2$/N are from the pre-mean-differenced pooled regression. Columns (2)-(3): stacked sale-level OLS, near$\times$post coefficient, SEs clustered by event; sale-level pre coefficients are in the event-study specification, not the pooled regression. 100$\times$log points.\end{minipage}
+\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize Column (1): cell-level LP-DiD, pooled never-treated controls; its R$^2$/N are from the pre-mean-differenced pooled regression. Column (2): LP-DiD with event$\times$calendar-year effects absorbed (within-event identification: each near ring vs its own far ring); its post$-$pre is the arithmetic difference (independence-approx.\ SE). Columns (3)-(4): stacked sale-level OLS, near$\times$post coefficient, SEs clustered by event. Long-differencing subsumes event$\times$ring FE in the LP-DiD columns. 100$\times$log points.\end{minipage}
 \end{table}
