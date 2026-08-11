@@ -1,42 +1,52 @@
 """
-Per-municipio program footprint: the island-level 10-11% exercise, repeated
-for the largest treated municipios.
+Per-municipio program footprint, in ONE valuation convention so the table's
+columns are exactly consistent with each other.
 
-For each municipio m:
-  uplift(m)  = ring-implied uplift over m's stock (parcel-level beta(d) x
-               assessed value x band market/assessed ratio -- Layer 1 method)
-             + concentration excess from m's 5+ purchase tracts
-               (D2 dose uplift minus ring-implied, from design2_aggregation.csv)
-  boom(m)    = m's market stock value x (1 - 1/(1+g_m)), where g_m is the
-               municipio's transaction-weighted mean-price growth 2019 -> 2024
-               from the Red Atlas tract panel
-  footprint(m) = uplift(m) / boom(m)
+Convention (matches design2_aggregation.py): every parcel's market value is
+assessed TOTALVAL x its tract's median market/assessed ratio (2019+ sales;
+municipio -> island fallback for thin tracts). On that common stock:
+
+  ring_total(m)  = sum over m's parcels of vmkt x (exp(beta(band)) - 1)
+  ring_hi5(m)    = same, restricted to parcels in 5+-purchase tracts
+  d2_total(m)    = sum over parcels in treated tracts of vmkt x (exp(E_grp)-1),
+                   E from the tract-DiD dose effects (1-4: +0.0376, 5+: +0.1831)
+  d2_hi5(m)      = same, 5+ tracts only
+  conc(m)        = d2_hi5 - ring_hi5      (concentration excess)
+  synth(m)       = ring_total + conc      (ring everywhere, topped up to the
+                                           full tract effect inside 5+ tracts)
+  boom(m)        = stock(m) x (1 - 1/(1+g_m)), g_m = repeat-sales growth
+                   2019 -> 2024 (municipio index)
+
+Identities that hold exactly, row by row:
+  synth = ring_total + (d2_hi5 - ring_hi5);  d2_total = d2_hi5 + d2_lo14.
 
 Output: output/design2/design2_muni_footprint.csv (all municipios) + printed
 summary for the top treated ones.
 """
 
-import csv, math, os
+import csv, math, os, statistics
 from collections import defaultdict
 from datetime import datetime
 
 import numpy as np
+import geopandas as gpd
+from shapely.geometry import Point
 
 REPO = r"C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise"
 ISLAND = os.path.join(REPO, "data", "third_party", "crim_parcels_island.csv")
+TRACTS = os.path.join(REPO, "data", "third_party", "tracts72")
 EVENTS = os.path.join(REPO, "data", "design1", "design1_events.csv")
 DT = os.path.join(REPO, "data", "third_party")
-D2AGG = os.path.join(REPO, "output", "design2", "design2_aggregation.csv")
+D2 = os.path.join(REPO, "data", "design2")
 REDATLAS = r"C:\Users\mva284\Dropbox\Ley60PR\data\clean\monthly_data_red_atlas.csv"
 OUT = os.path.join(REPO, "output", "design2", "design2_muni_footprint.csv")
 
 BANDS = [250, 500, 1000, 1500, 1750, 2500]
 BETA_CENTRAL = np.array([0.077, 0.105, 0.043, 0.027, 0.027, 0.031, 0.0])
-RATIO_BAND = None  # computed below
+E_LO, E_HI = 0.0376, 0.1831   # tract-DiD dose effects (design2 pooled Post)
 CELL = 0.025
 MLAT = 110540.0
 
-# tract fips -> municipio name (from the events file, which carries both)
 FOCUS = ["San Juan", "Dorado", "Humacao", "Carolina", "R\u00edo Grande",
          "Rinc\u00f3n", "Guaynabo"]
 
@@ -74,7 +84,7 @@ def main():
             if c:
                 investor.add(c)
 
-    # ---- pass 1: stock parcels with muni, band, value, recent ratio ----
+    # ---- pass 1: stock parcels with muni, assessed value, recent ratio ----
     P, V, MU, RT = [], [], [], []
     with open(ISLAND, newline="", encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
@@ -100,7 +110,16 @@ def main():
     P = np.array(P); V = np.array(V)
     print(f"stock parcels: {len(P):,}")
 
-    # distances (vectorized per grid block)
+    # ---- tract join (same as design2_aggregation.py) ----
+    tracts = gpd.read_file(TRACTS).to_crs(4326)[["GEOID", "geometry"]]
+    gdf = gpd.GeoDataFrame({"i": np.arange(len(P))},
+                           geometry=[Point(x, y) for x, y in P], crs=4326)
+    j = gpd.sjoin(gdf, tracts, how="left", predicate="within")
+    j = j[~j.index.duplicated(keep="first")]
+    geoid = np.full(len(P), "", dtype=object)
+    geoid[j["i"].values] = j["GEOID"].fillna("").values
+
+    # ---- distances to nearest event (vectorized per grid block) ----
     dmin = np.full(len(P), np.inf)
     cells = (P / CELL).astype(int)
     order = np.lexsort((cells[:, 1], cells[:, 0]))
@@ -124,34 +143,48 @@ def main():
         i0 = i1
     bins = np.digitize(dmin, BANDS)
 
-    # band ratios (Layer-1 convention)
-    band_r = []
-    for b in range(7):
-        vals = [RT[i] for i in range(len(RT)) if bins[i] == b and not math.isnan(RT[i])]
-        band_r.append(np.median(vals))
-    band_r = np.array(band_r)
-    g = np.exp(BETA_CENTRAL) - 1
+    # ---- market/assessed ratios: tract median -> muni -> island fallback ----
+    tr_ratios = defaultdict(list)
+    for g, rt in zip(geoid, RT):
+        if g and not math.isnan(rt):
+            tr_ratios[g].append(rt)
+    island_ratio = statistics.median([x for v in tr_ratios.values() for x in v])
+    muni_ratios = defaultdict(list)
+    for g, v in tr_ratios.items():
+        muni_ratios[g[:5]].extend(v)
 
-    vmkt = V * band_r[bins]
-    uplift_ring = vmkt * g[bins]
+    def ratio(g):
+        if len(tr_ratios.get(g, [])) >= 5:
+            return statistics.median(tr_ratios[g])
+        if len(muni_ratios.get(g[:5], [])) >= 5:
+            return statistics.median(muni_ratios[g[:5]])
+        return island_ratio
 
+    # ---- treated-tract dose groups ----
+    n_ev = {r["tract_geoid"]: int(r["n_events"])
+            for r in csv.DictReader(open(os.path.join(D2, "design2_tract_treatment.csv"),
+                                         newline="", encoding="utf-8"))}
+
+    # ---- accumulate per municipio, one valuation convention throughout ----
+    g_band = np.exp(BETA_CENTRAL) - 1
     muni_stock = defaultdict(float)
     muni_ring = defaultdict(float)
-    for m, vm, ur in zip(MU, vmkt, uplift_ring):
-        muni_stock[m] += vm
-        muni_ring[m] += ur
-
-    # ---- concentration excess per muni (5+ tracts, from D2 aggregation) ----
-    # also: tract-design-only uplift (dose-specific D2 effect x tract stock,
-    # summed over ALL treated tracts) for the design-by-design footprint columns
-    muni_conc = defaultdict(float)
+    muni_ring_hi5 = defaultdict(float)
     muni_d2 = defaultdict(float)
-    for r in csv.DictReader(open(D2AGG, newline="", encoding="utf-8")):
-        m = fips_muni.get(r["tract_geoid"][:5], "")
-        muni_d2[m] += float(r["uplift_d2_dose"])
-        if r["group"] != "hi5":
-            continue
-        muni_conc[m] += float(r["uplift_d2_dose"]) - float(r["uplift_ring_central"])
+    muni_d2_hi5 = defaultdict(float)
+    for m, gid, v, b in zip(MU, geoid, V, bins):
+        vmkt = v * ratio(gid)
+        muni_stock[m] += vmkt
+        ur = vmkt * g_band[b]
+        muni_ring[m] += ur
+        ne = n_ev.get(gid, 0)
+        if ne >= 1:
+            e = E_HI if ne >= 5 else E_LO
+            ud = vmkt * (math.exp(e) - 1)
+            muni_d2[m] += ud
+            if ne >= 5:
+                muni_d2_hi5[m] += ud
+                muni_ring_hi5[m] += ur
 
     # ---- muni price growth 2019 -> 2024 from the REPEAT-SALES index ----
     # (cumulative log index, base 2000; growth = exp(v2024 - v2019) - 1)
@@ -163,7 +196,6 @@ def main():
             hpi[r["geoCityId"].strip()][r["year"][:4]] = float(r["repSalesPerCity"])
         except ValueError:
             continue
-    # muni name -> fips via the events-derived map (invert)
     muni_fips = {}
     for f5, m in fips_muni.items():
         muni_fips[m] = f5
@@ -178,23 +210,33 @@ def main():
 
     # ---- assemble ----
     rows = []
-    for m in sorted(muni_stock, key=lambda x: -(muni_ring[x] + muni_conc[x])):
+    for m in sorted(muni_stock, key=lambda x: -(muni_ring[x] + muni_d2_hi5[x] - muni_ring_hi5[x])):
         if not m:
             continue
         st = muni_stock[m]
-        up = muni_ring[m] + muni_conc[m]
+        conc = muni_d2_hi5[m] - muni_ring_hi5[m]
+        up = muni_ring[m] + conc
         gm = growth.get(m, float("nan"))
         boom = st * (1 - 1/(1+gm)) if gm and not math.isnan(gm) and gm > -0.9 else float("nan")
         okboom = boom and not math.isnan(boom)
-        rows.append({"municipio": m, "stock_B": st/1e9, "uplift_ring_B": muni_ring[m]/1e9,
-                     "uplift_conc_B": muni_conc[m]/1e9, "uplift_d2_B": muni_d2[m]/1e9,
-                     "uplift_total_B": up/1e9,
+        def sh(x):
+            return 100*x/boom if okboom else float("nan")
+        rows.append({"municipio": m, "stock_B": st/1e9,
+                     "uplift_ring_B": muni_ring[m]/1e9,
+                     "uplift_ring_hi5_B": muni_ring_hi5[m]/1e9,
+                     "uplift_d2_B": muni_d2[m]/1e9,
+                     "uplift_d2_hi5_B": muni_d2_hi5[m]/1e9,
+                     "uplift_conc_B": conc/1e9,
+                     "uplift_synth_B": up/1e9,
                      "uplift_pct_of_stock": 100*up/st if st else float("nan"),
                      "growth_2019_2024_pct": 100*gm if not math.isnan(gm) else float("nan"),
-                     "boom_B": boom/1e9 if not math.isnan(boom) else float("nan"),
-                     "footprint_pct_of_boom": 100*up/boom if okboom else float("nan"),
-                     "footprint_ring_pct_of_boom": 100*muni_ring[m]/boom if okboom else float("nan"),
-                     "footprint_d2_pct_of_boom": 100*muni_d2[m]/boom if okboom else float("nan")})
+                     "boom_B": boom/1e9 if okboom else float("nan"),
+                     "share_ring_pct": sh(muni_ring[m]),
+                     "share_ring_hi5_pct": sh(muni_ring_hi5[m]),
+                     "share_d2_pct": sh(muni_d2[m]),
+                     "share_d2_hi5_pct": sh(muni_d2_hi5[m]),
+                     "share_synth_pct": sh(up),
+                     "share_conc_pct": sh(conc)})
 
     with open(OUT, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
@@ -202,13 +244,14 @@ def main():
         for r in rows:
             w.writerow({k: (round(v, 3) if isinstance(v, float) else v) for k, v in r.items()})
 
-    print(f"\n{'municipio':>12} | {'stock $B':>8} | {'uplift $B':>9} | {'% stock':>7} | {'growth19-24':>11} | {'boom $B':>7} | {'% of boom':>9} | {'ring only':>9} | {'tract DiD':>9}")
+    print(f"\n{'municipio':>12} | {'growth':>7} | {'boom $B':>7} | {'synth $B':>8} | "
+          f"{'ring':>5} {'ring5+':>6} | {'d2':>5} {'d25+':>5} | {'synth':>5} {'conc':>5}")
     for r in rows:
         if r["municipio"] in FOCUS:
-            print(f"{r['municipio']:>12} | {r['stock_B']:>8.1f} | {r['uplift_total_B']:>9.2f} | "
-                  f"{r['uplift_pct_of_stock']:>6.1f}% | {r['growth_2019_2024_pct']:>10.1f}% | "
-                  f"{r['boom_B']:>7.1f} | {r['footprint_pct_of_boom']:>8.1f}% | "
-                  f"{r['footprint_ring_pct_of_boom']:>8.1f}% | {r['footprint_d2_pct_of_boom']:>8.1f}%")
+            print(f"{r['municipio']:>12} | {r['growth_2019_2024_pct']:>6.1f}% | {r['boom_B']:>7.1f} | "
+                  f"{r['uplift_synth_B']:>8.2f} | {r['share_ring_pct']:>4.1f}% {r['share_ring_hi5_pct']:>5.1f}% | "
+                  f"{r['share_d2_pct']:>4.1f}% {r['share_d2_hi5_pct']:>4.1f}% | "
+                  f"{r['share_synth_pct']:>4.1f}% {r['share_conc_pct']:>4.1f}%")
     print(f"\ntable (all municipios): {OUT}")
 
 

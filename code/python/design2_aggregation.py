@@ -23,7 +23,7 @@ import geopandas as gpd
 from shapely.geometry import Point
 
 REPO = r"C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise"
-SP = r"C:\Users\mva284\AppData\Local\Temp\claude\C--Users-mva284-Dropbox-ClaudeAct2260MergeExercise\b80c9a74-aa99-4561-adf0-041046ec7be2\scratchpad"
+SP = os.path.join(REPO, "data", "third_party")
 ISLAND = os.path.join(REPO, "data", "third_party", "crim_parcels_island.csv")
 DT = os.path.join(REPO, "data", "third_party")
 D2 = os.path.join(REPO, "data", "design2")

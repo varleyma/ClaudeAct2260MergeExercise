@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  11 AUG 2026 14:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  11 AUG 2026 14:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -560,13 +560,13 @@ Package rerunfilecheck Info: File `design1_writeup.out' has not changed.
 (rerunfilecheck)             Checksum: 211615D205C98822C5DD91639C78356A;3489.
  ) 
 Here is how much of TeX's memory you used:
- 12142 strings out of 473579
- 190897 string characters out of 5732262
- 592170 words of memory out of 5000000
- 34847 multiletter control sequences out of 15000+600000
- 570565 words of font info for 84 fonts, out of 8000000 for 9000
+ 12144 strings out of 473579
+ 190919 string characters out of 5732262
+ 593170 words of memory out of 5000000
+ 34848 multiletter control sequences out of 15000+600000
+ 570900 words of font info for 85 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,8n,79p,977b,507s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,8n,79p,977b,543s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
 live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2024/texmf-di
@@ -580,11 +580,12 @@ xlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/texlive/202
 st/fonts/type1/public/amsfonts/cm/cmti10.pfb><c:/texlive/2024/texmf-dist/fonts/
 type1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/pub
 lic/amsfonts/symbols/msbm10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/
-cm-super/sfrm1095.pfb>
-Output written on design1_writeup.pdf (13 pages, 2520969 bytes).
+cm-super/sfrm1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/s
+frm1095.pfb>
+Output written on design1_writeup.pdf (13 pages, 2525639 bytes).
 PDF statistics:
- 279 PDF objects out of 1000 (max. 8388607)
- 215 compressed objects within 3 object streams
+ 284 PDF objects out of 1000 (max. 8388607)
+ 218 compressed objects within 3 object streams
  55 named destinations out of 1000 (max. 500000)
  228 words of extra memory for PDF output out of 10000 (max. 10000000)
 

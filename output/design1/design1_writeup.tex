@@ -421,33 +421,40 @@ boom. At municipio level, using municipio repeat-sales indices as the local
 boom denominators, footprints in the top investor municipios are much larger:
 
 \begin{center}
-\begin{tabular}{lrrrrrr}
+\small
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lrrrrrrrrr}
 \toprule
- & \multicolumn{2}{c}{Local boom '19--'24} & & \multicolumn{3}{c}{Share of boom} \\
-\cmidrule(lr){2-3} \cmidrule(lr){5-7}
-Municipio & Growth & \$ & Uplift & Synthesis & Ring only & Tract DiD only \\
+ & \multicolumn{2}{c}{Local boom '19--'24} & &
+   \multicolumn{2}{c}{Synthesis} & \multicolumn{2}{c}{Ring design} &
+   \multicolumn{2}{c}{Tract DiD} \\
+\cmidrule(lr){2-3} \cmidrule(lr){5-6} \cmidrule(lr){7-8} \cmidrule(lr){9-10}
+Municipio & Growth & \$ & Uplift & Total & 5+ diff. & Total & 5+ tracts & Total & 5+ tracts \\
 \midrule
-Rinc\'on     & $+148\%$ & \$0.6B  & \$0.27B & 44.9\% & 13.3\% & 54.8\% \\
-Dorado       & $+177\%$ & \$2.5B  & \$0.82B & 32.2\% & 11.0\% & 36.6\% \\
-R\'io Grande & $+115\%$ & \$1.8B  & \$0.47B & 25.6\% &  8.5\% & 25.7\% \\
-San Juan     & $+89\%$  & \$16.7B & \$4.13B & 24.6\% & 15.1\% & 18.9\% \\
-Carolina     & $+91\%$  & \$7.3B  & \$1.28B & 17.6\% & 10.4\% & 12.8\% \\
-Guaynabo     & $+124\%$ & \$5.5B  & \$0.85B & 15.5\% & 13.2\% &  8.5\% \\
-Humacao      & $+121\%$ & \$2.7B  & \$0.38B & 14.2\% &  7.4\% & 12.9\% \\
+Rinc\'on     & $+148\%$ & \$1.1B  & \$0.34B & 31.1\% & 17.7\% & 13.4\% & 12.7\% & 30.7\% & 30.4\% \\
+Dorado       & $+177\%$ & \$3.7B  & \$0.97B & 25.9\% & 14.4\% & 11.5\% & 10.3\% & 25.0\% & 24.8\% \\
+San Juan     & $+89\%$  & \$17.8B & \$4.29B & 24.1\% &  9.0\% & 15.1\% &  6.0\% & 17.8\% & 15.1\% \\
+R\'io Grande & $+115\%$ & \$2.0B  & \$0.48B & 24.0\% & 15.7\% &  8.4\% &  6.1\% & 23.5\% & 21.8\% \\
+Carolina     & $+91\%$  & \$7.6B  & \$1.32B & 17.2\% &  6.8\% & 10.4\% &  4.7\% & 12.2\% & 11.6\% \\
+Guaynabo     & $+124\%$ & \$5.4B  & \$0.84B & 15.5\% &  2.3\% & 13.2\% &  1.7\% &  8.6\% &  4.0\% \\
+Humacao      & $+121\%$ & \$2.5B  & \$0.39B & 15.5\% &  7.2\% &  8.3\% &  5.1\% & 13.7\% & 12.4\% \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\noindent The dollar boom is the municipio's market stock value times
+\noindent All columns share one valuation convention: each parcel at assessed
+value times its tract's median market/assessed ratio (2019+ sales; municipio
+and island fallbacks). The dollar boom is the municipio's market stock times
 $1-1/(1+g)$, the portion of current value attributable to repeat-sales growth
-$g$ since 2019. The synthesis column applies the ring gradient to every parcel and adds
-the concentration excess in 5+-purchase tracts; the design-by-design columns use
-each design's treatment effects alone --- ring only: the distance gradient over
-all parcels; tract DiD only: the dose-specific tract effects applied to treated
-tracts' market stock (zero outside treated tracts). The two bracket the
-synthesis in the hotspots: the ring design misses the tract-wide repricing
-under concentration, while the tract DiD assigns the whole tract effect to
-tract stock but nothing to spillovers beyond treated-tract borders.
+$g$ since 2019; Uplift is the synthesis in dollars. Shares of boom connect
+exactly: \emph{Ring, Total} integrates the distance gradient over all parcels
+and \emph{5+ tracts} restricts to parcels in 5+-purchase tracts; \emph{Tract
+DiD} applies the dose-specific tract effects to treated-tract stock
+(\emph{Total}: all treated tracts; \emph{5+ tracts}: the high-dose subset).
+The synthesis \emph{5+ differential} is Tract DiD (5+) minus Ring (5+) ---
+the tract-wide repricing beyond what proximity predicts --- and
+\emph{Synthesis, Total} $=$ Ring (Total) $+$ the 5+ differential, so the ring
+layer is never double-counted.
 
 All aggregates are lower bounds: exposure counts only the 1{,}200
 name-identified purchases, excluding LLC and unmatched investors; the
