@@ -1,0 +1,21 @@
+Events: 1256 total, 1200 decree-era (>=2012)
+Treated ZCTAs (>=2012): 90  (1-4: 53, 5+: 37)
+Spatial-join ZCTA vs legacy dominant-ZCTA column agreement: 92.1%
+
+Top 15 treated zips:
+ zcta  first_event_year  n_events dose_group
+00646              2013       191         5+
+00791              2012       146         5+
+00907              2014       126         5+
+00911              2013        81         5+
+00979              2015        56         5+
+00745              2015        50         5+
+00901              2013        46         5+
+00677              2014        43         5+
+00692              2018        40         5+
+00662              2012        26         5+
+00913              2015        23         5+
+00909              2014        23         5+
+00969              2013        20         5+
+00603              2013        19         5+
+00926              2016        19         5+
