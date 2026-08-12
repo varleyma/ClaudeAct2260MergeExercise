@@ -1,0 +1,580 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /experian/zip_inmigration_results.log
+  log type:  text
+ opened on:  12 Aug 2026, 14:35:23
+
+. 
+. use "$OUT/_zi_panel.dta", clear
+
+. qui count
+
+. di as result "Panel cells: " r(N)
+Panel cells: 2367
+
+. tab year treat
+
+           |         treat
+      year |         0          1 |     Total
+-----------+----------------------+----------
+      2006 |       132          0 |       132 
+      2007 |       132          0 |       132 
+      2008 |       132          0 |       132 
+      2009 |       132          0 |       132 
+      2010 |       132          0 |       132 
+      2011 |       132          0 |       132 
+      2012 |       128          4 |       132 
+      2013 |       121         11 |       132 
+      2014 |       113         19 |       132 
+      2015 |       106         26 |       132 
+      2016 |       101         31 |       132 
+      2017 |        97         35 |       132 
+      2018 |        91         41 |       132 
+      2019 |        81         50 |       131 
+      2020 |        70         60 |       130 
+      2021 |        58         72 |       130 
+      2022 |        51         79 |       130 
+      2023 |        47         83 |       130 
+-----------+----------------------+----------
+     Total |     1,856        511 |     2,367 
+
+. 
+. * headline: off-island in-migration (the Act-60-adjacent inflow)
+. use "$OUT/_zi_panel.dta", clear
+
+. runspec y_offisl T_ioff_base
+
+===== lpdid [T_ioff_base] outcome=y_offisl  =====
+lpdid y_offisl, unit(zip_num) time(year) treat(treat) pre_window(4) post_window
+> (3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .3843789   .2747388        1.4      .1642  -.1591199 
+        pre3 | -.0867103   .2216728       -.39      .6963   -.525232 
+        pre2 |   .032185   .1918366        .17       .867  -.3473136 
+        pre1 |         0          .          .          .          . 
+        tau0 | -.0692583    .220888       -.31      .7544  -.5062275 
+        tau1 |  .1633328   .2407702        .68      .4987   -.312968 
+        tau2 |  -.126006   .3851028       -.33       .744  -.8878313 
+        tau3 | -.2891781   .3494715       -.83      .4095   -.980516 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .9278777       1411 
+        pre3 |  .3518113       1543 
+        pre2 |  .4116835       1674 
+        pre1 |         .          . 
+        tau0 |  .3677108       1807 
+        tau1 |  .6396337       1670 
+        tau2 |  .6358192       1531 
+        tau3 |  .4021599       1389 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0418193   .1691233        .25      .8051   -.292747 
+        Post | -.0368693   .2266489       -.16       .871  -.4852348 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .3763856       1410 
+        Post |  .4114962       1387 
+
+. use "$OUT/_zi_panel.dta", clear
+
+. runspec y_offisl T_ioff_muni  muni_num
+
+===== lpdid [T_ioff_muni] outcome=y_offisl absorb(muni_num) =====
+lpdid y_offisl, unit(zip_num) time(year) treat(treat) pre_window(4) post_window
+> (3) nograph absorb(muni_num)
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .5146737   .3176815       1.62      .1076  -.1137761 
+        pre3 |  .0463819   .2613676        .18      .8594  -.4706656 
+        pre2 |  .0773409   .2010614        .38      .7011  -.3204065 
+        pre1 |         0          .          .          .          . 
+        tau0 | -.0366575   .2580933       -.14      .8873  -.5472276 
+        tau1 |  .0688349   .2563818        .27      .7887  -.4383495 
+        tau2 | -.2504307   .4305527       -.58      .5618  -1.102167 
+        tau3 | -.4380192    .406281      -1.08       .283   -1.24174 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  1.143124       1411 
+        pre3 |  .5634294       1543 
+        pre2 |  .4750882       1674 
+        pre1 |         .          . 
+        tau0 |  .4739125       1807 
+        tau1 |  .5760193       1670 
+        tau2 |  .6013052       1531 
+        tau3 |  .3657015       1389 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0609864    .182331        .33      .7386  -.2997077 
+        Post | -.1440331   .2379845       -.61      .5461  -.6148231 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .4216806       1410 
+        Post |   .326757       1387 
+
+. * any-origin arrivals
+. use "$OUT/_zi_panel.dta", clear
+
+. runspec y_any    T_iany_base
+
+===== lpdid [T_iany_base] outcome=y_any  =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .6206331   .6559676        .95      .3458  -.6770272 
+        pre3 |    -.2602   .4074899       -.64      .5242  -1.066312 
+        pre2 | -.3838479   .4320029       -.89      .3759  -1.238453 
+        pre1 |         0          .          .          .          . 
+        tau0 | -.4343948   .3915261      -1.11      .2693  -1.208927 
+        tau1 |  .4700255   .4621177       1.02       .311  -.4441534 
+        tau2 |  .2893086    1.12966        .26      .7983  -1.945428 
+        tau3 | -.6225182    .546383      -1.14      .2566  -1.703394 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  1.918293       1411 
+        pre3 |  .5459121       1543 
+        pre2 |  .4707568       1674 
+        pre1 |         .          . 
+        tau0 |  .3401372       1807 
+        tau1 |  1.384204       1670 
+        tau2 |  2.524045       1531 
+        tau3 |  .4583577       1389 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0749945   .4364692       -.17      .8638  -.9384347 
+        Post |  .2619365   .5037583        .52       .604  -.7346176 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .7884457       1410 
+        Post |  1.258491       1387 
+
+. use "$OUT/_zi_panel.dta", clear
+
+. runspec y_any    T_iany_muni  muni_num
+
+===== lpdid [T_iany_muni] outcome=y_any absorb(muni_num) =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph absorb(muni_num)
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .6032738   .7484765        .81      .4217  -.8773913 
+        pre3 | -.1854566    .465868        -.4      .6912  -1.107055 
+        pre2 | -.3876915   .4590368       -.84      .3999  -1.295776 
+        pre1 |         0          .          .          .          . 
+        tau0 | -.4040521     .42827       -.94      .3472  -1.251272 
+        tau1 |  .4521062   .4955811        .91      .3633  -.5282714 
+        tau2 |  .3068069   1.249199        .25      .8064  -2.164408 
+        tau3 | -.6598273   .6627448         -1      .3213  -1.970895 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  2.083939       1411 
+        pre3 |  .7361415       1543 
+        pre2 |  .5203928       1674 
+        pre1 |         .          . 
+        tau0 |  .4431681       1807 
+        tau1 |  1.432484       1670 
+        tau2 |  2.778022       1531 
+        tau3 |    .65124       1389 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  -.191992   .4879414       -.39      .6946  -1.157257 
+        Post |  .2678157   .5632467        .48      .6352  -.8464206 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .7732725       1410 
+        Post |  1.382052       1387 
+
+. * within-PR arrivals
+. use "$OUT/_zi_panel.dta", clear
+
+. runspec y_within T_iwithin_base
+
+===== lpdid [T_iwithin_base] outcome=y_within  =====
+lpdid y_within, unit(zip_num) time(year) treat(treat) pre_window(4) post_window
+> (3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .2362542   .4844959        .49      .6266  -.7221943 
+        pre3 | -.1734896   .3202301       -.54      .5889  -.8069812 
+        pre2 | -.4160329   .3736473      -1.11      .2676  -1.155196 
+        pre1 |         0          .          .          .          . 
+        tau0 | -.3651364   .2974036      -1.23      .2217  -.9534718 
+        tau1 |  .3066926   .3336468        .92      .3597  -.3533403 
+        tau2 |  .4153146    1.06021        .39      .6959  -1.682034 
+        tau3 | -.3333401    .392664       -.85      .3975  -1.110123 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  1.194703       1411 
+        pre3 |  .4600019       1543 
+        pre2 |  .3231305       1674 
+        pre1 |         .          . 
+        tau0 |  .2231989       1807 
+        tau1 |  .9667256       1670 
+        tau2 |  2.512663       1531 
+        tau3 |   .443443       1389 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.1168137   .3457527       -.34       .736  -.8007951 
+        Post |  .2988057   .4021449        .74      .4588  -.4967327 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .5671676       1410 
+        Post |  1.094344       1387 
+
+. * dose: 5+ vs never-treated
+. use "$OUT/_zi_panel.dta", clear
+
+. keep if n_events >= 5 | missing(first_event_year)
+(954 observations deleted)
+
+. runspec y_offisl T_ioff_dose5
+
+===== lpdid [T_ioff_dose5] outcome=y_offisl  =====
+lpdid y_offisl, unit(zip_num) time(year) treat(treat) pre_window(4) post_window
+> (3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .3999525   .4587486        .87       .386  -.5133459 
+        pre3 | -.3008603   .3441982       -.87      .3848  -.9861061 
+        pre2 | -.0395372   .3440729       -.11      .9088  -.7245338 
+        pre1 |         0          .          .          .          . 
+        tau0 | -.1958902   .2947869       -.66      .5083  -.7827659 
+        tau1 |  .2518298   .4166234         .6      .5473  -.5776037 
+        tau2 |  .3699409   .5145987        .72      .4744  -.6545464 
+        tau3 |  .3211241   .4070756        .79      .4326  -.4893011 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  1.313251        828 
+        pre3 |  .3843856        907 
+        pre2 |  .6454593        985 
+        pre1 |         .          . 
+        tau0 |  .3909855       1065 
+        tau1 |  1.081263        985 
+        tau2 |  1.394428        906 
+        tau3 |  1.131549        826 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0198517   .3026852        .07      .9479  -.5827483 
+        Post |  .2691641   .3360288         .8      .4256  -.3998178 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .6224517        827 
+        Post |  .9381461        824 
+
+. use "$OUT/_zi_panel.dta", clear
+
+. keep if n_events >= 5 | missing(first_event_year)
+(954 observations deleted)
+
+. runspec y_any    T_iany_dose5
+
+===== lpdid [T_iany_dose5] outcome=y_any  =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  1.191118   1.295755        .92      .3608  -1.388533 
+        pre3 | -.2575792   .7271089       -.35      .7241  -1.705142 
+        pre2 | -.4756211   .8189952       -.58      .5631  -2.106115 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .3709591   .6812286        .54      .5876  -.9852629 
+        tau1 |  .7345722   .7854468        .94      .3526  -.8291323 
+        tau2 |  1.663724   2.002529        .83      .4086  -2.323004 
+        tau3 | -.0777612   .7432165        -.1      .9169  -1.557391 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  3.770769        828 
+        pre3 |  1.189983        907 
+        pre2 |  1.154873        985 
+        pre1 |         .          . 
+        tau0 |  1.727181       1065 
+        tau1 |  2.298277        985 
+        tau2 |  5.650452        906 
+        tau3 |  1.401869        826 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .1526392   .8666311        .18      .8606  -1.572691 
+        Post |  .8363415   .7988295       1.05      .2984  -.7540059 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  1.877969        827 
+        Post |  2.426689        824 
+
+. * dose: 1-4 vs never-treated
+. use "$OUT/_zi_panel.dta", clear
+
+. keep if inrange(n_events, 1, 4) | missing(first_event_year)
+(663 observations deleted)
+
+. runspec y_offisl T_ioff_dose14
+
+===== lpdid [T_ioff_dose14] outcome=y_offisl  =====
+lpdid y_offisl, unit(zip_num) time(year) treat(treat) pre_window(4) post_window
+> (3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .3454297   .3050137       1.13      .2603  -.2601821 
+        pre3 |  .0967007   .2726277        .35      .7236   -.444608 
+        pre2 |  .0972676   .2055582        .47      .6372   -.310873 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0317638   .3112891         .1      .9189   -.586308 
+        tau1 |  .0808886   .2527376        .32      .7496  -.4209278 
+        tau2 | -.7261311   .5011236      -1.45      .1507  -1.721124 
+        tau3 |  -1.09921   .5486131         -2       .048  -2.188494 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .9510415       1164 
+        pre3 |  .6380095       1259 
+        pre2 |  .5054081       1353 
+        pre1 |         .          . 
+        tau0 |  .6498356       1449 
+        tau1 |  .5827051       1349 
+        tau2 |  .2688615       1248 
+        tau3 | -.0099256       1145 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0585261   .1738833        .34      .7372  -.2867233 
+        Post | -.4202279   .2568858      -1.64      .1052  -.9302806 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .4037755       1163 
+        Post |  .0898248       1143 
+
+. use "$OUT/_zi_panel.dta", clear
+
+. keep if inrange(n_events, 1, 4) | missing(first_event_year)
+(663 observations deleted)
+
+. runspec y_any    T_iany_dose14
+
+===== lpdid [T_iany_dose14] outcome=y_any  =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .1457042   .5019263        .29      .7722  -.8508822 
+        pre3 | -.2366491   .4386513       -.54      .5908  -1.107602 
+        pre2 | -.3358126    .369657       -.91       .366  -1.069775 
+        pre1 |         0          .          .          .          . 
+        tau0 |  -1.11104     .42105      -2.64      .0097  -1.947045 
+        tau1 |  .2468846   .4774689        .52      .6063   -.701141 
+        tau2 | -1.222612   .6997908      -1.75      .0839  -2.612063 
+        tau3 | -1.235164   .7536985      -1.64      .1046   -2.73165 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  1.142291       1164 
+        pre3 |  .6343032       1259 
+        pre2 |    .39815       1353 
+        pre1 |         .          . 
+        tau0 | -.2750354       1449 
+        tau1 |   1.19491       1349 
+        tau2 |  .1668395       1248 
+        tau3 |  .2613221       1145 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.2618774   .3213009       -.82      .4171  -.8998279 
+        Post | -.4333085   .4339182         -1      .3206  -1.294863 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   .376073       1163 
+        Post |  .4282463       1143 
+
+. * robustness: drop thin cells
+. use "$OUT/_zi_panel.dta", clear
+
+. keep if n_stock >= 20
+(138 observations deleted)
+
+. runspec y_offisl T_ioff_min20
+
+===== lpdid [T_ioff_min20] outcome=y_offisl  =====
+lpdid y_offisl, unit(zip_num) time(year) treat(treat) pre_window(4) post_window
+> (3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .1074217   .1896224        .57      .5721  -.2679242 
+        pre3 | -.2325029   .1872741      -1.24      .2168  -.6032005 
+        pre2 | -.0071872   .1927859       -.04      .9703   -.388795 
+        pre1 |         0          .          .          .          . 
+        tau0 | -.1746649   .1758283       -.99      .3225  -.5226783 
+        tau1 |  .1894909   .2373641         .8      .4262  -.2803568 
+        tau2 | -.0007899   .2078447          0       .997  -.4122058 
+        tau3 | -.0300013   .2724782       -.11      .9125  -.5693552 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .4827677       1317 
+        pre3 |  .1381948       1441 
+        pre2 |  .3744207       1564 
+        pre1 |         .          . 
+        tau0 |  .1733485       1689 
+        tau1 |  .6593386       1560 
+        tau2 |  .4106259       1428 
+        tau3 |  .5093526       1293 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0440894   .1602199       -.28      .7836   -.361235 
+        Post | -.0783639   .2119747       -.37      .7123  -.4979548 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .2730561       1316 
+        Post |   .341227       1293 
+
+. use "$OUT/_zi_panel.dta", clear
+
+. keep if n_stock >= 20
+(138 observations deleted)
+
+. runspec y_any    T_iany_min20
+
+===== lpdid [T_iany_min20] outcome=y_any  =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0404408   .4417713       -.09      .9272  -.9149001 
+        pre3 | -.5236091   .3639609      -1.44      .1528  -1.244047 
+        pre2 | -.6462938   .3738752      -1.73      .0864  -1.386357 
+        pre1 |         0          .          .          .          . 
+        tau0 | -.6482641   .3373702      -1.92       .057  -1.316014 
+        tau1 |  .5426617   .4572878       1.19      .2376  -.3625115 
+        tau2 | -.4753558   .3634077      -1.31      .1933  -1.194699 
+        tau3 |  -.351969   .5196489       -.68      .4995  -1.380582 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .8340185       1317 
+        pre3 |  .1968292       1441 
+        pre2 |  .0937692       1564 
+        pre1 |         .          . 
+        tau0 |   .019486       1689 
+        tau1 |  1.447835       1560 
+        tau2 |  .2439875       1428 
+        tau3 |  .6766441       1293 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.4034479   .3344302      -1.21        .23  -1.065432 
+        Post | -.1946115   .3759312       -.52      .6056  -.9387444 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .2585363       1316 
+        Post |  .5495213       1293 
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /experian/zip_inmigration_results.log
+  log type:  text
+ closed on:  12 Aug 2026, 14:37:03
+-------------------------------------------------------------------------------
