@@ -1,0 +1,685 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /experian/zip_migration_results.log
+  log type:  text
+ opened on:  12 Aug 2026, 14:26:46
+
+. 
+. * sample description
+. use "$OUT/_zm_panel.dta", clear
+
+. qui levelsof zip if n_events > 0, local(tz)
+
+. di as result "Treated ZCTAs in panel: " `:word count `tz''
+Treated ZCTAs in panel: 90
+
+. tab year treat
+
+           |         treat
+      year |         0          1 |     Total
+-----------+----------------------+----------
+      2005 |       132          0 |       132 
+      2006 |       132          0 |       132 
+      2007 |       132          0 |       132 
+      2008 |       132          0 |       132 
+      2009 |       132          0 |       132 
+      2010 |       132          0 |       132 
+      2011 |       132          0 |       132 
+      2012 |       128          4 |       132 
+      2013 |       121         11 |       132 
+      2014 |       113         19 |       132 
+      2015 |       106         26 |       132 
+      2016 |       101         31 |       132 
+      2017 |        97         35 |       132 
+      2018 |        90         41 |       131 
+      2019 |        81         50 |       131 
+      2020 |        69         60 |       129 
+      2021 |        58         72 |       130 
+      2022 |        51         79 |       130 
+-----------+----------------------+----------
+     Total |     1,939        428 |     2,367 
+
+. su n_at_risk if treat == 0
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+   n_at_risk |      1,939    150.2589    106.6484          1        782
+
+. su n_at_risk if treat == 1
+
+    Variable |        Obs        Mean    Std. dev.       Min        Max
+-------------+---------------------------------------------------------
+   n_at_risk |        428    173.1028    109.4549          1        641
+
+. 
+. * headline: off-island outmigration, base and zip3-FE
+. use "$OUT/_zm_panel.dta", clear
+
+. runspec y_offpr  T_offpr_base
+
+===== lpdid [T_offpr_base] outcome=y_offpr  =====
+lpdid y_offpr, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(
+> 3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .0133397   .2677716        .05      .9603  -.5163765 
+        pre3 | -.2115489   .2334269       -.91      .3665   -.673323 
+        pre2 |  .1564474   .2496001        .63      .5319  -.3373211 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .3138928   .2935929       1.07       .287   -.266904 
+        tau1 | -.4092031   .2406425       -1.7      .0914  -.8852513 
+        tau2 |  .0882666   .3005736        .29      .7695  -.5063398 
+        tau3 | -.4694794   .3464488      -1.36      .1777  -1.154838 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .5430558       1490 
+        pre3 |  .2502252       1622 
+        pre2 |  .6502159       1754 
+        pre1 |         .          . 
+        tau0 |  .8946897       1886 
+        tau1 |  .0668451       1746 
+        tau2 |  .6828729       1603 
+        tau3 |   .215879       1461 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0139206   .2006748       -.07      .9448  -.4109031 
+        Post | -.1554319   .2805189       -.55      .5805  -.7103653 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   .383062       1490 
+        Post |  .3995014       1460 
+
+. use "$OUT/_zm_panel.dta", clear
+
+. runspec y_offpr  T_offpr_zip3  zip3_num
+
+===== lpdid [T_offpr_zip3] outcome=y_offpr absorb(zip3_num) =====
+lpdid y_offpr, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(
+> 3) nograph absorb(zip3_num)
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .0173358   .2712345        .06      .9491  -.5192307 
+        pre3 | -.2126267   .2337279       -.91      .3646  -.6749963 
+        pre2 |  .1523727   .2498664        .61       .543  -.3419226 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .3170006   .2942693       1.08      .2833  -.2651342 
+        tau1 | -.4156234   .2436389      -1.71      .0904  -.8975994 
+        tau2 |  .0815761   .3036827        .27      .7886  -.5191808 
+        tau3 | -.4747327   .3513176      -1.35      .1789  -1.169723 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .5539023       1490 
+        pre3 |  .2497429       1622 
+        pre2 |   .646668       1754 
+        pre1 |         .          . 
+        tau0 |  .8991355       1886 
+        tau1 |  .0663525       1746 
+        tau2 |   .682333       1603 
+        tau3 |  .2202572       1461 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0091374    .201203       -.05      .9638   -.407165 
+        Post | -.1580255   .2842255       -.56      .5792  -.7202913 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .3888902       1490 
+        Post |  .4042403       1460 
+
+. use "$OUT/_zm_panel.dta", clear
+
+. runspec y_offpr  T_offpr_muni  muni_num
+
+===== lpdid [T_offpr_muni] outcome=y_offpr absorb(muni_num) =====
+lpdid y_offpr, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(
+> 3) nograph absorb(muni_num)
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0095238   .2661536       -.04      .9715  -.5360391 
+        pre3 | -.2419541   .2529777       -.96      .3406  -.7424043 
+        pre2 |  .1703251   .2632494        .65      .5188  -.3504451 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .3095766      .3041       1.02      .3105  -.2920057 
+        tau1 | -.3963536   .2484014       -1.6       .113  -.8877509 
+        tau2 |  .1327333    .315558        .42      .6747  -.4915156 
+        tau3 | -.4014497   .3649102       -1.1      .2733  -1.123329 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .5169916       1490 
+        pre3 |  .2584961       1622 
+        pre2 |  .6910953       1754 
+        pre1 |         .          . 
+        tau0 |  .9111589       1886 
+        tau1 |  .0950437       1746 
+        tau2 |  .7569823       1603 
+        tau3 |  .3204297       1461 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0242585   .2106886       -.12      .9085  -.4410508 
+        Post | -.1119021   .2931718       -.38      .7033  -.6918659 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .3925338       1490 
+        Post |  .4680617       1460 
+
+. * any-move (incl. within-PR)
+. use "$OUT/_zm_panel.dta", clear
+
+. runspec y_any    T_any_base
+
+===== lpdid [T_any_base] outcome=y_any  =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |   .582299   .7959799        .73      .4657  -.9923391 
+        pre3 | -.0517473   .3868933       -.13      .8938  -.8171145 
+        pre2 |   .571225   .5075824       1.13      .2625   -.432894 
+        pre1 |         0          .          .          .          . 
+        tau0 |  1.131973   .7657781       1.48      .1418  -.3829187 
+        tau1 | -.4585461   .4326249      -1.06      .2911  -1.314381 
+        tau2 |  .8361901   1.028634        .81      .4177  -1.198693 
+        tau3 |  .0952574   1.234528        .08      .9386  -2.346934 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  2.156937       1490 
+        pre3 |    .71362       1622 
+        pre2 |  1.575344       1754 
+        pre1 |         .          . 
+        tau0 |  2.646865       1886 
+        tau1 |  .3972891       1746 
+        tau2 |  2.871074       1603 
+        tau3 |  2.537448       1461 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .3672589   .4194216        .88      .3828   -.462457 
+        Post |  .5022673    .895893        .56       .576  -1.270023 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  1.196975       1490 
+        Post |  2.274557       1460 
+
+. use "$OUT/_zm_panel.dta", clear
+
+. runspec y_any    T_any_zip3    zip3_num
+
+===== lpdid [T_any_zip3] outcome=y_any absorb(zip3_num) =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph absorb(zip3_num)
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .4553297   .7956994        .57      .5681  -1.118753 
+        pre3 |  -.119456   .3957511        -.3      .7632  -.9023461 
+        pre2 |  .5504636    .510971       1.08      .2833   -.460359 
+        pre1 |         0          .          .          .          . 
+        tau0 |  1.154544   .7633805       1.51      .1328  -.3556044 
+        tau1 | -.4067131   .4299068       -.95      .3459  -1.257171 
+        tau2 |  .9289486   1.030531         .9       .369  -1.109688 
+        tau3 |  .3139118   1.226561        .26      .7984  -2.112519 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  2.029413       1490 
+        pre3 |  .6634342       1622 
+        pre2 |  1.561286       1754 
+        pre1 |         .          . 
+        tau0 |  2.664693       1886 
+        tau1 |  .4437451       1746 
+        tau2 |  2.967585       1603 
+        tau3 |  2.740343       1461 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .2925732   .4259896        .69      .4934   -.550136 
+        Post |  .6382278   .8814749        .72      .4703   -1.10554 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  1.135282       1490 
+        Post |  2.381995       1460 
+
+. use "$OUT/_zm_panel.dta", clear
+
+. runspec y_any    T_any_muni    muni_num
+
+===== lpdid [T_any_muni] outcome=y_any absorb(muni_num) =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph absorb(muni_num)
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .4386566   .8534913        .51      .6081  -1.249753 
+        pre3 |  -.131794   .4233085       -.31       .756  -.9691992 
+        pre2 |  .6016911   .5328682       1.13      .2609  -.4524493 
+        pre1 |         0          .          .          .          . 
+        tau0 |  1.143638   .8032665       1.42      .1569  -.4454151 
+        tau1 | -.4229964   .4512056       -.94      .3502  -1.315589 
+        tau2 |  .9581324   1.110862        .86        .39  -1.239418 
+        tau3 |  .2959684    1.32079        .22       .823   -2.31687 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  2.127066       1490 
+        pre3 |  .7056112       1622 
+        pre2 |  1.655831       1754 
+        pre1 |         .          . 
+        tau0 |  2.732691       1886 
+        tau1 |  .4695959       1746 
+        tau2 |  3.155683       1603 
+        tau3 |  2.908807       1461 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .3001532    .449627        .67      .5056  -.5893162 
+        Post |  .6496467   .9254445         .7      .4839  -1.181103 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  1.189623       1490 
+        Post |  2.480397       1460 
+
+. * within-PR decomposition
+. use "$OUT/_zm_panel.dta", clear
+
+. runspec y_within T_within_base
+
+===== lpdid [T_within_base] outcome=y_within  =====
+lpdid y_within, unit(zip_num) time(year) treat(treat) pre_window(4) post_window
+> (3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .5689594   .7475899        .76       .448  -.9099518 
+        pre3 |  .1598016   .3847491        .42      .6786  -.6013239 
+        pre2 |  .4147777   .4349433        .95       .342  -.4456439 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .8180802   .7424176        1.1      .2725  -.6505989 
+        tau1 |  -.049343   .4234425       -.12      .9074  -.8870134 
+        tau2 |  .7479235   1.014941        .74      .4625  -1.259872 
+        tau3 |  .5647367     1.1938        .47       .637  -1.796885 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  2.047871       1490 
+        pre3 |   .920927       1622 
+        pre2 |  1.275199       1754 
+        pre1 |         .          . 
+        tau0 |  2.286759       1886 
+        tau1 |  .7883273       1746 
+        tau2 |  2.755719       1603 
+        tau3 |  2.926358       1461 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .3811795   .3866815        .99      .3261  -.3837687 
+        Post |  .6576993   .8875844        .74        .46  -1.098154 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  1.146128       1490 
+        Post |  2.413553       1460 
+
+. * dose: 5+ events vs never-treated
+. use "$OUT/_zm_panel.dta", clear
+
+. keep if n_events >= 5 | missing(first_event_year)
+(954 observations deleted)
+
+. runspec y_offpr  T_offpr_dose5
+
+===== lpdid [T_offpr_dose5] outcome=y_offpr  =====
+lpdid y_offpr, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(
+> 3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .4340877   .4073109       1.07      .2898   -.376806 
+        pre3 | -.0157537   .3494694       -.05      .9642  -.7114938 
+        pre2 |  .5309198   .4033287       1.32      .1919   -.272046 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .6963074   .4889739       1.42      .1584  -.2771648 
+        tau1 | -.2683416   .3261031       -.82      .4131   -.917563 
+        tau2 |  .5110978   .4082491       1.25      .2143  -.3016638 
+        tau3 | -.2385359   .4958324       -.48      .6318  -1.225662 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  1.244981        864 
+        pre3 |  .6799864        943 
+        pre2 |  1.333886       1022 
+        pre1 |         .          . 
+        tau0 |   1.66978       1101 
+        tau1 |  .3808798       1021 
+        tau2 |  1.323859        940 
+        tau3 |  .7485906        859 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |   .316418   .2948189       1.07      .2865  -.2705214 
+        Post |  .1939933   .3938054        .49      .6237   -.590013 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .9033573        864 
+        Post |  .9779996        858 
+
+. use "$OUT/_zm_panel.dta", clear
+
+. keep if n_events >= 5 | missing(first_event_year)
+(954 observations deleted)
+
+. runspec y_any    T_any_dose5
+
+===== lpdid [T_any_dose5] outcome=y_any  =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .9611125    1.54983        .62       .537  -2.124363 
+        pre3 |  -.542672   .5946408       -.91      .3643  -1.726511 
+        pre2 |   .779291   .8214662        .95      .3457  -.8561226 
+        pre1 |         0          .          .          .          . 
+        tau0 |  1.384216   1.509028        .92      .3618  -1.620027 
+        tau1 | -.7628407   .6831948      -1.12      .2676  -2.122977 
+        tau2 |  1.559994   1.729766         .9      .3699  -1.883705 
+        tau3 | -.3724123   1.905311        -.2      .8455  -4.165594 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  4.046588        864 
+        pre3 |   .641167        943 
+        pre2 |  2.414705       1022 
+        pre1 |         .          . 
+        tau0 |   4.38846       1101 
+        tau1 |  .5972957       1021 
+        tau2 |  5.003693        940 
+        tau3 |   3.42077        859 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .3992439   .7187378        .56      .5802  -1.031653 
+        Post |  .4985801   1.422801        .35       .727  -2.333999 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  1.830141        864 
+        Post |  3.331159        858 
+
+. * dose: 1-4 events vs never-treated
+. use "$OUT/_zm_panel.dta", clear
+
+. keep if inrange(n_events, 1, 4) | missing(first_event_year)
+(664 observations deleted)
+
+. runspec y_offpr  T_offpr_dose14
+
+===== lpdid [T_offpr_dose14] outcome=y_offpr  =====
+lpdid y_offpr, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(
+> 3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.4372031   .3279476      -1.33      .1857  -1.088351 
+        pre3 | -.4152934   .3062868      -1.36      .1784  -1.023433 
+        pre2 | -.2036516   .2804402       -.73      .4695  -.7604723 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0134932   .3157368        .04       .966  -.6134096 
+        tau1 |  -.477547   .3459744      -1.38      .1708  -1.164487 
+        tau2 |  -.315713   .4272437       -.74      .4618  -1.164015 
+        tau3 | -.5935832   .4239004       -1.4      .1647  -1.435247 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .2139445       1206 
+        pre3 |  .1928463       1301 
+        pre2 |   .353169       1396 
+        pre1 |         .          . 
+        tau0 |  .6403959       1491 
+        tau1 |  .2093933       1389 
+        tau2 |  .5325894       1285 
+        tau3 |   .248081       1183 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.3520494   .2578218      -1.37      .1754  -.8639607 
+        Post | -.5528793   .3350978      -1.65      .1023  -1.218224 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   .159862       1206 
+        Post |  .1124652       1182 
+
+. use "$OUT/_zm_panel.dta", clear
+
+. keep if inrange(n_events, 1, 4) | missing(first_event_year)
+(664 observations deleted)
+
+. runspec y_any    T_any_dose14
+
+===== lpdid [T_any_dose14] outcome=y_any  =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .1593993   .5127531        .31      .7566   -.858684 
+        pre3 |  .3574721   .5311832        .67      .5026  -.6972045 
+        pre2 |  .3460628   .6109957        .57      .5725  -.8670835 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .9209263   .4898941       1.88      .0632    -.05177 
+        tau1 | -.1018341   .5181499        -.2      .8446  -1.130633 
+        tau2 | -.1145997   .6562116       -.17      .8617  -1.417523 
+        tau3 |  .6719995     .78467        .86      .3939  -.8859812 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  1.177483       1206 
+        pre3 |  1.412149       1301 
+        pre2 |  1.559209       1396 
+        pre1 |         .          . 
+        tau0 |  1.893623       1491 
+        tau1 |  .9269647       1389 
+        tau2 |  1.188324       1285 
+        tau3 |   2.22998       1183 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .2876447   .4643019        .62      .5371  -.6342376 
+        Post |  .5410968   .3568546       1.52      .1328  -.1674464 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  1.209527       1206 
+        Post |   1.24964       1182 
+
+. * robustness: drop thin cells (n_at_risk < 20)
+. use "$OUT/_zm_panel.dta", clear
+
+. keep if n_at_risk >= 20
+(143 observations deleted)
+
+. runspec y_offpr  T_offpr_min20
+
+===== lpdid [T_offpr_min20] outcome=y_offpr  =====
+lpdid y_offpr, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(
+> 3) nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0354311   .2194772       -.16       .872  -.4698729 
+        pre3 | -.0702133   .2313768        -.3      .7621  -.5282468 
+        pre2 |  .1800137   .2583118         .7      .4872  -.3312987 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .2559032   .2684904        .95      .3424  -.2755571 
+        tau1 | -.2976938   .2420413      -1.23      .2211  -.7767996 
+        tau2 |  .2207175    .294327        .75      .4547  -.3618848 
+        tau3 | -.4083582   .3566302      -1.15      .2544  -1.114286 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .3990106       1388 
+        pre3 |  .3878202       1510 
+        pre2 |  .6913262       1634 
+        pre1 |         .          . 
+        tau0 |  .7873635       1760 
+        tau1 |  .1814121       1626 
+        tau2 |  .8033198       1493 
+        tau3 |  .2975695       1358 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0498577   .1953024        .26      .7989  -.3367629 
+        Post | -.2259253   .2855913       -.79      .4304  -.7912357 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .4364784       1385 
+        Post |  .3393851       1356 
+
+. use "$OUT/_zm_panel.dta", clear
+
+. keep if n_at_risk >= 20
+(143 observations deleted)
+
+. runspec y_any    T_any_min20
+
+===== lpdid [T_any_min20] outcome=y_any  =====
+lpdid y_any, unit(zip_num) time(year) treat(treat) pre_window(4) post_window(3)
+>  nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.1295605    .394349       -.33      .7431  -.9101502 
+        pre3 |  .0722992   .3673704         .2      .8443  -.6549472 
+        pre2 |  .3116093   .4251724        .73       .465  -.5299933 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .3362001   .3822187        .88      .3808  -.4203783 
+        tau1 | -.3905448   .4273075       -.91      .3625  -1.236374 
+        tau2 | -.0779235   .5312624       -.15      .8836  -1.129525 
+        tau3 | -1.128425   .6549857      -1.72      .0874  -2.424929 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .6510292       1388 
+        pre3 |  .7995455       1510 
+        pre2 |  1.153212       1634 
+        pre1 |         .          . 
+        tau0 |  1.092779       1760 
+        tau1 |  .4552842       1626 
+        tau2 |  .9736779       1493 
+        tau3 |  .1680792       1358 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0831393   .3190153        .26      .7948  -.5483833 
+        Post | -.4725446   .4423813      -1.07      .2875  -1.348211 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .7146619       1385 
+        Post |   .403122       1356 
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /experian/zip_migration_results.log
+  log type:  text
+ closed on:  12 Aug 2026, 14:28:57
+-------------------------------------------------------------------------------
