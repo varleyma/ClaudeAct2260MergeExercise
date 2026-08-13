@@ -3,8 +3,9 @@
 
  Borrower-composition DiD on the LONG HMDA panel (2012-2024, consistent
  population: originated first-lien owner-occupied 1-4 family purchases).
- Pre window now reaches -6 (binned endpoint), giving real pre-period support
- for the early-adopting high-dose tracts.
+ Pre endpoint binned at -4 (rel <= -4), matching the display window of the
+ other event studies; the 2012 panel start still gives the deep-pre bin
+ broad support incl. the early-adopting high-dose tracts.
 
    A. counts by ethnicity (ppmlhdfe): purch_hisp_n, purch_nonhisp_n
    B. borrower income (reghdfe, 100 x ln mean income): all + Hispanic-only
@@ -52,16 +53,14 @@ merge m:1 tract_geoid using `trt', keep(master match) nogen
 gen treat = !missing(first_event_year) & year >= first_event_year
 gen rel = year - first_event_year if !missing(first_event_year)
 
-gen Dm6 = !missing(rel) & rel <= -6
-gen Dm5 = !missing(rel) & rel == -5
-gen Dm4 = !missing(rel) & rel == -4
+gen Dm4 = !missing(rel) & rel <= -4
 gen Dm3 = !missing(rel) & rel == -3
 gen Dm2 = !missing(rel) & rel == -2
 gen D0  = !missing(rel) & rel == 0
 gen D1  = !missing(rel) & rel == 1
 gen D2  = !missing(rel) & rel == 2
 gen D3  = !missing(rel) & rel >= 3
-local DVARS Dm6 Dm5 Dm4 Dm3 Dm2 D0 D1 D2 D3
+local DVARS Dm4 Dm3 Dm2 D0 D1 D2 D3
 
 gen lninc_all  = 100 * ln((purch_hisp_inc + purch_nonhisp_inc) / ///
                           (purch_hisp_incn + purch_nonhisp_incn)) ///
@@ -81,8 +80,6 @@ postfile `pf' str20 test double h b se using "$OUT/_hl.dta", replace
 capture program drop grabes
 program define grabes
     args pf test
-    post `pf' ("`test'") (-6) (_b[Dm6]) (_se[Dm6])
-    post `pf' ("`test'") (-5) (_b[Dm5]) (_se[Dm5])
     post `pf' ("`test'") (-4) (_b[Dm4]) (_se[Dm4])
     post `pf' ("`test'") (-3) (_b[Dm3]) (_se[Dm3])
     post `pf' ("`test'") (-2) (_b[Dm2]) (_se[Dm2])

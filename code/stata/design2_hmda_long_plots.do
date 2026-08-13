@@ -2,7 +2,7 @@
  design2_hmda_long_plots.do
 
  Figures for the long-panel (2012-2024) HMDA results (hmda_long_coefs.csv):
-   figH7_income_long       borrower income, all + Hispanic-only, h = -6..3
+   figH7_income_long       borrower income, all + Hispanic-only, h = -4..3
    figH8_income_dose_long  borrower income by tract dose (5+ vs 1-4)
    figH9_eth_counts_long   purchase counts by borrower ethnicity
 ==============================================================================*/
@@ -54,12 +54,12 @@ program define drawfig
         title("$FIG_TITLE", size(medium)) ///
         ytitle("$FIG_YT") xtitle("$FIG_XT") ///
         note("$FIG_NOTE1" "$FIG_NOTE2", size(vsmall)) ///
-        xlabel(-6(1)3) name(`out', replace)
+        xlabel(-4(1)3) name(`out', replace)
     graph export "$OUT/`out'.png", replace width(2000)
 end
 
 local XT "Years since first investor purchase in tract"
-global FIG_NOTE2 "Consistent population 2012-2024: originated first-lien owner-occupied 1-4 family purchases. Endpoints binned at -6 and +3."
+global FIG_NOTE2 "Consistent population 2012-2024: originated first-lien owner-occupied 1-4 family purchases. Endpoints binned at -4 and +3."
 
 use `coefs', clear
 global FIG_TESTS  lninc_all lninc_hisp
