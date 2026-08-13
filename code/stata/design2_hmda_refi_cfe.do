@@ -1,6 +1,10 @@
 /*==============================================================================
  design2_hmda_refi_cfe.do
 
+ NOT USED IN THE WRITE-UP (user decision 2026-08-13): refi outcome fails
+ parallel trends (pre-path ~+5 pts/yr into treatment, no post kink).
+ Exploratory record only.
+
  County x year FE robustness for the refinancing-by-ethnicity event studies
  (2012-2024 long panel): identification within municipio-year, absorbing
  county-specific shocks and trends. Tract FE (nesting county) retained.

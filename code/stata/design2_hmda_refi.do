@@ -1,6 +1,11 @@
 /*==============================================================================
  design2_hmda_refi.do
 
+ NOT USED IN THE WRITE-UP (user decision 2026-08-13): the Hispanic refi
+ event study fails parallel trends -- the pre-path climbs ~+5 pts/yr into
+ treatment and the post-path continues on that same line (no kink), so the
+ refi margin is unidentified. Kept as exploratory record only.
+
  Refinancing DiD by borrower ethnicity -- the equity-extraction margin: do
  incumbent (overwhelmingly Hispanic) owners in treated tracts monetize the
  appreciation? Same population as the long purchase panel (originated

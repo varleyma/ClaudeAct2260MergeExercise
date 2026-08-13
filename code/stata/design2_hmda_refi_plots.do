@@ -1,6 +1,10 @@
 /*==============================================================================
  design2_hmda_refi_plots.do
 
+ NOT USED IN THE WRITE-UP (user decision 2026-08-13): refi outcome fails
+ parallel trends (pre-path ~+5 pts/yr into treatment, no post kink).
+ Exploratory record only.
+
  Figures for the refinancing-by-ethnicity results (hmda_refi_coefs.csv):
    figH10_refi_eth_long   all refis by borrower ethnicity, 2012-2024
    figH11_cashout_eth     cash-out refis by ethnicity, 2018-2024 (the
