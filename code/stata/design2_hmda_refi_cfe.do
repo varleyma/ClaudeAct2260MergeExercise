@@ -1,9 +1,10 @@
 /*==============================================================================
  design2_hmda_refi_cfe.do
 
- NOT USED IN THE WRITE-UP (user decision 2026-08-13): refi outcome fails
- parallel trends (pre-path ~+5 pts/yr into treatment, no post kink).
- Exploratory record only.
+ PARTIAL USE (user decisions 2026-08-13): the HISPANIC refi series is
+ EXCLUDED from the write-up -- its pre-path climbs ~+5 pts/yr into
+ treatment with no post kink (unidentified). The NON-HISPANIC refi series
+ IS reported (financed mainlander entry, figH11_refi_nonhisp).
 
  County x year FE robustness for the refinancing-by-ethnicity event studies
  (2012-2024 long panel): identification within municipio-year, absorbing

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  13 AUG 2026 15:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  13 AUG 2026 16:23
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -575,8 +575,23 @@ ine 536.
 
 [15 <../design2/figH7_income_long.png (PNG copy)> <../design2/figH8_income_dose
 _long.png (PNG copy)>]
+<../design2/figH9b_purch_nonhisp.png, id=220, 2007.5pt x 1204.5pt>
+File: ../design2/figH9b_purch_nonhisp.png Graphic file (type png)
+<use ../design2/figH9b_purch_nonhisp.png>
+Package pdftex.def Info: ../design2/figH9b_purch_nonhisp.png  used on input lin
+e 564.
+(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
+<../design2/figH11_refi_nonhisp.png, id=221, 2007.5pt x 1204.5pt>
+File: ../design2/figH11_refi_nonhisp.png Graphic file (type png)
+<use ../design2/figH11_refi_nonhisp.png>
+Package pdftex.def Info: ../design2/figH11_refi_nonhisp.png  used on input line
+ 573.
+(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
-[16] (./design1_writeup.aux)
+
+[16 <../design2/figH9b_purch_nonhisp.png (PNG copy)>]
+
+[17 <../design2/figH11_refi_nonhisp.png (PNG copy)>] (./design1_writeup.aux)
  ***********
 LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-09-10>
@@ -585,13 +600,13 @@ Package rerunfilecheck Info: File `design1_writeup.out' has not changed.
 (rerunfilecheck)             Checksum: 978F338D01261F95E8295FDF062F0F3C;3922.
  ) 
 Here is how much of TeX's memory you used:
- 12176 strings out of 473579
- 191826 string characters out of 5732262
- 594553 words of memory out of 5000000
- 34873 multiletter control sequences out of 15000+600000
+ 12196 strings out of 473579
+ 192482 string characters out of 5732262
+ 595020 words of memory out of 5000000
+ 34889 multiletter control sequences out of 15000+600000
  570900 words of font info for 85 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,8n,79p,977b,593s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,8n,79p,977b,543s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
 live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2024/texmf-di
@@ -607,10 +622,10 @@ type1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/pub
 lic/amsfonts/symbols/msbm10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/
 cm-super/sfrm1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/s
 frm1095.pfb>
-Output written on design1_writeup.pdf (16 pages, 3021490 bytes).
+Output written on design1_writeup.pdf (17 pages, 3338362 bytes).
 PDF statistics:
- 309 PDF objects out of 1000 (max. 8388607)
- 237 compressed objects within 3 object streams
- 62 named destinations out of 1000 (max. 500000)
- 251 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 320 PDF objects out of 1000 (max. 8388607)
+ 245 compressed objects within 3 object streams
+ 66 named destinations out of 1000 (max. 500000)
+ 261 words of extra memory for PDF output out of 10000 (max. 10000000)
 

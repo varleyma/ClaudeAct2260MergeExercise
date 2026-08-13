@@ -88,4 +88,14 @@ global FIG_XT     `XT'
 global FIG_NOTE1  "ppmlhdfe with tract and year FE, never-treated controls, clustered by tract."
 drawfig, out(figH9_eth_counts_long)
 
+* single-series non-Hispanic purchases (own scale -- thin base, wide CIs)
+use `coefs', clear
+global FIG_TESTS  purch_nonhisp_n
+global FIG_LABELS `""Non-Hispanic borrowers""'
+global FIG_TITLE  Purchase originations by non-Hispanic borrowers (2012-2024 panel)
+global FIG_YT     "Effect on origination counts (100 x Poisson coef ~ %)"
+global FIG_XT     `XT'
+global FIG_NOTE1  "ppmlhdfe with tract and year FE, never-treated controls, clustered by tract. Thin base: a few hundred non-Hispanic borrower purchases per year island-wide."
+drawfig, out(figH9b_purch_nonhisp)
+
 di as result _n "Long-panel HMDA figures: figH7, figH8, figH9"
