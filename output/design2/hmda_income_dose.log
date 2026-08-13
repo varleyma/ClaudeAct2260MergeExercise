@@ -1,0 +1,180 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/hmda_income_dose.log
+  log type:  text
+ opened on:  13 Aug 2026, 08:29:43
+
+. 
+. tempname pf
+
+. postfile `pf' str10 test double h b se using "$OUT/_hid.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/_hid.dta not found)
+
+. 
+. foreach g in hi5 lo14 {
+  2.     use `panel', clear
+  3.     if "`g'" == "hi5"  keep if nevertr | n_events >= 5
+  4.     if "`g'" == "lo14" keep if nevertr | inrange(n_events, 1, 4)
+  5.     di as result _n "===== lninc_all, dose group `g' ====="
+  6.     reghdfe lninc_all Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) ///
+>         vce(cluster tract_num)
+  7.     post `pf' ("`g'") (-4) (_b[Dm4]) (_se[Dm4])
+  8.     post `pf' ("`g'") (-3) (_b[Dm3]) (_se[Dm3])
+  9.     post `pf' ("`g'") (-2) (_b[Dm2]) (_se[Dm2])
+ 10.     post `pf' ("`g'") (-1) (0) (.)
+ 11.     post `pf' ("`g'") (0)  (_b[D0]) (_se[D0])
+ 12.     post `pf' ("`g'") (1)  (_b[D1]) (_se[D1])
+ 13.     post `pf' ("`g'") (2)  (_b[D2]) (_se[D2])
+ 14.     post `pf' ("`g'") (3)  (_b[D3]) (_se[D3])
+ 15. 
+.     di as result _n "===== lninc_all pooled, dose group `g' ====="
+ 16.     reghdfe lninc_all treat, absorb(tract_num year) vce(cluster tract_num)
+ 17.     post `pf' ("`g'") (99) (_b[treat]) (_se[treat])
+ 18. }
+(1,337 observations deleted)
+
+===== lninc_all, dose group hi5 =====
+(dropped 22 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =      4,814
+Absorbing 2 HDFE groups                           F(   7,    737) =     575.70
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.6615
+                                                  Adj R-squared   =     0.5991
+                                                  Within R-sq.    =     0.0030
+Number of clusters (tract_num) =        738       Root MSE        =    32.4772
+
+                            (Std. err. adjusted for 738 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |   82.08068   7.699299    10.66   0.000     66.96551    97.19585
+         Dm3 |   39.05635   37.16363     1.05   0.294    -33.90285    112.0155
+         Dm2 |    3.09676   6.492953     0.48   0.634    -9.650128    15.84365
+          D0 |   16.84778   7.537712     2.24   0.026     2.049836    31.64573
+          D1 |   16.97218   7.342703     2.31   0.021     2.557075    31.38729
+          D2 |   22.72764   7.879149     2.88   0.004     7.259385    38.19589
+          D3 |   20.29335   7.417856     2.74   0.006     5.730701    34.85599
+       _cons |   395.3642   .3515574  1124.61   0.000     394.6741    396.0544
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       738         738           0    *|
+        year |         7           1           6     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== lninc_all pooled, dose group hi5 =====
+(dropped 22 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =      4,814
+Absorbing 2 HDFE groups                           F(   1,    737) =       1.16
+Statistics robust to heteroskedasticity           Prob > F        =     0.2811
+                                                  R-squared       =     0.6606
+                                                  Adj R-squared   =     0.5986
+                                                  Within R-sq.    =     0.0004
+Number of clusters (tract_num) =        738       Root MSE        =    32.4962
+
+                            (Std. err. adjusted for 738 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   10.90384   10.10915     1.08   0.281    -8.942314    30.74999
+       _cons |    395.926    .556486   711.48   0.000     394.8335    397.0185
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       738         738           0    *|
+        year |         7           1           6     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(308 observations deleted)
+
+===== lninc_all, dose group lo14 =====
+(dropped 22 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =      5,793
+Absorbing 2 HDFE groups                           F(   7,    884) =       3.67
+Statistics robust to heteroskedasticity           Prob > F        =     0.0006
+                                                  R-squared       =     0.5808
+                                                  Adj R-squared   =     0.5040
+                                                  Within R-sq.    =     0.0051
+Number of clusters (tract_num) =        885       Root MSE        =    32.3028
+
+                            (Std. err. adjusted for 885 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -6.402001   3.695855    -1.73   0.084    -13.65567    .8516726
+         Dm3 |  -6.138667   3.743044    -1.64   0.101    -13.48496    1.207623
+         Dm2 |  -4.137012   3.327516    -1.24   0.214    -10.66777    2.393742
+          D0 |   7.934382   3.959869     2.00   0.045     .1625409    15.70622
+          D1 |   5.571257    4.23009     1.32   0.188    -2.730934    13.87345
+          D2 |    7.19592   4.654591     1.55   0.122    -1.939418    16.33126
+          D3 |   13.08269   4.444798     2.94   0.003     4.359098    21.80627
+       _cons |   395.1954   .5615159   703.80   0.000     394.0933    396.2974
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       885         885           0    *|
+        year |         7           1           6     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== lninc_all pooled, dose group lo14 =====
+(dropped 22 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =      5,793
+Absorbing 2 HDFE groups                           F(   1,    884) =      16.45
+Statistics robust to heteroskedasticity           Prob > F        =     0.0001
+                                                  R-squared       =     0.5803
+                                                  Adj R-squared   =     0.5040
+                                                  Within R-sq.    =     0.0038
+Number of clusters (tract_num) =        885       Root MSE        =    32.3040
+
+                            (Std. err. adjusted for 885 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   10.93069   2.695429     4.06   0.000       5.6405    16.22087
+       _cons |   394.5957   .3080224  1281.06   0.000     393.9912    395.2002
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       885         885           0    *|
+        year |         7           1           6     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. postclose `pf'
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/hmda_income_dose.log
+  log type:  text
+ closed on:  13 Aug 2026, 08:29:44
+-------------------------------------------------------------------------------
