@@ -1,0 +1,569 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/robustness_lpdid.log
+  log type:  text
+ opened on:  19 Jul 2026, 14:47:07
+
+. 
+. /*============================================================================
+>   T1. BASELINE REFERENCE (annual near-vs-far, lnp)
+> ============================================================================*/
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(139,797 observations deleted)
+
+. run_lpdid lnp T1_baseline
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T1_baseline] outcome=lnp =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 |  -.001387   .0222918       -.06      .9504  -.0451027   .0423288       8619 
+        pre3 |  .0015696   .0210984        .07      .9407  -.0398056   .0429449       9812 
+        pre2 | -.0071238   .0209688       -.34      .7341  -.0482448   .0339972      11002 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0212027   .0213779        .99      .3214  -.0207197   .0631252      12301 
+        tau1 |  .0408048   .0209686       1.95      .0518   -.000316   .0819256      10978 
+        tau2 |  .0940551   .0253524       3.71      .0002   .0443361   .1437741       9695 
+        tau3 |  .0739367   .0249435       2.96      .0031   .0250174    .122856       8367 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre |   .003259   .0168826        .19      .8469  -.0298494   .0363675       8496 
+        Post |  .0730567   .0197988       3.69      .0002   .0342264   .1118869       8277 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T1_baseline.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T1_baseline.png saved as PNG format
+
+. 
+. /*============================================================================
+>   T2. COMPOSITION: characteristics as outcomes (flat => bump is prices)
+> ============================================================================*/
+. foreach y in lnstru lncab subu vac {
+  2.     use `sales', clear
+  3.     drop if ring == "gap_250_400"
+  4.     run_lpdid `y' T2_comp_`y'
+  5. }
+(139,797 observations deleted)
+(363 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T2_comp_lnstru] outcome=lnstru =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 |   .021177   .0138749       1.53      .1271   -.006033    .048387       8498 
+        pre3 |  .0037629    .014025        .27      .7885  -.0237414   .0312671       9674 
+        pre2 | -.0062866   .0116232       -.54      .5887  -.0290805   .0165073      10854 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 | -.0007423   .0129806       -.06      .9544  -.0261979   .0247132      12156 
+        tau1 |  .0164436   .0137251        1.2       .231  -.0104726   .0433597      10826 
+        tau2 |  .0248069   .0142248       1.74      .0813    -.00309   .0527037       9556 
+        tau3 |  .0503571   .0172009       2.93      .0035   .0166221   .0840921       8252 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre |  .0105689   .0100853       1.05      .2948  -.0092096   .0303475       8365 
+        Post |  .0241426   .0127716       1.89      .0589   -.000906   .0491911       8148 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T2_comp_lnstru.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T2_comp_lnstru.png saved as PNG format
+(139,797 observations deleted)
+(79 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T2_comp_lncab] outcome=lncab =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 |  .0311014   .0196529       1.58      .1137  -.0074394   .0696422       8599 
+        pre3 | -.0184863   .0188248       -.98      .3262   -.055403   .0184304       9792 
+        pre2 | -.0006246   .0169373       -.04      .9706  -.0338395   .0325903      10978 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  -.004586   .0173181       -.26      .7912  -.0385473   .0293752      12276 
+        tau1 | -.0143896   .0167028       -.86      .3891   -.047145   .0183657      10954 
+        tau2 |  .0147988   .0180308        .82      .4119  -.0205619   .0501595       9673 
+        tau3 |  .0496548   .0210543       2.36      .0185   .0083629   .0909467       8346 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre |  .0116142   .0141956        .82      .4134   -.016225   .0394534       8474 
+        Post |   .029134   .0161441        1.8      .0713  -.0025284   .0607965       8256 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T2_comp_lncab.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T2_comp_lncab.png saved as PNG format
+(139,797 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T2_comp_subu] outcome=subu =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 |  .0005512   .0065341        .08      .9328  -.0122625    .013365       8619 
+        pre3 |  .0100961   .0055733       1.81      .0702  -.0008334   .0210256       9812 
+        pre2 | -.0020227   .0052952       -.38      .7025  -.0124068   .0083614      11002 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0091097   .0056156       1.62      .1049  -.0019026   .0201219      12301 
+        tau1 |  .0156693   .0055402       2.83      .0047   .0048046    .026534      10978 
+        tau2 | -.0010577   .0059407       -.18      .8587   -.012708   .0105926       9695 
+        tau3 |  .0044014   .0064454        .68      .4948  -.0082393   .0170421       8367 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre | -.0022903   .0046551       -.49      .6228  -.0114194   .0068389       8496 
+        Post |  .0049259    .005222        .94      .3457  -.0053157   .0151674       8277 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T2_comp_subu.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T2_comp_subu.png saved as PNG format
+(139,797 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T2_comp_vac] outcome=vac =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 |  .0051887   .0052936        .98      .3271  -.0051923   .0155697       8619 
+        pre3 | -.0103648   .0051876         -2      .0458   -.020538  -.0001917       9812 
+        pre2 | -.0081483   .0053084      -1.53      .1249  -.0185584   .0022618      11002 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 | -.0072701   .0055282      -1.32      .1886   -.018111   .0035708      12301 
+        tau1 |  .0002152    .005175        .04      .9668  -.0099332   .0103636      10978 
+        tau2 | -.0038389    .006031       -.64      .5245  -.0156665   .0079886       9695 
+        tau3 |  -.000197   .0063526       -.03      .9753  -.0126557   .0122617       8367 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre | -.0011513   .0037642       -.31      .7597  -.0085333   .0062307       8496 
+        Post |  .0005793   .0043512        .13      .8941  -.0079544    .009113       8277 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T2_comp_vac.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T2_comp_vac.png saved as PNG format
+
+. 
+. /*============================================================================
+>   T3. DISTANCE GRADIENT: gap ring as the treated group vs far
+>       (compare T3 coefficient path to T1: expect near > gap > ~0)
+> ============================================================================*/
+. use `sales', clear
+
+. drop if ring == "near_0_250"
+(151,759 observations deleted)
+
+. replace ring = "near_0_250" if ring == "gap_250_400"   // gap plays "treated"
+(139,797 real changes made)
+
+. run_lpdid lnp T3_gradient_gap
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T3_gradient_gap] outcome=lnp =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 | -.0299762   .0237888      -1.26      .2078  -.0766284    .016676       8562 
+        pre3 | -.0182237   .0225473       -.81       .419  -.0624412   .0259938       9737 
+        pre2 | -.0012381   .0213703       -.06      .9538  -.0431472    .040671      10939 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0127118   .0215134        .59      .5547  -.0294772   .0549007      12239 
+        tau1 |  .0096995    .025542        .38      .7042  -.0403909   .0597899      10915 
+        tau2 |  .0729474   .0252043       2.89      .0038   .0235178    .122377       9634 
+        tau3 |  .0728039   .0282017       2.58      .0099   .0174938   .1281139       8335 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre | -.0036472   .0178092        -.2      .8378  -.0385737   .0312793       8423 
+        Post |  .0670076   .0212043       3.16      .0016   .0254203   .1085949       8237 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T3_gradient_gap.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T3_gradient_gap.png saved as PNG format
+
+. 
+. /*============================================================================
+>   T4. DOSE RESPONSE by contamination (n other events within 1km)
+> ============================================================================*/
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(139,797 observations deleted)
+
+. keep if n_other_events_within_1000m <= 2
+(924,920 observations deleted)
+
+. run_lpdid lnp T4_dose_low
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T4_dose_low] outcome=lnp =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 |  .0164631   .0586973        .28      .7793  -.0989612   .1318874       1525 
+        pre3 |  .0034666   .0580857        .06      .9524  -.1107519   .1176852       1751 
+        pre2 |  -.012369   .0501104       -.25      .8052  -.1109024   .0861644       1980 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0307766   .0612275         .5      .6155  -.0895904   .1511436       2274 
+        tau1 |   -.03704   .0580067       -.64      .5235  -.1511001   .0770202       1980 
+        tau2 |  -.017002   .0522376       -.33       .745  -.1197236   .0857195       1747 
+        tau3 |  .0007785   .0659125        .01      .9906  -.1288719   .1304289       1490 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre | -.0375013   .0416032        -.9       .368  -.1193378   .0443352       1458 
+        Post |  .0246882   .0463326        .53      .5945  -.0664668   .1158432       1443 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T4_dose_low.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T4_dose_low.png saved as PNG format
+
+. 
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(139,797 observations deleted)
+
+. keep if inrange(n_other_events_within_1000m, 3, 25)
+(806,535 observations deleted)
+
+. run_lpdid lnp T4_dose_mid
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T4_dose_mid] outcome=lnp =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 | -.0812721   .0379116      -2.14      .0324  -.1557188  -.0068254       2538 
+        pre3 | -.0294026    .030114       -.98      .3292  -.0885357   .0297306       2889 
+        pre2 | -.0342867   .0300952      -1.14       .255  -.0933813   .0248079       3240 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 | -.0067266   .0317194       -.21      .8321   -.069008   .0555549       3617 
+        tau1 | -.0285918   .0349821       -.82       .414  -.0972844   .0401007       3229 
+        tau2 |  .0555857   .0411508       1.35      .1773   -.025229   .1364004       2849 
+        tau3 |  .0176536   .0455684        .39      .6986  -.0718488   .1071561       2467 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre |  -.028945   .0234923      -1.23      .2184  -.0750788   .0171888       2503 
+        Post |  .0257951   .0349422        .74      .4607  -.0428396   .0944299       2437 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T4_dose_mid.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T4_dose_mid.png saved as PNG format
+
+. 
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(139,797 observations deleted)
+
+. keep if n_other_events_within_1000m > 25
+(239,419 observations deleted)
+
+. run_lpdid lnp T4_dose_high
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T4_dose_high] outcome=lnp =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 |  .0406903   .0308781       1.32      .1878  -.0198939   .1012745       4556 
+        pre3 |  .0182505   .0306205         .6      .5513  -.0418279   .0783288       5171 
+        pre2 |  .0068017   .0315209        .22      .8292   -.055043   .0686465       5781 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0304502   .0309132        .99      .3248  -.0302012   .0911016       6410 
+        tau1 |  .0894312   .0288485        3.1       .002    .032829   .1460335       5768 
+        tau2 |  .1309691   .0370919       3.53      .0004   .0581887   .2037495       5099 
+        tau3 |  .1060641   .0334649       3.17      .0016   .0403945   .1717338       4410 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre |  .0302599   .0251061       1.21      .2283  -.0190003   .0795201       4534 
+        Post |  .0947884   .0274262       3.46      .0006   .0409678    .148609       4396 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T4_dose_high.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T4_dose_high.png saved as PNG format
+
+. 
+. /*============================================================================
+>   T5. LATE SAMPLE: events 2018+ (short last-sale censoring window)
+> ============================================================================*/
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(139,797 observations deleted)
+
+. keep if year(edate) >= 2018
+(64,025 observations deleted)
+
+. run_lpdid lnp T5_late
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2012 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T5_late] outcome=lnp =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 | -.0127125    .023176       -.55      .5834  -.0581646   .0327396       7734 
+        pre3 | -.0092485   .0214621       -.43      .6666  -.0513391    .032842       8818 
+        pre2 | -.0026159   .0217032       -.12      .9041   -.045179   .0399473       9910 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0183987   .0213885        .86      .3898  -.0235468   .0603442      11081 
+        tau1 |  .0424847   .0212127          2      .0453   .0008831   .0840863       9880 
+        tau2 |  .0912264   .0256913       3.55      .0004   .0408398    .141613       8702 
+        tau3 |  .0630266   .0254914       2.47      .0135   .0130292    .113024       7475 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre |  .0029816   .0174866        .17      .8646  -.0313131   .0372764       7628 
+        Post |  .0645629   .0199018       3.24      .0012    .025528   .1035977       7403 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T5_late.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T5_late.png saved as PNG format
+
+. 
+. /*============================================================================
+>   T6. PLACEBO EVENTS (+ matching real baseline with far ring 400-750m)
+> ============================================================================*/
+. * real baseline, far truncated to 400-750m (placebo coverage limit)
+. use `sales', clear
+
+. drop if ring == "gap_250_400"
+(139,797 observations deleted)
+
+. drop if ring == "far_400_1000" & dist_m > 750
+(394,953 observations deleted)
+
+. run_lpdid lnp T6_real_far750
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T6_real_far750] outcome=lnp =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 |  .0119267   .0226189        .53       .598  -.0324306   .0562841       8250 
+        pre3 |  .0106217   .0212775         .5      .6177  -.0311048   .0523483       9395 
+        pre2 | -.0043617    .021043       -.21      .8358  -.0456282   .0369049      10528 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0205806   .0214624        .96      .3377  -.0215077   .0626688      11867 
+        tau1 |  .0359977   .0211116       1.71      .0883  -.0054035    .077399      10504 
+        tau2 |  .0861619   .0256353       3.36      .0008   .0358877    .136436       9266 
+        tau3 |  .0652081   .0254003       2.57      .0103   .0153927   .1150236       7983 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre |  .0104215   .0171191        .61      .5427   -.023151   .0439941       8040 
+        Post |  .0644717   .0199986       3.22      .0013   .0252492   .1036941       7821 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T6_real_far750.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T6_real_far750.png saved as PNG format
+
+. 
+. * placebo
+. import delimited "$D1/placebo_sale_event_pairs.csv", ///
+>     varnames(1) encoding(utf8) stringcols(_all) clear
+(22 vars, 5,575,533 obs)
+
+. destring salesamt dist_m event_time_months, replace force
+salesamt: all characters numeric; replaced as double
+dist_m: all characters numeric; replaced as double
+event_time_months: all characters numeric; replaced as int
+(10357 missing values generated)
+
+. gen sdate = date(sale_date, "YMD")
+(10,305 missing values generated)
+
+. gen edate = date(event_date, "YMD")
+
+. gen tt    = yofd(sdate)
+(10,305 missing values generated)
+
+. gen ett   = yofd(edate)
+
+. drop if flag_junk_date == "True"
+(10,357 observations deleted)
+
+. drop if flag_nominal_price == "True"
+(1,095,248 observations deleted)
+
+. drop if sale_is_investor_parcel == "True"
+(119,774 observations deleted)
+
+. keep if salesamt > 0 & !missing(salesamt)
+(0 observations deleted)
+
+. keep if inrange(event_time_months, -72, 60)
+(2,503,385 observations deleted)
+
+. 
+. * temporal separation from the co-located real event (>3y either side)
+. preserve
+
+.     import delimited "$D1/placebo_events.csv", varnames(1) ///
+>         encoding(utf8) stringcols(_all) clear
+(11 vars, 1,500 obs)
+
+.     keep event_id months_to_nearest_event
+
+.     destring months_to_nearest_event, replace force
+months_to_nearest_event: all characters numeric; replaced as int
+
+.     tempfile pinfo
+
+.     save `pinfo'
+file C:\Users\mva284\AppData\Local\Temp\ST_7294_000005.tmp saved as .dta format
+
+. restore
+
+. merge m:1 event_id using `pinfo', keep(master match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                         1,846,769  
+    -----------------------------------------
+
+. drop if abs(months_to_nearest_event) <= 36
+(964,631 observations deleted)
+
+. 
+. gen lnp = ln(salesamt)
+
+. drop if ring == "gap_250_400"
+(111,641 observations deleted)
+
+. drop if ring == "far_400_1000" & dist_m > 750
+(305,772 observations deleted)
+
+. run_lpdid lnp T6_placebo
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2007 to 2026, but with gaps
+         Delta: 1 unit
+
+===== lpdid [T6_placebo] outcome=lnp =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 |  .0592555   .0250363       2.37      .0181   .0101389   .1083722       5750 
+        pre3 |  .0102283   .0230713        .44      .6576  -.0350335   .0554902       6432 
+        pre2 | -.0111159   .0196216       -.57      .5711  -.0496099    .027378       7112 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 | -.0003276   .0181009       -.02      .9856   -.035837   .0351818       7882 
+        tau1 | -.0205169   .0200742      -1.02      .3069   -.059898   .0188642       7138 
+        tau2 |  .0146281   .0200754        .73      .4663  -.0247554   .0540116       6465 
+        tau3 | -.0064026   .0209702       -.31      .7602  -.0475412    .034736       5791 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre |  .0245461   .0177256       1.38      .1664  -.0102296   .0593218       5665 
+        Post | -.0053404   .0160862       -.33        .74  -.0368985   .0262177       5717 
+(file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T6_placebo.png not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/rob_T6_placebo.png saved as PNG format
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/robustness_lpdid.log
+  log type:  text
+ closed on:  19 Jul 2026, 14:49:56
+--------------------------------------------------------------------------------------------------------------------------------------------------

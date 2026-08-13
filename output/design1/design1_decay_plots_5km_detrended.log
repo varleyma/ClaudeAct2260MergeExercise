@@ -1,0 +1,453 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign1_decay_plots_5km_detrended.do 
+
+. /*===========================================================================
+> ===
+>  design1_decay_plots_5km_detrended.do
+> 
+>  EXPLORATORY EXTREME: detrended decay figures for the 5km spec (control
+>  4000-5000m). Same method as the 3.5km version: per-bin linear pre-drift
+>  fitted through the base period and projected out of all coefficients;
+>  pooled points shifted by slope x mean(h+1) (post 2.5, pre -1.5).
+> 
+>  CAVEATS: 4-5km controls are in different housing markets; the drift removed
+>  here is the largest in the ladder, extrapolated 4+ years, and treated as
+>  known (CIs shifted, not widened). This is a how-far-does-the-linear-story
+>  stretch exercise -- NOT a headline spec.
+> 
+>  Figures: figD8_es_inner_5km_dt  (0-250 / 250-500 / 500-1000)
+>           figD9_es_mid_5km_dt    (1000-1750 / 1750-2500)
+>           figD10_es_outer_5km_dt (2500-3500 / 3500-4000)
+>           figD11_decay_5km_dt    (raw vs detrended pooled post + detrended pr
+> e)
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global OUT  "$REPO/output/design1"
+
+. 
+. use "$OUT/decay_coefs_5km.dta", clear
+
+. gen b  = c1
+
+. gen se = c2
+(7 missing values generated)
+
+. gen lb = c5
+(7 missing values generated)
+
+. gen ub = c6
+(7 missing values generated)
+
+. replace lb = b - 1.96*se if missing(lb) & !missing(se)
+(0 real changes made)
+
+. replace ub = b + 1.96*se if missing(ub) & !missing(se)
+(0 real changes made)
+
+. drop if missing(b)
+(0 observations deleted)
+
+. 
+. gen horizon = .
+(70 missing values generated)
+
+. replace horizon = -real(substr(rowname, 4, .)) if strpos(rowname, "pre") == 1
+(28 real changes made)
+
+. replace horizon =  real(substr(rowname, 4, .)) if strpos(rowname, "tau") == 1
+(28 real changes made)
+
+. gen hp1 = horizon + 1
+(14 missing values generated)
+
+. 
+. /*===========================================================================
+> =
+>   PER-BIN LINEAR PRE-TREND AND DETRENDING
+> ============================================================================*
+> /
+. gen b_adj  = .
+(70 missing values generated)
+
+. gen lb_adj = .
+(70 missing values generated)
+
+. gen ub_adj = .
+(70 missing values generated)
+
+. gen slope  = .
+(70 missing values generated)
+
+. levelsof test, local(T)
+`"D_0_250"' `"D_1000_1750"' `"D_1750_2500"' `"D_2500_3500"' `"D_250_500"' `"D_3
+> 500_4000"' `"D_500_1000"'
+
+. foreach t of local T {
+  2.     qui reg b c.hp1 if test == "`t'" & matrix_type == "event" & horizon < 
+> 0, nocons
+  3.     local s = _b[hp1]
+  4.     di as result "bin `t': pre-period linear drift = " %6.4f `s' " per yea
+> r"
+  5.     replace slope = `s' if test == "`t'"
+  6.     replace b_adj  = b  - `s'*hp1 if test == "`t'" & matrix_type == "event
+> "
+  7.     replace lb_adj = lb - `s'*hp1 if test == "`t'" & matrix_type == "event
+> "
+  8.     replace ub_adj = ub - `s'*hp1 if test == "`t'" & matrix_type == "event
+> "
+  9.     replace b_adj  = b  - `s'*2.5 if test == "`t'" & matrix_type == "poole
+> d" & lower(rowname) == "post"
+ 10.     replace lb_adj = lb - `s'*2.5 if test == "`t'" & matrix_type == "poole
+> d" & lower(rowname) == "post"
+ 11.     replace ub_adj = ub - `s'*2.5 if test == "`t'" & matrix_type == "poole
+> d" & lower(rowname) == "post"
+ 12.     replace b_adj  = b  + `s'*1.5 if test == "`t'" & matrix_type == "poole
+> d" & lower(rowname) == "pre"
+ 13.     replace lb_adj = lb + `s'*1.5 if test == "`t'" & matrix_type == "poole
+> d" & lower(rowname) == "pre"
+ 14.     replace ub_adj = ub + `s'*1.5 if test == "`t'" & matrix_type == "poole
+> d" & lower(rowname) == "pre"
+ 15. }
+bin D_0_250: pre-period linear drift = 0.0333 per year
+(10 real changes made)
+(8 real changes made)
+(7 real changes made)
+(7 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+bin D_1000_1750: pre-period linear drift = 0.0267 per year
+(10 real changes made)
+(8 real changes made)
+(7 real changes made)
+(7 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+bin D_1750_2500: pre-period linear drift = 0.0189 per year
+(10 real changes made)
+(8 real changes made)
+(7 real changes made)
+(7 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+bin D_2500_3500: pre-period linear drift = 0.0151 per year
+(10 real changes made)
+(8 real changes made)
+(7 real changes made)
+(7 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+bin D_250_500: pre-period linear drift = 0.0274 per year
+(10 real changes made)
+(8 real changes made)
+(7 real changes made)
+(7 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+bin D_3500_4000: pre-period linear drift = 0.0106 per year
+(10 real changes made)
+(8 real changes made)
+(7 real changes made)
+(7 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+bin D_500_1000: pre-period linear drift = 0.0282 per year
+(10 real changes made)
+(8 real changes made)
+(7 real changes made)
+(7 real changes made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+(1 real change made)
+
+. tempfile coefs
+
+. save `coefs'
+file C:\Users\mva284\AppData\Local\Temp\ST_48e0_000001.tmp saved as .dta
+    format
+
+. 
+. /*===========================================================================
+> =
+>   DETRENDED EVENT-STUDY OVERLAYS
+> ============================================================================*
+> /
+. capture program drop drawadj
+
+. program define drawadj
+  1.     syntax, out(string)
+  2.     local STYLE  graphregion(color(white)) bgcolor(white) ///
+>                  ylabel(, angle(horizontal) format(%9.2f)) ///
+>                  yline(0, lcolor(gs8) lwidth(thin)) ///
+>                  xline(-0.5, lcolor(gs11) lpattern(dash))
+  3.     local colors navy cranberry dkorange
+  4.     local n : word count $FIG_TESTS
+  5.     local plots
+  6.     local legorder
+  7.     local i = 0
+  8.     foreach t of global FIG_TESTS {
+  9.         local ++i
+ 10.         local col : word `i' of `colors'
+ 11.         local off = cond(`n'==1, 0, (`i' - (`n'+1)/2) * 0.12)
+ 12.         capture drop x`i'
+ 13.         gen x`i' = horizon + `off' if test == "`t'"
+ 14.         local lab : word `i' of $FIG_LABELS
+ 15.         local plots `plots' ///
+>             (rcap ub_adj lb_adj x`i' if test == "`t'", lcolor(`col') lwidth(m
+> edthin)) ///
+>             (connected b_adj x`i' if test == "`t'", color(`col') msymbol(O) l
+> width(medthin))
+ 16.         local legorder `legorder' `= 2*`i'' "`lab'"
+ 17.     }
+ 18.     twoway `plots', `STYLE' ///
+>         legend(order(`legorder') rows(1) region(lstyle(none))) ///
+>         title("$FIG_TITLE", size(medium)) ///
+>         ytitle("$FIG_YT") xtitle("$FIG_XT") ///
+>         note("$FIG_NOTE", size(vsmall)) ///
+>         xlabel(-4(1)3) name(`out', replace)
+ 19.     graph export "$OUT/`out'.png", replace width(2000)
+ 20. end
+
+. 
+. local XT "Years since investor purchase (0 = purchase year)"
+
+. local YT "Detrended effect on log sale price"
+
+. local CAVEAT "EXPLORATORY EXTREME: per-bin linear pre-drift projected out; CI
+> s shifted, not widened. Control band 4,000-5,000m -- different housing market
+> s; largest drift in the ladder."
+
+. 
+. use `coefs', clear
+
+. keep if matrix_type == "event"
+(14 observations deleted)
+
+. global FIG_TESTS  D_0_250 D_250_500 D_500_1000
+
+. global FIG_LABELS `""0-250m" "250-500m" "500-1000m""'
+
+. global FIG_TITLE  Detrended, 4-5km control: inner rings
+
+. global FIG_YT     `YT'
+
+. global FIG_XT     `XT'
+
+. global FIG_NOTE   `CAVEAT'
+
+. drawadj, out(figD8_es_inner_5km_dt)
+(48 missing values generated)
+(48 missing values generated)
+(48 missing values generated)
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD8_es_inner_5km_dt.png not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD8_es_inner_5km_dt.png saved as PNG format
+
+. 
+. use `coefs', clear
+
+. keep if matrix_type == "event"
+(14 observations deleted)
+
+. global FIG_TESTS  D_1000_1750 D_1750_2500
+
+. global FIG_LABELS `""1,000-1,750m" "1,750-2,500m""'
+
+. global FIG_TITLE  Detrended, 4-5km control: middle rings
+
+. global FIG_YT     `YT'
+
+. global FIG_XT     `XT'
+
+. global FIG_NOTE   `CAVEAT'
+
+. drawadj, out(figD9_es_mid_5km_dt)
+(48 missing values generated)
+(48 missing values generated)
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD9_es_mid_5km_dt.png not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD9_es_mid_5km_dt.png saved as PNG format
+
+. 
+. use `coefs', clear
+
+. keep if matrix_type == "event"
+(14 observations deleted)
+
+. global FIG_TESTS  D_2500_3500 D_3500_4000
+
+. global FIG_LABELS `""2,500-3,500m" "3,500-4,000m""'
+
+. global FIG_TITLE  Detrended, 4-5km control: outer rings
+
+. global FIG_YT     `YT'
+
+. global FIG_XT     `XT'
+
+. global FIG_NOTE   `CAVEAT'
+
+. drawadj, out(figD10_es_outer_5km_dt)
+(48 missing values generated)
+(48 missing values generated)
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD10_es_outer_5km_dt.png not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD10_es_outer_5km_dt.png saved as PNG format
+
+. 
+. /*===========================================================================
+> =
+>   DECAY CURVE: raw vs detrended pooled post (+ detrended pooled pre)
+> ============================================================================*
+> /
+. use `coefs', clear
+
+. keep if matrix_type == "pooled"
+(56 observations deleted)
+
+. gen post = lower(rowname) == "post"
+
+. gen mid = .
+(14 missing values generated)
+
+. replace mid = 125  if test == "D_0_250"
+(2 real changes made)
+
+. replace mid = 375  if test == "D_250_500"
+(2 real changes made)
+
+. replace mid = 750  if test == "D_500_1000"
+(2 real changes made)
+
+. replace mid = 1375 if test == "D_1000_1750"
+(2 real changes made)
+
+. replace mid = 2125 if test == "D_1750_2500"
+(2 real changes made)
+
+. replace mid = 3000 if test == "D_2500_3500"
+(2 real changes made)
+
+. replace mid = 3750 if test == "D_3500_4000"
+(2 real changes made)
+
+. drop if missing(mid)
+(0 observations deleted)
+
+. gen x  = mid
+
+. gen xr = mid - 80
+
+. gen xp = mid + 80
+
+. sort post x
+
+. 
+. twoway ///
+>     (rcap ub lb xr if post, lcolor(gs10) lwidth(thin)) ///
+>     (connected b xr if post, color(gs10) msymbol(Th) lpattern(shortdash) lwid
+> th(thin) sort(xr)) ///
+>     (rcap ub_adj lb_adj x if post, lcolor(navy) lwidth(medthin)) ///
+>     (connected b_adj x if post, color(navy) msymbol(O) lwidth(medthin) sort(x
+> )) ///
+>     (connected b_adj xp if !post, color(gs9) msymbol(Oh) lpattern(dash) lwidt
+> h(thin) sort(xp)) ///
+>     , graphregion(color(white)) bgcolor(white) ///
+>     ylabel(, angle(horizontal) format(%9.2f)) ///
+>     yline(0, lcolor(gs8) lwidth(thin)) ///
+>     legend(order(4 "Detrended pooled post effect" 2 "Raw pooled post (unadjus
+> ted)" ///
+>                  5 "Detrended pooled pre (should be ~0)") ///
+>            rows(3) position(6) region(lstyle(none))) ///
+>     title("Spatial decay to 4km, linear pre-drift removed (4-5km control)", s
+> ize(medium)) ///
+>     ytitle("Pooled effect on log sale price") ///
+>     xtitle("Distance from investor purchase (ring midpoint, meters)") ///
+>     xlabel(125 "125" 375 "375" 750 "750" 1375 "1,375" 2125 "2,125" 3000 "3,00
+> 0" 3750 "3,750") ///
+>     note("`CAVEAT'", size(vsmall)) ///
+>     name(figD11_decay_5km_dt, replace)
+
+. graph export "$OUT/figD11_decay_5km_dt.png", replace width(2000)
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD11_decay_5km_dt.png not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD11_decay_5km_dt.png saved as PNG format
+
+. 
+. di as result _n "5km detrended figures: figD8..figD11"
+
+5km detrended figures: figD8..figD11
+
+. 
+end of do-file

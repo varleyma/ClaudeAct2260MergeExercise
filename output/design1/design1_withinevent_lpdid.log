@@ -1,0 +1,296 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign1_withinevent_lpdid.do 
+
+. /*===========================================================================
+> ===
+>  design1_withinevent_lpdid.do
+> 
+>  Baseline ring LP-DiD with EVENT x CALENDAR-YEAR effects absorbed
+>  (lpdid's absorb() option): forces identification within event-year, i.e.
+>  each near cell's long difference against its OWN far ring's, rather than
+>  the pooled never-treated control pool.
+> 
+>  Note: event x ring (cell) FE are NOT added -- long-differencing already
+>  removes time-invariant cell effects, and adding cell FE to the differenced
+>  equation would (a) control cell trends instead, and (b) singleton-drop every
+>  newly treated observation.
+> 
+>  Output: appended to output/design1/withinevent_results.log (comparison vs
+>  the pooled-control baseline printed at the end)
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global D1   "$REPO/data/design1"
+
+. global OUT  "$REPO/output/design1"
+
+. 
+. capture which lpdid
+
+. if _rc ssc install lpdid, replace
+
+. 
+. import delimited "$D1/design1_sale_event_pairs.csv", ///
+>     varnames(1) encoding(utf8) stringcols(_all) clear
+(28 vars, 3,472,651 obs)
+
+. destring salesamt dist_m event_time_months, replace force
+salesamt: all characters numeric; replaced as double
+dist_m: all characters numeric; replaced as double
+event_time_months: all characters numeric; replaced as int
+(7852 missing values generated)
+
+. gen sdate = date(sale_date, "YMD")
+(7,795 missing values generated)
+
+. gen edate = date(event_date, "YMD")
+
+. gen tt    = yofd(sdate)
+(7,795 missing values generated)
+
+. gen ett   = yofd(edate)
+
+. drop if ring == "gap_250_400"
+(426,392 observations deleted)
+
+. drop if flag_junk_date == "True"
+(7,165 observations deleted)
+
+. drop if flag_nominal_price == "True"
+(614,231 observations deleted)
+
+. drop if sale_is_investor_parcel == "True"
+(98,296 observations deleted)
+
+. drop if year(edate) < 2012
+(62,825 observations deleted)
+
+. keep if salesamt > 0 & !missing(salesamt)
+(0 observations deleted)
+
+. keep if inrange(event_time_months, -72, 60)
+(1,292,022 observations deleted)
+
+. gen lnp = ln(salesamt)
+
+. egen cellid = group(event_id ring)
+
+. gen near = ring == "near_0_250"
+
+. collapse (mean) y = lnp (first) near ett (firstnm) event_id ///
+>     (count) nsales = salesamt, by(cellid tt)
+
+. drop if missing(y)
+(0 observations deleted)
+
+. gen treat = near & tt >= ett
+
+. egen evyear = group(event_id tt)
+
+. xtset cellid tt
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+. 
+. log using "$OUT/withinevent_results.log", replace text
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/withinevent_results.log not found)
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/withinevent_results.log
+  log type:  text
+ opened on:  11 Aug 2026, 10:27:29
+
+. 
+. di as result _n "===== BASELINE (pooled controls, for reference) ====="
+
+===== BASELINE (pooled controls, for reference) =====
+
+. lpdid y, unit(cellid) time(tt) treat(treat) ///
+>     pre_window(4) post_window(3) nograph nevertreated
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated nograph
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0006468   .0225249       -.03      .9771  -.0448197 
+        pre3 |  -.003557   .0216278       -.16      .8694  -.0459703 
+        pre2 |  -.008262   .0214346       -.39      .6999  -.0502964 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0163962    .021602        .76      .4479  -.0259657 
+        tau1 |  .0412159   .0213634       1.93      .0538  -.0006791 
+        tau2 |  .0919145   .0258968       3.55      .0004   .0411278 
+        tau3 |  .0705132   .0252902       2.79      .0054   .0209138 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .0435262       8615 
+        pre3 |  .0388564       9806 
+        pre2 |  .0337723      10998 
+        pre1 |         .          . 
+        tau0 |  .0587581      12299 
+        tau1 |   .083111      10975 
+        tau2 |  .1427012       9692 
+        tau3 |  .1201127       8363 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0034351   .0170511         .2      .8404  -.0300039 
+        Post |  .0694791   .0202803       3.43      .0006   .0297045 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   .036874       8490 
+        Post |  .1092536       8271 
+
+. matrix list e(pooled_results)
+
+e(pooled_results)[2,7]
+      coefficient           se            t            p       ci_low
+ Pre    .00343508    .01705108           .2        .8404   -.03000388
+Post    .06947906    .02028031         3.43        .0006    .02970451
+
+          ci_high          obs
+ Pre    .03687403         8490
+Post    .10925361         8271
+
+. 
+. di as result _n "===== WITHIN-EVENT: absorb(event x year) ====="
+
+===== WITHIN-EVENT: absorb(event x year) =====
+
+. lpdid y, unit(cellid) time(tt) treat(treat) ///
+>     pre_window(4) post_window(3) nograph nevertreated absorb(evyear)
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated nograph absorb(evyear)
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  -.021498   .0233457       -.92      .3574  -.0673129 
+        pre3 | -.0187182   .0230555       -.81      .4171  -.0639622 
+        pre2 |  -.020168   .0235435       -.86      .3919  -.0663683 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0045755   .0241744        .19      .8499   -.042859 
+        tau1 |  .0149536   .0235013        .64      .5247  -.0311652 
+        tau2 |  .0603363   .0274663        2.2      .0283    .006428 
+        tau3 |  .0755743   .0273886       2.76      .0059   .0218022 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |   .024317       1906 
+        pre3 |  .0265257       1956 
+        pre2 |  .0260324       2004 
+        pre1 |         .          . 
+        tau0 |    .05201       2148 
+        tau1 |  .0610724       1960 
+        tau2 |  .1142446       1734 
+        tau3 |  .1293463       1426 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0256901   .0183593       -1.4      .1621  -.0617225 
+        Post |  .0510144   .0215352       2.37      .0181   .0087302 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .0103422       1788 
+        Post |  .0932986       1350 
+
+. matrix list e(results)
+
+e(results)[8,7]
+      coefficient           se            t            p       ci_low
+pre4   -.02149797    .02334568         -.92        .3574   -.06731291
+pre3   -.01871824    .02305549         -.81        .4171   -.06396221
+pre2   -.02016796    .02354353         -.86        .3919   -.06636829
+pre1            0            .            .            .            .
+tau0    .00457551    .02417442          .19        .8499   -.04285899
+tau1     .0149536    .02350134          .64        .5247    -.0311652
+tau2     .0603363    .02746629          2.2        .0283    .00642802
+tau3    .07557427     .0273886         2.76        .0059    .02180219
+
+          ci_high          obs
+pre4    .02431696         1906
+pre3    .02652573         1956
+pre2    .02603237         2004
+pre1            .            .
+tau0    .05201001         2148
+tau1     .0610724         1960
+tau2    .11424457         1734
+tau3    .12934635         1426
+
+. matrix list e(pooled_results)
+
+e(pooled_results)[2,7]
+      coefficient           se            t            p       ci_low
+ Pre   -.02569014    .01835928         -1.4        .1621   -.06172251
+Post    .05101438    .02153523         2.37        .0181    .00873018
+
+          ci_high          obs
+ Pre    .01034223         1788
+Post    .09329858         1350
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/withinevent_results.log
+  log type:  text
+ closed on:  11 Aug 2026, 10:27:54
+-------------------------------------------------------------------------------
+
+. di as result "Saved: $OUT/withinevent_results.log"
+Saved: C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/desig
+> n1/withinevent_results.log
+
+. 
+end of do-file

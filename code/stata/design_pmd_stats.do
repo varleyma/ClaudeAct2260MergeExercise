@@ -107,6 +107,8 @@ if !_rc {
                   inlist(seller_nonhispanic, "True", "False")
     gen isl2main  = (seller_nonhispanic == "False" & buyer_nonhispanic == "True")  if bothcl
     gen main2main = (seller_nonhispanic == "True"  & buyer_nonhispanic == "True")  if bothcl
+    gen main2isl  = (seller_nonhispanic == "True"  & buyer_nonhispanic == "False") if bothcl
+    gen netin     = isl2main - main2isl if bothcl
     drop bothcl
 }
 tempfile salesall sales
@@ -117,58 +119,58 @@ save `sales'
 use `sales', clear
 drop if ring == "gap_250_400"
 r2cell lnp T1_baseline
-post `pf' (\"T1_baseline\") ($BB) ($SS) ($R2) ($NN)
+post `pf' ("T1_baseline") ($BB) ($SS) ($R2) ($NN)
 
 foreach y in lnstru lncab subu vac {
     use `sales', clear
     drop if ring == "gap_250_400"
     r2cell `y' T2_comp_`y'
-    post `pf' (\"T2_comp_`y'\") ($BB) ($SS) ($R2) ($NN)
+    post `pf' ("T2_comp_`y'") ($BB) ($SS) ($R2) ($NN)
 }
 
 use `sales', clear
 drop if ring == "near_0_250"
 replace ring = "near_0_250" if ring == "gap_250_400"
 r2cell lnp T3_gradient_gap
-post `pf' (\"T3_gradient_gap\") ($BB) ($SS) ($R2) ($NN)
+post `pf' ("T3_gradient_gap") ($BB) ($SS) ($R2) ($NN)
 
 use `sales', clear
 drop if ring == "gap_250_400"
 keep if n_other_events_within_1000m <= 2
 r2cell lnp T4_dose_low
-post `pf' (\"T4_dose_low\") ($BB) ($SS) ($R2) ($NN)
+post `pf' ("T4_dose_low") ($BB) ($SS) ($R2) ($NN)
 
 use `sales', clear
 drop if ring == "gap_250_400"
 keep if inrange(n_other_events_within_1000m, 3, 25)
 r2cell lnp T4_dose_mid
-post `pf' (\"T4_dose_mid\") ($BB) ($SS) ($R2) ($NN)
+post `pf' ("T4_dose_mid") ($BB) ($SS) ($R2) ($NN)
 
 use `sales', clear
 drop if ring == "gap_250_400"
 keep if n_other_events_within_1000m > 25
 r2cell lnp T4_dose_high
-post `pf' (\"T4_dose_high\") ($BB) ($SS) ($R2) ($NN)
+post `pf' ("T4_dose_high") ($BB) ($SS) ($R2) ($NN)
 
 use `sales', clear
 drop if ring == "gap_250_400"
 keep if year(edate) >= 2018
 r2cell lnp T5_late
-post `pf' (\"T5_late\") ($BB) ($SS) ($R2) ($NN)
+post `pf' ("T5_late") ($BB) ($SS) ($R2) ($NN)
 
-foreach y in buy_nh sell_nh isl2main main2main {
+foreach y in buy_nh sell_nh isl2main main2main netin {
     use `sales', clear
     capture confirm variable `y'
     if _rc continue
     drop if ring == "gap_250_400"
     r2cell `y' T7_`y'
-    post `pf' (\"T7_`y'\") ($BB) ($SS) ($R2) ($NN)
+    post `pf' ("T7_`y'") ($BB) ($SS) ($R2) ($NN)
 }
 
 use `salesall', clear
 drop if ring == "gap_250_400"
 r2cell lnp T8_incl_investors
-post `pf' (\"T8_incl_investors\") ($BB) ($SS) ($R2) ($NN)
+post `pf' ("T8_incl_investors") ($BB) ($SS) ($R2) ($NN)
 
 use `sales', clear
 capture confirm variable buyer_nonhispanic
@@ -176,14 +178,14 @@ if !_rc {
     drop if ring == "gap_250_400"
     keep if buyer_nonhispanic == "False"
     r2cell lnp T8_hisp_buyers
-    post `pf' (\"T8_hisp_buyers\") ($BB) ($SS) ($R2) ($NN)
+    post `pf' ("T8_hisp_buyers") ($BB) ($SS) ($R2) ($NN)
 }
 
 use `sales', clear
 drop if ring == "gap_250_400"
 drop if ring == "far_400_1000" & dist_m > 750
 r2cell lnp T6_real_far750
-post `pf' (\"T6_real_far750\") ($BB) ($SS) ($R2) ($NN)
+post `pf' ("T6_real_far750") ($BB) ($SS) ($R2) ($NN)
 
 * placebo
 import delimited "$D1/placebo_sale_event_pairs.csv", ///
@@ -212,7 +214,7 @@ gen lnp = ln(salesamt)
 drop if ring == "gap_250_400"
 drop if ring == "far_400_1000" & dist_m > 750
 r2cell lnp T6_placebo
-post `pf' (\"T6_placebo\") ($BB) ($SS) ($R2) ($NN)
+post `pf' ("T6_placebo") ($BB) ($SS) ($R2) ($NN)
 
 /*============================================================================
   B. 5km decay / ladder specs
@@ -254,7 +256,7 @@ foreach s in "-1 250 D_0_250" "250 500 D_250_500" "500 1000 D_500_1000" "1000 15
     local hi : word 2 of `s'
     local t  : word 3 of `s'
     r2band `lo' `hi' 1500 2000 `t'
-    post `pf' (\"`t'\") ($BB) ($SS) ($R2) ($NN)
+    post `pf' ("`t'") ($BB) ($SS) ($R2) ($NN)
 }
 * ladder (0-250 vs each band)
 foreach s in "400 1000 C_400_1000" "1000 1500 C_1000_1500" "1500 2000 C_1500_2000" "2000 2500 C_2000_2500" "2500 3500 C_2500_3500" {
@@ -262,7 +264,7 @@ foreach s in "400 1000 C_400_1000" "1000 1500 C_1000_1500" "1500 2000 C_1500_200
     local c2 : word 2 of `s'
     local t  : word 3 of `s'
     r2band -1 250 `c1' `c2' `t'
-    post `pf' (\"`t'\") ($BB) ($SS) ($R2) ($NN)
+    post `pf' ("`t'") ($BB) ($SS) ($R2) ($NN)
 }
 * 3.5km spec (control 2500-3500)
 foreach s in "-1 250 D35_0_250" "250 500 D35_250_500" "500 1000 D35_500_1000" "1000 1750 D35_1000_1750" "1750 2500 D35_1750_2500" {
@@ -270,7 +272,7 @@ foreach s in "-1 250 D35_0_250" "250 500 D35_250_500" "500 1000 D35_500_1000" "1
     local hi : word 2 of `s'
     local t  : word 3 of `s'
     r2band `lo' `hi' 2500 3500 `t'
-    post `pf' (\"`t'\") ($BB) ($SS) ($R2) ($NN)
+    post `pf' ("`t'") ($BB) ($SS) ($R2) ($NN)
 }
 * 5km spec (control 4000-5000)
 foreach s in "-1 250 D5K_0_250" "250 500 D5K_250_500" "500 1000 D5K_500_1000" "1000 1750 D5K_1000_1750" "1750 2500 D5K_1750_2500" "2500 3500 D5K_2500_3500" "3500 4000 D5K_3500_4000" {
@@ -278,7 +280,7 @@ foreach s in "-1 250 D5K_0_250" "250 500 D5K_250_500" "500 1000 D5K_500_1000" "1
     local hi : word 2 of `s'
     local t  : word 3 of `s'
     r2band `lo' `hi' 4000 5000 `t'
-    post `pf' (\"`t'\") ($BB) ($SS) ($R2) ($NN)
+    post `pf' ("`t'") ($BB) ($SS) ($R2) ($NN)
 }
 capture erase "$OUT/_r2_5km.dta"
 

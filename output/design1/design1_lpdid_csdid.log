@@ -1,0 +1,911 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/design1_lpdid_csdid.log
+  log type:  text
+ opened on:  19 Jul 2026, 14:11:26
+
+. 
+. *---- (a) lpdid, no tract FE -------------------------------------------------
+. lpdid lnp, unit(cellid) time(tt) treat(treat) ///
+>     pre_window(`PREW') post_window(`POSTW') nevertreated
+lpdid lnp, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(4) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 | -.0532645   .0256256      -2.08      .0378  -.1035202  -.0030089       9133 
+        pre3 | -.0302423   .0283775      -1.07      .2867  -.0858946   .0254101      10285 
+        pre2 | -.0191701   .0268506       -.71      .4753  -.0718282   .0334879      11413 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0181961   .0262752        .69      .4887  -.0333319    .069724      12791 
+        tau1 |  .0346999   .0262892       1.32       .187   -.016857   .0862569      11421 
+        tau2 |  .0288305   .0270245       1.07      .2862  -.0241692   .0818303      10223 
+        tau3 |  .0706457   .0312338       2.26      .0238   .0093894   .1319019       9011 
+        tau4 |  .0558854    .031446       1.78      .0757  -.0057884   .1175592       7803 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre | -.0303569   .0227428      -1.33      .1821  -.0749607   .0142469       8902 
+        Post |  .0333631   .0244394       1.37      .1724  -.0145713   .0812974       7581 
+
+. matrix LP_NOFE = r(results)
+
+. graph export "$OUT/lpdid_noFE.png", replace
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/lpdid_noFE.png saved as PNG format
+
+. 
+. *---- (b) lpdid, tract FE ----------------------------------------------------
+. lpdid lnp_trfe, unit(cellid) time(tt) treat(treat) ///
+>     pre_window(`PREW') post_window(`POSTW') nevertreated
+lpdid lnp_trfe, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(4) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre4 | -.0550667   .0254999      -2.16      .0309  -.1050759  -.0050576       9133 
+        pre3 | -.0277215   .0284134       -.98      .3294  -.0834441   .0280011      10285 
+        pre2 | -.0246828   .0268507       -.92      .3581  -.0773411   .0279755      11413 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0175767   .0261861        .67      .5022  -.0337765   .0689299      12789 
+        tau1 |  .0335153   .0262942       1.27      .2026  -.0180513    .085082      11420 
+        tau2 |  .0243549   .0268491        .91      .3645  -.0283009   .0770106      10222 
+        tau3 |  .0651384   .0312015       2.09       .037   .0039456   .1263312       9010 
+        tau4 |  .0472847   .0314474        1.5      .1329  -.0143917   .1089611       7802 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre | -.0324089   .0226075      -1.43      .1519  -.0767473   .0119295       8901 
+        Post |  .0267004   .0242839        1.1      .2717  -.0209289   .0743297       7580 
+
+. matrix LP_FE = r(results)
+
+. graph export "$OUT/lpdid_tractFE.png", replace
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/lpdid_tractFE.png saved as PNG format
+
+. 
+. *---- (c)-(d) Callaway-Sant'Anna ---------------------------------------------
+. * csdid computes a doubly-robust ATT(g,t) for EVERY cohort x period pair
+. * (~50 cohorts x ~50 periods here) -> very slow. FAST_CS=1 uses csdid2
+. * (same estimator, compiled, much faster) and cross-checks with jwdid
+. * (Wooldridge-Mundlak via reghdfe, near-instant, same never-treated logic).
+. * For csdid keep only the +/-2y window (the extra margin is lpdid-only).
+. preserve
+
+. keep if inrange(tt - ett, -`PREW'-1, `POSTW') | gq == 0
+(1,428 observations deleted)
+
+. 
+. if `FAST_CS' {
+.     * csdid2: no tract FE
+.     csdid2 lnp, ivar(cellid) tvar(tt) gvar(gq) method(dripw) notyet
+Producing Long Gaps by default
+Using method dripw
+Panel is not balanced
+Will use observations with Pair balanced (observed at t0 and t1)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+..................................................   100
+..................................................   150
+..................................................   200
+..................................................   250
+.....     estat event, window(-`PREW'-1 `POSTW') estore(cs_noFE)
+window() invalid -- invalid numlist
+r(121);
+.     estat plot
+.     graph export "$OUT/csdid_noFE.png", replace
+. 
+.     * csdid2: tract FE
+.     csdid2 lnp_trfe, ivar(cellid) tvar(tt) gvar(gq) method(dripw) notyet
+.     estat event, window(-`PREW'-1 `POSTW') estore(cs_FE)
+.     estat plot
+.     graph export "$OUT/csdid_tractFE.png", replace
+. 
+.     * jwdid cross-check (fast; should be close to csdid2)
+.     qui jwdid lnp, ivar(cellid) tvar(tt) gvar(gq) never
+.     estat event
+.     qui jwdid lnp_trfe, ivar(cellid) tvar(tt) gvar(gq) never
+.     estat event
+. 
+. }
+r(121);
+
+end of do-file
+
+r(121);
+
+. do "C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\design1_eventstudy_lpdid_csdid.do"
+
+. /*==============================================================================
+>  design1_eventstudy_lpdid_csdid.do
+> 
+>  Design 1 stacked ring event study: effect of an Act 22/60 investor purchase
+>  on nearby sale prices, +/- 2 years, via lpdid and csdid.
+>  Reports each estimator without and with tract fixed effects.
+> 
+>  DESIGN MAPPING (read this first)
+>  ---------------------------------
+>  lpdid / csdid need a panel, but CRIM gives ONE sale per parcel (its last).
+>  We therefore build an event x ring x quarter panel:
+>    unit  = event x ring cell (near ring = 0-250m, far ring = 400-1000m;
+>            the 250-400m gap ring is dropped as a spillover buffer)
+>    time  = calendar quarter of sale
+>    y     = mean log sale price among that cell's sales that quarter
+>    treatment: the NEAR cell of event e switches on in e's event quarter
+>               (absorbing); FAR cells never switch -> never-treated controls.
+>  "With tract FE": sale-level ln(price) is residualized on tract dummies
+>  (reghdfe) BEFORE collapsing, so cross-tract level differences and the
+>  composition drift across tracts are removed. (FE cannot be added inside
+>  csdid; residualizing first is the clean equivalent.)
+> 
+>  KNOWN LIMITATIONS OF THIS STARTER
+>  ----------------------------------
+>  - Cells are SPARSE (many cell-quarters have 0 sales). lpdid/csdid drop
+>    missing cells; treat the first run as diagnostic, and consider quarterly ->
+>    half-year aggregation, or your tract-month price data as an alternative
+>    outcome panel, if too noisy.
+>  - CRIM keeps only each parcel's LAST sale: earlier sales are censored by
+>    later resales, and the censoring can be treatment-correlated. Within-window
+>    near-vs-far comparisons mitigate but do not eliminate this. See
+>    log/2026-07-18_1530.md.
+>  - Only 158/1256 events have no other event within 1km (median 25!). The
+>    CLEAN_ONLY toggle below restricts to less-contaminated events; the full
+>    sample estimates a "dose-diluted" effect.
+> 
+>  Inputs  (repo): data/design1/design1_sale_event_pairs.csv  (regenerate via
+>                  code/python/build_design1_event_panel.py if missing - 673MB,
+>                  gitignored), data/design1/design1_events.csv
+>  Outputs (repo): output/design1/  (estimates logs + event-study plots)
+> ==============================================================================*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. *--- paths (repo only; Dropbox is read-only and not touched here) ------------
+. global REPO   "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global D1     "$REPO/data/design1"
+
+. global OUT    "$REPO/output/design1"
+
+. capture mkdir "$REPO/output"
+
+. capture mkdir "$OUT"
+
+. 
+. *--- toggles ------------------------------------------------------------------
+. local CLEAN_ONLY  0   // 1 = keep only events with <=2 other events within 1km
+
+. local MIN_EVYEAR  2012  // drop pre-decree-era "events" (sales before Act 22)
+
+. local HALFYEARS   0   // 1 = half-year time units (4x fewer ATT(g,t) cells,
+
+.                       //     denser cells); 0 = quarters
+. local FAST_CS     1   // 1 = csdid2 (much faster) + jwdid; 0 = original csdid
+
+. 
+. *--- packages (one-time) ------------------------------------------------------
+. capture which lpdid
+
+. if _rc ssc install lpdid, replace
+
+. capture which csdid
+
+. if _rc ssc install csdid, replace
+
+. capture which drdid
+
+. if _rc ssc install drdid, replace
+
+. capture which reghdfe
+
+. if _rc ssc install reghdfe, replace
+
+. capture which ftools
+
+. if _rc ssc install ftools, replace
+
+. * csdid2 is NOT on SSC — it installs from Fernando Rios-Avila's package site
+. capture which csdid2
+
+. if _rc capture net install csdid2, from("https://friosavila.github.io/stpackages") replace
+
+. capture which jwdid
+
+. if _rc ssc install jwdid, replace
+
+. 
+. /*============================================================================
+>   1. LOAD PAIRS + FILTERS
+> ============================================================================*/
+. import delimited "$D1/design1_sale_event_pairs.csv", ///
+>     varnames(1) encoding(utf8) stringcols(_all) clear
+(22 vars, 3,472,651 obs)
+
+. 
+. * numeric conversions
+. destring salesamt dist_m event_time_months cabida land structure totalval, ///
+>     replace force
+salesamt: all characters numeric; replaced as double
+dist_m: all characters numeric; replaced as double
+event_time_months: all characters numeric; replaced as int
+(7852 missing values generated)
+cabida: all characters numeric; replaced as double
+(141631 missing values generated)
+land: all characters numeric; replaced as double
+structure: all characters numeric; replaced as double
+totalval: all characters numeric; replaced as double
+(3 missing values generated)
+
+. 
+. * dates
+. gen sdate  = date(sale_date, "YMD")
+(7,795 missing values generated)
+
+. gen edate  = date(event_date, "YMD")
+
+. format sdate edate %td
+
+. gen sqtr   = qofd(sdate)
+(7,795 missing values generated)
+
+. gen eqtr   = qofd(edate)
+
+. format sqtr eqtr %tq
+
+. 
+. * ---- sample filters ----
+. drop if ring == "gap_250_400"                    // spillover buffer
+(426,392 observations deleted)
+
+. drop if flag_junk_date == "True"                 // ~0.3% junk CRIM dates
+(7,165 observations deleted)
+
+. drop if flag_nominal_price == "True"             // $1-type transfers
+(614,231 observations deleted)
+
+. drop if sale_is_investor_parcel == "True"        // market sales only
+(76,404 observations deleted)
+
+. drop if year(edate) < `MIN_EVYEAR'               // decree-era events only
+(63,319 observations deleted)
+
+. keep if salesamt > 0 & !missing(salesamt)
+(0 observations deleted)
+
+. 
+. * +/- 2y estimation window, with 1y margin so lpdid has pre-period levels
+. keep if inrange(event_time_months, -36, 30)
+(1,695,359 observations deleted)
+
+. 
+. * event-level contamination info
+. preserve
+
+.     import delimited "$D1/design1_events.csv", varnames(1) ///
+>         encoding(utf8) stringcols(_all) clear
+(17 vars, 1,256 obs)
+
+.     keep event_id n_other_events_within_1000m clean_event_1000m
+
+.     destring n_other_events_within_1000m, replace force
+n_other_events_within_1000m: all characters numeric; replaced as int
+
+.     tempfile evinfo
+
+.     save `evinfo'
+file C:\Users\mva284\AppData\Local\Temp\ST_8498_000002.tmp saved as .dta format
+
+. restore
+
+. merge m:1 event_id using `evinfo', keep(master match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                           589,781  
+    -----------------------------------------
+
+. if `CLEAN_ONLY' keep if n_other_events_within_1000m <= 2
+
+. 
+. gen lnp = ln(salesamt)
+
+. 
+. /*============================================================================
+>   2. TRACT-FE VERSION OF THE OUTCOME (residualize BEFORE collapsing)
+> ============================================================================*/
+. egen tract = group(tract_geoid)
+
+. * hedonic-adjusted option: add cabida structure is_subunit etc. as controls here
+. reghdfe lnp, absorb(tract) residuals(lnp_trfe)
+(dropped 18 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =    589,763
+Absorbing 1 HDFE group                            F(   0, 589272) =          .
+                                                  Prob > F        =          .
+                                                  R-squared       =     0.1703
+                                                  Adj R-squared   =     0.1696
+                                                  Within R-sq.    =     0.0000
+                                                  Root MSE        =     1.1694
+
+------------------------------------------------------------------------------
+         lnp | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _cons |   12.37827   .0015227  8129.27   0.000     12.37528    12.38125
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       tract |       491           0         491     |
+-----------------------------------------------------+
+
+. 
+. /*============================================================================
+>   3. COLLAPSE TO EVENT x RING x QUARTER PANEL
+> ============================================================================*/
+. gen near = ring == "near_0_250"
+
+. egen cellid = group(event_id ring)
+
+. 
+. * time unit: quarters or half-years (HALFYEARS=1 -> 4x fewer ATT(g,t) cells)
+. if `HALFYEARS' {
+.     gen tt  = hofd(sdate)
+.     gen ett = hofd(edate)
+.     local PREW  4
+.     local POSTW 4
+. }
+
+. else {
+.     gen tt  = sqtr
+.     gen ett = eqtr
+.     local PREW  8
+.     local POSTW 8
+. }
+
+. 
+. collapse (mean) lnp lnp_trfe (first) near ett (count) nsales = salesamt, ///
+>     by(cellid tt)
+
+. 
+. * treatment structure
+. gen treat = near & tt >= ett           // absorbing 0->1 for near cells
+
+. gen gq    = cond(near, ett, 0)         // csdid group var (0 = never treated)
+
+. 
+. xtset cellid tt
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 197 to 266, but with gaps
+         Delta: 1 unit
+
+. 
+. /*============================================================================
+>   4. ESTIMATION  (+/- 8 quarters = +/- 2 years)
+> ============================================================================*/
+. log using "$OUT/design1_lpdid_csdid.log", replace text
+log file already open
+r(604);
+
+end of do-file
+
+r(604);
+
+. do "C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\design1_eventstudy_lpdid_csdid.do"
+
+. /*==============================================================================
+>  design1_eventstudy_lpdid_csdid.do
+> 
+>  Design 1 stacked ring event study: effect of an Act 22/60 investor purchase
+>  on nearby sale prices, +/- 2 years, via lpdid and csdid.
+>  Reports each estimator without and with tract fixed effects.
+> 
+>  DESIGN MAPPING (read this first)
+>  ---------------------------------
+>  lpdid / csdid need a panel, but CRIM gives ONE sale per parcel (its last).
+>  We therefore build an event x ring x quarter panel:
+>    unit  = event x ring cell (near ring = 0-250m, far ring = 400-1000m;
+>            the 250-400m gap ring is dropped as a spillover buffer)
+>    time  = calendar quarter of sale
+>    y     = mean log sale price among that cell's sales that quarter
+>    treatment: the NEAR cell of event e switches on in e's event quarter
+>               (absorbing); FAR cells never switch -> never-treated controls.
+>  "With tract FE": sale-level ln(price) is residualized on tract dummies
+>  (reghdfe) BEFORE collapsing, so cross-tract level differences and the
+>  composition drift across tracts are removed. (FE cannot be added inside
+>  csdid; residualizing first is the clean equivalent.)
+> 
+>  KNOWN LIMITATIONS OF THIS STARTER
+>  ----------------------------------
+>  - Cells are SPARSE (many cell-quarters have 0 sales). lpdid/csdid drop
+>    missing cells; treat the first run as diagnostic, and consider quarterly ->
+>    half-year aggregation, or your tract-month price data as an alternative
+>    outcome panel, if too noisy.
+>  - CRIM keeps only each parcel's LAST sale: earlier sales are censored by
+>    later resales, and the censoring can be treatment-correlated. Within-window
+>    near-vs-far comparisons mitigate but do not eliminate this. See
+>    log/2026-07-18_1530.md.
+>  - Only 158/1256 events have no other event within 1km (median 25!). The
+>    CLEAN_ONLY toggle below restricts to less-contaminated events; the full
+>    sample estimates a "dose-diluted" effect.
+> 
+>  Inputs  (repo): data/design1/design1_sale_event_pairs.csv  (regenerate via
+>                  code/python/build_design1_event_panel.py if missing - 673MB,
+>                  gitignored), data/design1/design1_events.csv
+>  Outputs (repo): output/design1/  (estimates logs + event-study plots)
+> ==============================================================================*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. *--- paths (repo only; Dropbox is read-only and not touched here) ------------
+. global REPO   "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global D1     "$REPO/data/design1"
+
+. global OUT    "$REPO/output/design1"
+
+. capture mkdir "$REPO/output"
+
+. capture mkdir "$OUT"
+
+. 
+. *--- toggles ------------------------------------------------------------------
+. local CLEAN_ONLY  0   // 1 = keep only events with <=2 other events within 1km
+
+. local MIN_EVYEAR  2012  // drop pre-decree-era "events" (sales before Act 22)
+
+. local HALFYEARS   0   // 1 = half-year time units (4x fewer ATT(g,t) cells,
+
+.                       //     denser cells); 0 = quarters
+. local FAST_CS     1   // 1 = csdid2 (much faster) + jwdid; 0 = original csdid
+
+. 
+. *--- packages (one-time) ------------------------------------------------------
+. capture which lpdid
+
+. if _rc ssc install lpdid, replace
+
+. capture which csdid
+
+. if _rc ssc install csdid, replace
+
+. capture which drdid
+
+. if _rc ssc install drdid, replace
+
+. capture which reghdfe
+
+. if _rc ssc install reghdfe, replace
+
+. capture which ftools
+
+. if _rc ssc install ftools, replace
+
+. * csdid2 is NOT on SSC — it installs from Fernando Rios-Avila's package site
+. capture which csdid2
+
+. if _rc capture net install csdid2, from("https://friosavila.github.io/stpackages") replace
+
+. capture which jwdid
+
+. if _rc ssc install jwdid, replace
+
+. 
+. /*============================================================================
+>   1. LOAD PAIRS + FILTERS
+> ============================================================================*/
+. import delimited "$D1/design1_sale_event_pairs.csv", ///
+>     varnames(1) encoding(utf8) stringcols(_all) clear
+(22 vars, 3,472,651 obs)
+
+. 
+. * numeric conversions
+. destring salesamt dist_m event_time_months cabida land structure totalval, ///
+>     replace force
+salesamt: all characters numeric; replaced as double
+dist_m: all characters numeric; replaced as double
+event_time_months: all characters numeric; replaced as int
+(7852 missing values generated)
+cabida: all characters numeric; replaced as double
+(141631 missing values generated)
+land: all characters numeric; replaced as double
+structure: all characters numeric; replaced as double
+totalval: all characters numeric; replaced as double
+(3 missing values generated)
+
+. 
+. * dates
+. gen sdate  = date(sale_date, "YMD")
+(7,795 missing values generated)
+
+. gen edate  = date(event_date, "YMD")
+
+. format sdate edate %td
+
+. gen sqtr   = qofd(sdate)
+(7,795 missing values generated)
+
+. gen eqtr   = qofd(edate)
+
+. format sqtr eqtr %tq
+
+. 
+. * ---- sample filters ----
+. drop if ring == "gap_250_400"                    // spillover buffer
+(426,392 observations deleted)
+
+. drop if flag_junk_date == "True"                 // ~0.3% junk CRIM dates
+(7,165 observations deleted)
+
+. drop if flag_nominal_price == "True"             // $1-type transfers
+(614,231 observations deleted)
+
+. drop if sale_is_investor_parcel == "True"        // market sales only
+(76,404 observations deleted)
+
+. drop if year(edate) < `MIN_EVYEAR'               // decree-era events only
+(63,319 observations deleted)
+
+. keep if salesamt > 0 & !missing(salesamt)
+(0 observations deleted)
+
+. 
+. * +/- 2y estimation window, with 1y margin so lpdid has pre-period levels
+. keep if inrange(event_time_months, -36, 30)
+(1,695,359 observations deleted)
+
+. 
+. * event-level contamination info
+. preserve
+
+.     import delimited "$D1/design1_events.csv", varnames(1) ///
+>         encoding(utf8) stringcols(_all) clear
+(17 vars, 1,256 obs)
+
+.     keep event_id n_other_events_within_1000m clean_event_1000m
+
+.     destring n_other_events_within_1000m, replace force
+n_other_events_within_1000m: all characters numeric; replaced as int
+
+.     tempfile evinfo
+
+.     save `evinfo'
+file C:\Users\mva284\AppData\Local\Temp\ST_8498_000002.tmp saved as .dta format
+
+. restore
+
+. merge m:1 event_id using `evinfo', keep(master match) nogen
+
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                           589,781  
+    -----------------------------------------
+
+. if `CLEAN_ONLY' keep if n_other_events_within_1000m <= 2
+
+. 
+. gen lnp = ln(salesamt)
+
+. 
+. /*============================================================================
+>   2. TRACT-FE VERSION OF THE OUTCOME (residualize BEFORE collapsing)
+> ============================================================================*/
+. egen tract = group(tract_geoid)
+
+. * hedonic-adjusted option: add cabida structure is_subunit etc. as controls here
+. reghdfe lnp, absorb(tract) residuals(lnp_trfe)
+(dropped 18 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =    589,763
+Absorbing 1 HDFE group                            F(   0, 589272) =          .
+                                                  Prob > F        =          .
+                                                  R-squared       =     0.1703
+                                                  Adj R-squared   =     0.1696
+                                                  Within R-sq.    =     0.0000
+                                                  Root MSE        =     1.1694
+
+------------------------------------------------------------------------------
+         lnp | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       _cons |   12.37827   .0015227  8129.27   0.000     12.37528    12.38125
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       tract |       491           0         491     |
+-----------------------------------------------------+
+
+. 
+. /*============================================================================
+>   3. COLLAPSE TO EVENT x RING x QUARTER PANEL
+> ============================================================================*/
+. gen near = ring == "near_0_250"
+
+. egen cellid = group(event_id ring)
+
+. 
+. * time unit: quarters or half-years (HALFYEARS=1 -> 4x fewer ATT(g,t) cells)
+. if `HALFYEARS' {
+.     gen tt  = hofd(sdate)
+.     gen ett = hofd(edate)
+.     local PREW  4
+.     local POSTW 4
+. }
+
+. else {
+.     gen tt  = sqtr
+.     gen ett = eqtr
+.     local PREW  8
+.     local POSTW 8
+. }
+
+. 
+. collapse (mean) lnp lnp_trfe (first) near ett (count) nsales = salesamt, ///
+>     by(cellid tt)
+
+. 
+. * treatment structure
+. gen treat = near & tt >= ett           // absorbing 0->1 for near cells
+
+. gen gq    = cond(near, ett, 0)         // csdid group var (0 = never treated)
+
+. 
+. xtset cellid tt
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 197 to 266, but with gaps
+         Delta: 1 unit
+
+. 
+. /*============================================================================
+>   4. ESTIMATION  (+/- 8 quarters = +/- 2 years)
+> ============================================================================*/
+. *log using "$OUT/design1_lpdid_csdid.log", replace text
+. 
+. *---- (a) lpdid, no tract FE -------------------------------------------------
+. lpdid lnp, unit(cellid) time(tt) treat(treat) ///
+>     pre_window(`PREW') post_window(`POSTW') nevertreated
+lpdid lnp, unit(cellid) time(tt) treat(treat) pre_window(8) post_window(8) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre8 | -.0582753   .0303582      -1.92      .0551  -.1178159   .0012654      15178 
+        pre7 |  -.008845   .0348867       -.25      .7999  -.0772672   .0595772      16219 
+        pre6 | -.0352063   .0332016      -1.06      .2891  -.1003241   .0299115      17268 
+        pre5 |  -.076271   .0300978      -2.53      .0114  -.1353005  -.0172415      18395 
+        pre4 | -.0157637   .0307081       -.51      .6078  -.0759906   .0444631      19440 
+        pre3 | -.0202998   .0332105       -.61      .5411  -.0854339   .0448344      20496 
+        pre2 | -.0407005   .0299261      -1.36       .174  -.0993927   .0179917      21585 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0389679   .0283913       1.37      .1701  -.0167122    .094648      23340 
+        tau1 |  .0370837   .0322651       1.15      .2506  -.0261959   .1003634      21588 
+        tau2 |  .0046774   .0311024        .15      .8805  -.0563225   .0656773      20461 
+        tau3 |  .0015428    .031302        .05      .9607  -.0598489   .0629346      19393 
+        tau4 |  .0134961   .0313471        .43      .6669  -.0479851   .0749774      18268 
+        tau5 |  .0820289   .0337676       2.43      .0152   .0157995   .1482583      17150 
+        tau6 |  .0369746   .0392068        .94      .3458   -.039923   .1138722      16076 
+        tau7 | -.0150199   .0369155       -.41      .6842  -.0874247    .057385      14969 
+        tau8 | -.0169217    .035868       -.47      .6371  -.0872723    .053429      13888 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre | -.0143859   .0257954       -.56      .5771  -.0649846   .0362128      13768 
+        Post | -.0130104   .0272229       -.48      .6328  -.0664124   .0403916      12586 
+
+. matrix LP_NOFE = r(results)
+
+. graph export "$OUT/lpdid_noFE.png", replace
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/lpdid_noFE.png saved as PNG format
+
+. 
+. *---- (b) lpdid, tract FE ----------------------------------------------------
+. lpdid lnp_trfe, unit(cellid) time(tt) treat(treat) ///
+>     pre_window(`PREW') post_window(`POSTW') nevertreated
+lpdid lnp_trfe, unit(cellid) time(tt) treat(treat) pre_window(8) post_window(8) nevertreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+        pre8 | -.0612848   .0301935      -2.03      .0425  -.1205025  -.0020672      15177 
+        pre7 | -.0054841   .0346607       -.16      .8743   -.073463   .0624948      16218 
+        pre6 | -.0315977   .0331237       -.95      .3402  -.0965626   .0333673      17268 
+        pre5 | -.0824103   .0301332      -2.73      .0063  -.1415094  -.0233112      18393 
+        pre4 |  -.017476   .0305236       -.57       .567  -.0773409   .0423889      19439 
+        pre3 | -.0253424   .0332644       -.76      .4462  -.0905823   .0398975      20495 
+        pre2 | -.0386822   .0297583       -1.3      .1938  -.0970454   .0196809      21584 
+        pre1 |         0          .          .          .          .          .          . 
+        tau0 |  .0368879   .0282296       1.31      .1915  -.0184753   .0922511      23338 
+        tau1 |  .0374192   .0319831       1.17      .2422  -.0253073   .1001458      21587 
+        tau2 |   .002446   .0309153        .08      .9369  -.0581868   .0630788      20459 
+        tau3 | -.0009894   .0310268       -.03      .9746  -.0618413   .0598626      19391 
+        tau4 |  .0079056   .0309903        .26      .7987  -.0528759   .0686871      18266 
+        tau5 |  .0772777   .0334853       2.31      .0211   .0116021   .1429533      17149 
+        tau6 |  .0307689   .0388863        .79      .4289     -.0455   .1070378      16075 
+        tau7 | -.0224832   .0365561       -.62      .5386  -.0941831   .0492167      14968 
+        tau8 |  -.023432   .0359828       -.65       .515  -.0940077   .0471437      13887 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~.  interval]        obs 
+-------------+----------------------------------------------------------------------------
+         Pre | -.0145458   .0256514       -.57      .5708   -.064862   .0357704      13768 
+        Post | -.0191174    .026699       -.72      .4741  -.0714918    .033257      12586 
+
+. matrix LP_FE = r(results)
+
+. graph export "$OUT/lpdid_tractFE.png", replace
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/lpdid_tractFE.png saved as PNG format
+
+. 
+. *---- (c)-(d) Callaway-Sant'Anna ---------------------------------------------
+. * csdid computes a doubly-robust ATT(g,t) for EVERY cohort x period pair
+. * (~50 cohorts x ~50 periods here) -> very slow. FAST_CS=1 uses csdid2
+. * (same estimator, compiled, much faster) and cross-checks with jwdid
+. * (Wooldridge-Mundlak via reghdfe, near-instant, same never-treated logic).
+. * For csdid keep only the +/-2y window (the extra margin is lpdid-only).
+. preserve
+
+. keep if inrange(tt - ett, -`PREW'-1, `POSTW') | gq == 0
+(3,472 observations deleted)
+
+. 
+. if `FAST_CS' {
+.     * csdid2: no tract FE
+.     csdid2 lnp, ivar(cellid) tvar(tt) gvar(gq) method(dripw) notyet
+Producing Long Gaps by default
+Using method dripw
+Panel is not balanced
+Will use observations with Pair balanced (observed at t0 and t1)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+..................................................   100
+..................................................   150
+...................................x..x......x....   200
+..................................................   250
+..................................................   300
+..................................................   350
+..................................................   400
+..................................................   450
+..................................................   500
+..................................................   550
+..................................................   600
+..................................................   650
+..................................................   700
+..................................................   750
+..................................................   800
+................................     estat event, window(-`PREW' `POSTW') estore(cs_noFE)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     Pre_avg |  -.0198436   .0219769    -0.90   0.367    -.0629175    .0232302
+    Post_avg |   .0347903   .0209721     1.66   0.097    -.0063143     .075895
+         tm8 |  -.0251949   .0303056    -0.83   0.406    -.0845928    .0342029
+         tm7 |  -.0063872    .034622    -0.18   0.854    -.0742451    .0614707
+         tm6 |  -.0104589   .0320946    -0.33   0.745    -.0733633    .0524454
+         tm5 |  -.0396753   .0297727    -1.33   0.183    -.0980288    .0186781
+         tm4 |  -.0029549   .0310892    -0.10   0.924    -.0638886    .0579788
+         tm3 |  -.0119591   .0323937    -0.37   0.712    -.0754496    .0515313
+         tm2 |   -.042275   .0293555    -1.44   0.150    -.0998107    .0152607
+         tp0 |   .0382473   .0286196     1.34   0.181    -.0178461    .0943407
+         tp1 |   .0606045   .0319752     1.90   0.058    -.0020658    .1232748
+         tp2 |    .017841   .0301346     0.59   0.554    -.0412218    .0769038
+         tp3 |    .013238   .0301177     0.44   0.660    -.0457917    .0722676
+         tp4 |   .0096995   .0312985     0.31   0.757    -.0516444    .0710435
+         tp5 |    .100085   .0343532     2.91   0.004      .032754     .167416
+         tp6 |    .053233   .0379847     1.40   0.161    -.0212156    .1276815
+         tp7 |   -.000581   .0358218    -0.02   0.987    -.0707904    .0696284
+         tp8 |   .0207458   .0354113     0.59   0.558    -.0486591    .0901506
+------------------------------------------------------------------------------
+.     estat plot
+.     graph export "$OUT/csdid_noFE.png", replace
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/csdid_noFE.png saved as PNG format
+. 
+.     * csdid2: tract FE
+.     csdid2 lnp_trfe, ivar(cellid) tvar(tt) gvar(gq) method(dripw) notyet
+Producing Long Gaps by default
+Using method dripw
+Panel is not balanced
+Will use observations with Pair balanced (observed at t0 and t1)
+----+--- 1 ---+--- 2 ---+--- 3 ---+--- 4 ---+--- 5 
+..................................................    50
+..................................................   100
+..................................................   150
+...................................x..x......x....   200
+..................................................   250
+..................................................   300
+..................................................   350
+..................................................   400
+..................................................   450
+..................................................   500
+..................................................   550
+..................................................   600
+..................................................   650
+..................................................   700
+..................................................   750
+..................................................   800
+................................     estat event, window(-`PREW' `POSTW') estore(cs_FE)
+------------------------------------------------------------------------------
+             | Coefficient  Std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     Pre_avg |  -.0196476    .021897    -0.90   0.370     -.062565    .0232698
+    Post_avg |   .0322624   .0207696     1.55   0.120    -.0084452    .0729701
+         tm8 |  -.0266697   .0302151    -0.88   0.377    -.0858902    .0325507
+         tm7 |  -.0009454   .0344673    -0.03   0.978    -.0685001    .0666093
+         tm6 |  -.0051272   .0320624    -0.16   0.873    -.0679684     .057714
+         tm5 |   -.044125   .0298319    -1.48   0.139    -.1025945    .0143445
+         tm4 |  -.0039692   .0309541    -0.13   0.898    -.0646382    .0566998
+         tm3 |  -.0166059   .0324604    -0.51   0.609    -.0802271    .0470153
+         tm2 |  -.0400907   .0292163    -1.37   0.170    -.0973535    .0171721
+         tp0 |   .0365763   .0284438     1.29   0.198    -.0191725     .092325
+         tp1 |   .0612866   .0317445     1.93   0.054    -.0009315    .1235048
+         tp2 |   .0177135   .0300119     0.59   0.555    -.0411087    .0765357
+         tp3 |   .0127365   .0299111     0.43   0.670    -.0458882    .0713611
+         tp4 |   .0059344   .0310226     0.19   0.848    -.0548688    .0667376
+         tp5 |   .0980651   .0341953     2.87   0.004     .0310436    .1650867
+         tp6 |   .0481507    .037742     1.28   0.202    -.0258222    .1221237
+         tp7 |  -.0053236   .0355502    -0.15   0.881    -.0750008    .0643535
+         tp8 |   .0152224   .0355031     0.43   0.668    -.0543623    .0848071
+------------------------------------------------------------------------------
+.     estat plot
+.     graph export "$OUT/csdid_tractFE.png", replace
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1/csdid_tractFE.png saved as PNG format
+. 
+.     * jwdid cross-check (fast; should be close to csdid2)
+.     qui jwdid lnp, ivar(cellid) tvar(tt) gvar(gq) never
+WARNING: Singleton observations not dropped; statistical significance is biased (link)
+--Break--
+r(1);
+.     estat event
+.     qui jwdid lnp_trfe, ivar(cellid) tvar(tt) gvar(gq) never
+.     estat event
+. 
+. }
+--Break--
+r(1);
+
+end of do-file
+
+--Break--
+r(1);
+
+. help honestdid
+
+. help honestdid
+
+. clear
+
+. cls
+
+. exit

@@ -1,0 +1,590 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign1_ctrlband_ladder.do 
+
+. /*===========================================================================
+> ===
+>  design1_ctrlband_ladder.do
+> 
+>  Control-band ladder: the near ring (0-250m) estimated against each candidate
+>  control band. One exhibit that shows how BOTH the pooled pre-period
+>  imbalance and the pooled post effect move as the control band approaches the
+>  event -- replacing the "which control band is right?" argument with a
+>  transparency figure.
+> 
+>  Reading the figure:
+>    - Pre -> 0 as the control nears  = nearer bands share investor-territory
+>      drift (parallel trends restored)
+>    - Post declines as the control nears = the control band itself carries
+>      part of the effect (estimates become gradients, conservative)
+>    - The defensible headline is the nearest band with clean pre-trends.
+> 
+>  Ladder rungs (control bands, meters):
+>    400-1000 (the original 1km design) | 1000-1500 | 1500-2000 |
+>    2000-2500 | 2500-3500
+> 
+>  Output: output/design1/ladder_coefs.dta (+.csv), figD4_ctrlband_ladder.png
+>  Input:  data/design1/design1_sale_event_pairs_5km.csv + events info
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global D1   "$REPO/data/design1"
+
+. global OUT  "$REPO/output/design1"
+
+. capture mkdir "$REPO/output"
+
+. capture mkdir "$OUT"
+
+. global COEFTMP "$OUT/_ladder_accum.dta"
+
+. capture erase "$COEFTMP"
+
+. 
+. capture which lpdid
+
+. if _rc ssc install lpdid, replace
+
+. 
+. capture program drop grabmat
+
+. program define grabmat
+  1.     args M test mtype
+  2.     local rn : rowfullnames `M'
+  3.     local nr = rowsof(`M')
+  4.     preserve
+  5.     clear
+  6.     qui svmat double `M', names(c)
+  7.     qui gen row = _n
+  8.     qui gen str32 rowname = ""
+  9.     forvalues i = 1/`nr' {
+ 10.         local r : word `i' of `rn'
+ 11.         qui replace rowname = "`r'" in `i'
+ 12.     }
+ 13.     qui gen str40 test = "`test'"
+ 14.     qui gen str10 matrix_type = "`mtype'"
+ 15.     capture confirm file "$COEFTMP"
+ 16.     if !_rc qui append using "$COEFTMP"
+ 17.     qui save "$COEFTMP", replace
+ 18.     restore
+ 19. end
+
+. 
+. /*===========================================================================
+> =
+>   LOAD + PREP (identical filters to design1_decay_results.do)
+> ============================================================================*
+> /
+. import delimited "$D1/design1_sale_event_pairs_5km.csv", ///
+>     varnames(1) encoding(utf8) stringcols(_all) clear
+(12 vars, 31,851,974 obs)
+
+. destring salesamt dist_m, replace force
+salesamt: all characters numeric; replaced as double
+dist_m: all characters numeric; replaced as double
+
+. 
+. gen sdate = date(sale_date, "YMD")
+(142,632 missing values generated)
+
+. gen edate = date(event_date, "YMD")
+
+. gen etm   = (year(sdate)*12 + month(sdate)) - (year(edate)*12 + month(edate))
+(142,632 missing values generated)
+
+. gen tt    = yofd(sdate)
+(142,632 missing values generated)
+
+. gen ett   = yofd(edate)
+
+. 
+. drop if flag_junk_date == "True"
+(142,888 observations deleted)
+
+. drop if flag_nominal_price == "True"
+(7,786,592 observations deleted)
+
+. drop if sale_is_investor_parcel == "True"
+(633,345 observations deleted)
+
+. drop if year(edate) < 2012
+(694,996 observations deleted)
+
+. keep if salesamt > 0 & !missing(salesamt)
+(0 observations deleted)
+
+. keep if inrange(etm, -72, 60)
+(13,459,139 observations deleted)
+
+. 
+. gen lnp = ln(salesamt)
+
+. keep event_id dist_m tt ett lnp salesamt
+
+. save "$OUT/_ladder_sales.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/_ladder_sales.dta not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/_ladder_sales.dta saved
+
+. 
+. /*===========================================================================
+> =
+>   LADDER: near ring 0-250m vs each control band
+> ============================================================================*
+> /
+. log using "$OUT/ladder_results.log", replace text
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/ladder_results.log not found)
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/ladder_results.log
+  log type:  text
+ opened on:  24 Jul 2026, 10:13:13
+
+. 
+. local bands "400_1000 1000_1500 1500_2000 2000_2500 2500_3500"
+
+. foreach bnd of local bands {
+  2.     local cmin = real(substr("`bnd'", 1, strpos("`bnd'", "_") - 1))
+  3.     local cmax = real(substr("`bnd'", strpos("`bnd'", "_") + 1, .))
+  4.     use "$OUT/_ladder_sales.dta", clear
+  5.     keep if dist_m <= 250 | (dist_m > `cmin' & dist_m <= `cmax')
+  6.     gen near = dist_m <= 250
+  7.     egen cellid = group(event_id near)
+  8.     collapse (mean) y = lnp (first) near ett (count) nsales = salesamt, //
+> /
+>         by(cellid tt)
+  9.     drop if missing(y)
+ 10.     gen treat = near & tt >= ett
+ 11.     xtset cellid tt
+ 12.     di as result _n "===== near 0-250m vs control `cmin'-`cmax' ====="
+ 13.     lpdid y, unit(cellid) time(tt) treat(treat) ///
+>         pre_window(4) post_window(3) nevertreated
+ 14.     capture graph rename Graph lad_`bnd', replace
+ 15.     local tag "C_`bnd'"
+ 16.     matrix E = e(results)
+ 17.     grabmat E `tag' event
+ 18.     capture matrix P = e(pooled_results)
+ 19.     if !_rc grabmat P `tag' pooled
+ 20. }
+(8,163,178 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== near 0-250m vs control 400-1000 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0006344   .0225231       -.03      .9775  -.0448037 
+        pre3 | -.0036251   .0216277       -.17      .8669  -.0460384 
+        pre2 | -.0083013   .0214326       -.39      .6986  -.0503317 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0162366    .021597        .75      .4523  -.0261156 
+        tau1 |  .0411524   .0213703       1.93      .0543  -.0007561 
+        tau2 |  .0920646   .0258952       3.56      .0004    .041281 
+        tau3 |  .0706355   .0252906       2.79      .0053   .0210354 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .0435349       8615 
+        pre3 |  .0387882       9806 
+        pre2 |  .0337291      10998 
+        pre1 |         .          . 
+        tau0 |  .0585888      12299 
+        tau1 |  .0830609      10975 
+        tau2 |  .1428481       9692 
+        tau3 |  .1202356       8363 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0034164   .0170495         .2      .8412  -.0300194 
+        Post |  .0694603   .0202763       3.43      .0006   .0296936 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .0368522       8490 
+        Post |   .109227       8271 
+(8,125,267 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== near 0-250m vs control 1000-1500 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0178537     .02265       -.79      .4306  -.0622719 
+        pre3 |  -.009541   .0217481       -.44      .6609  -.0521903 
+        pre2 | -.0015268   .0215672       -.07      .9436  -.0438212 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0335879   .0216015       1.55      .1201  -.0087731 
+        tau1 |  .0623559    .021433       2.91      .0037   .0203244 
+        tau2 |  .1207749   .0259149       4.66          0   .0699527 
+        tau3 |  .1053439   .0252559       4.17          0   .0558118 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .0265644       8635 
+        pre3 |  .0331083       9828 
+        pre2 |  .0407676      11022 
+        pre1 |         .          . 
+        tau0 |  .0759488      12307 
+        tau1 |  .1043873      10999 
+        tau2 |  .1715971       9705 
+        tau3 |   .154876       8375 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0075348   .0171693       -.44      .6608  -.0412055 
+        Post |  .0937852   .0203666        4.6          0   .0538414 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   .026136       8527 
+        Post |   .133729       8308 
+(8,131,352 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== near 0-250m vs control 1500-2000 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0210362   .0224455       -.94      .3488  -.0650534 
+        pre3 | -.0173891    .021613        -.8      .4212  -.0597734 
+        pre2 | -.0091804   .0214649       -.43      .6689  -.0512741 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0244262   .0216528       1.13      .2594  -.0180354 
+        tau1 |  .0491083   .0214538       2.29      .0222    .007036 
+        tau2 |   .101294   .0260489       3.89      .0001   .0502091 
+        tau3 |  .0847959   .0255329       3.32      .0009   .0347206 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |   .022981       8780 
+        pre3 |  .0249953       9991 
+        pre2 |  .0329133      11199 
+        pre1 |         .          . 
+        tau0 |  .0668879      12480 
+        tau1 |  .0911806      11176 
+        tau2 |  .1523788       9877 
+        tau3 |  .1348712       8531 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0130275    .016972       -.77      .4428  -.0463113 
+        Post |  .0851728   .0203712       4.18          0   .0452203 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .0202563       8695 
+        Post |  .1251253       8476 
+(8,100,518 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== near 0-250m vs control 2000-2500 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  -.034561   .0224982      -1.54      .1246  -.0786813 
+        pre3 | -.0206147   .0217431       -.95      .3432  -.0632541 
+        pre2 | -.0107093   .0214942        -.5      .6184  -.0528605 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0194066   .0215744         .9      .3685  -.0229011 
+        tau1 |  .0526941    .021494       2.45      .0143   .0105431 
+        tau2 |  .1057813   .0260857       4.06      .0001   .0546243 
+        tau3 |  .0941512   .0256506       3.67      .0002   .0438452 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .0095594       8685 
+        pre3 |  .0220247       9884 
+        pre2 |  .0314419      11087 
+        pre1 |         .          . 
+        tau0 |  .0617144      12392 
+        tau1 |  .0948451      11064 
+        tau2 |  .1569384       9772 
+        tau3 |  .1444572       8442 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0206222   .0169829      -1.21      .2248  -.0539275 
+        Post |  .0975187   .0203698       4.79          0   .0575687 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   .012683       8565 
+        Post |  .1374687       8346 
+(7,066,883 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== near 0-250m vs control 2500-3500 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0647857   .0222004      -2.92      .0036  -.1083222 
+        pre3 | -.0465402   .0215729      -2.16      .0311  -.0888459 
+        pre2 | -.0243166   .0214437      -1.13      .2569  -.0663687 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0357269   .0215285       1.66      .0972  -.0064909 
+        tau1 |  .0834368   .0214148        3.9      .0001   .0414411 
+        tau2 |   .152429   .0258435        5.9          0   .1017469 
+        tau3 |  .1537413   .0251133       6.12          0    .104489 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 | -.0212492       8868 
+        pre3 | -.0042346      10088 
+        pre2 |  .0177355      11307 
+        pre1 |         .          . 
+        tau0 |  .0779447      12580 
+        tau1 |  .1254325      11284 
+        tau2 |  .2031111       9976 
+        tau3 |  .2029935       8625 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  -.042798   .0168529      -2.54      .0112  -.0758481 
+        Post |  .1330764   .0201328       6.61          0   .0935914 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre | -.0097479       8804 
+        Post |  .1725614       8585 
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/ladder_results.log
+  log type:  text
+ closed on:  24 Jul 2026, 10:14:13
+-------------------------------------------------------------------------------
+
+. 
+. use "$COEFTMP", clear
+
+. order test matrix_type row rowname
+
+. sort test matrix_type row
+
+. tab test matrix_type
+
+                      |      matrix_type
+                 test |     event     pooled |     Total
+----------------------+----------------------+----------
+          C_1000_1500 |         8          2 |        10 
+          C_1500_2000 |         8          2 |        10 
+          C_2000_2500 |         8          2 |        10 
+          C_2500_3500 |         8          2 |        10 
+           C_400_1000 |         8          2 |        10 
+----------------------+----------------------+----------
+                Total |        40         10 |        50 
+
+. save "$OUT/ladder_coefs.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/ladder_coefs.dta not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/ladder_coefs.dta saved
+
+. export delimited "$OUT/ladder_coefs.csv", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/ladder_coefs.csv not found)
+file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design1
+> /ladder_coefs.csv saved
+
+. capture erase "$COEFTMP"
+
+. capture erase "$OUT/_ladder_sales.dta"
+
+. 
+. /*===========================================================================
+> =
+>   FIGURE: pooled Pre and Post vs control-band midpoint
+> ============================================================================*
+> /
+. use "$OUT/ladder_coefs.dta", clear
+
+. keep if matrix_type == "pooled"
+(40 observations deleted)
+
+. gen b  = c1
+
+. gen se = c2
+
+. gen lb = c5
+
+. gen ub = c6
+
+. replace lb = b - 1.96*se if missing(lb) & !missing(se)
+(0 real changes made)
+
+. replace ub = b + 1.96*se if missing(ub) & !missing(se)
+(0 real changes made)
+
+. gen post = lower(rowname) == "post"
+
+. gen mid = .
+(10 missing values generated)
+
+. replace mid = 700  if test == "C_400_1000"
+(2 real changes made)
+
+. replace mid = 1250 if test == "C_1000_1500"
+(2 real changes made)
+
+. replace mid = 1750 if test == "C_1500_2000"
+(2 real changes made)
+
+. replace mid = 2250 if test == "C_2000_2500"
+(2 real changes made)
+
+. replace mid = 3000 if test == "C_2500_3500"
+(2 real changes made)
+
+. drop if missing(mid)
+(0 observations deleted)
+
+. gen x = mid + cond(post, 0, 60)
+
+. sort post x
+
+. 
+. twoway ///
+>     (rcap ub lb x if post, lcolor(navy) lwidth(medthin)) ///
+>     (connected b x if post, color(navy) msymbol(O) lwidth(medthin) sort(x)) /
+> //
+>     (rcap ub lb x if !post, lcolor(gs9) lwidth(thin)) ///
+>     (connected b x if !post, color(gs9) msymbol(Oh) lpattern(dash) lwidth(thi
+> n) sort(x)) ///
+>     , graphregion(color(white)) bgcolor(white) ///
+>     ylabel(, angle(horizontal) format(%9.2f)) ///
+>     yline(0, lcolor(gs8) lwidth(thin)) ///
+>     legend(order(2 "Pooled post-treatment effect (0-250m ring)" ///
+>                  4 "Pooled pre-period (parallel-trends check)") ///
+>            rows(2) position(6) region(lstyle(none))) ///
+>     title("The control-band dial: effect and pre-trend vs control distance", 
+> size(medium)) ///
+>     ytitle("Pooled effect on log sale price, 0-250m ring") ///
+>     xtitle("Control-band midpoint (meters from investor purchase)") ///
+>     xlabel(700 "700" 1250 "1,250" 1750 "1,750" 2250 "2,250" 3000 "3,000") ///
+>     note("Treated ring fixed at 0-250m; each x-position uses a different cont
+> rol band (400-1,000 / 1,000-1,500 / 1,500-2,000 /" ///
+>          "2,000-2,500 / 2,500-3,500m). Pre near zero identifies bands sharing
+>  the treated ring's counterfactual trend;" ///
+>          "Post declines with nearer controls as the band itself carries part 
+> of the effect (estimates are within-area gradients).", size(vsmall)) ///
+>     name(figD4_ladder, replace)
+
+. graph export "$OUT/figD4_ctrlband_ladder.png", replace width(2000)
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD4_ctrlband_ladder.png not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD4_ctrlband_ladder.png saved as PNG format
+
+. 
+. di as result _n "Ladder complete: ladder_coefs.dta + figD4_ctrlband_ladder.pn
+> g"
+
+Ladder complete: ladder_coefs.dta + figD4_ctrlband_ladder.png
+
+. 
+end of do-file

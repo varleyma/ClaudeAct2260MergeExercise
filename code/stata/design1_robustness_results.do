@@ -139,6 +139,10 @@ if !_rc {
                   inlist(seller_nonhispanic, "True", "False")
     gen isl2main  = (seller_nonhispanic == "False" & buyer_nonhispanic == "True")  if bothcl
     gen main2main = (seller_nonhispanic == "True"  & buyer_nonhispanic == "True")  if bothcl
+    gen main2isl  = (seller_nonhispanic == "True"  & buyer_nonhispanic == "False") if bothcl
+    * net compositional flow: a sale changes stock ownership composition only
+    * when buyer and seller classes differ; netin = net H->NH conversion rate
+    gen netin     = isl2main - main2isl if bothcl
     drop bothcl
 }
 * `salesall' keeps investor-parcel sales (for the T8 decomposition);
@@ -187,7 +191,7 @@ keep if year(edate) >= 2018
 run_lpdid lnp T5_late
 
 * ---- T7: buyer/seller composition (displacement) ----
-foreach y in buy_nh sell_nh isl2main main2main {
+foreach y in buy_nh sell_nh isl2main main2main netin {
     use `sales', clear
     capture confirm variable `y'
     if _rc continue

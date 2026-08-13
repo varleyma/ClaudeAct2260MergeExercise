@@ -1,0 +1,294 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign1_decay_plots.do 
+
+. /*===========================================================================
+> ===
+>  design1_decay_plots.do
+> 
+>  Plots for the spatial-decay results (decay_coefs.dta from
+>  design1_decay_results.do).
+> 
+>  Figures:
+>    figD1_es_inner   event-study overlay: 0-250 / 250-500 / 500-1000 bins
+>    figD2_es_outer   event-study overlay: 1000-1750 / 1750-2500 bins
+>    figD3_decay      THE decay curve: pooled post-treatment effect (95% CI)
+>                     against ring distance, with the pooled pre-period placebo
+>                     series alongside -- the maximal-precision spatial profile
+> .
+> 
+>  lpdid matrix columns: c1=coefficient c2=se c3=t c4=p c5=ci_low c6=ci_high c7
+> =obs
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global OUT  "$REPO/output/design1"
+
+. 
+. local COL_B  c1
+
+. local COL_SE c2
+
+. local COL_LB c5
+
+. local COL_UB c6
+
+. 
+. use "$OUT/decay_coefs.dta", clear
+
+. gen b  = `COL_B'
+
+. gen se = `COL_SE'
+(4 missing values generated)
+
+. gen lb = `COL_LB'
+(4 missing values generated)
+
+. gen ub = `COL_UB'
+(4 missing values generated)
+
+. replace lb = b - 1.96*se if missing(lb) & !missing(se)
+(0 real changes made)
+
+. replace ub = b + 1.96*se if missing(ub) & !missing(se)
+(0 real changes made)
+
+. drop if missing(b)
+(0 observations deleted)
+
+. tempfile coefs
+
+. save `coefs'
+file C:\Users\mva284\AppData\Local\Temp\ST_3c54_000001.tmp saved as .dta
+    format
+
+. 
+. /*===========================================================================
+> =
+>   EVENT-STUDY OVERLAYS (same drawfig pattern as the robustness plots)
+> ============================================================================*
+> /
+. capture program drop drawfig
+
+. program define drawfig
+  1.     syntax, out(string)
+  2.     local STYLE  graphregion(color(white)) bgcolor(white) ///
+>                  ylabel(, angle(horizontal) format(%9.2f)) ///
+>                  yline(0, lcolor(gs8) lwidth(thin)) ///
+>                  xline(-0.5, lcolor(gs11) lpattern(dash))
+  3.     local colors navy cranberry dkorange
+  4.     local n : word count $FIG_TESTS
+  5.     local plots
+  6.     local legorder
+  7.     local i = 0
+  8.     foreach t of global FIG_TESTS {
+  9.         local ++i
+ 10.         local col : word `i' of `colors'
+ 11.         local off = cond(`n'==1, 0, (`i' - (`n'+1)/2) * 0.12)
+ 12.         capture drop x`i'
+ 13.         gen x`i' = horizon + `off' if test == "`t'"
+ 14.         local lab : word `i' of $FIG_LABELS
+ 15.         local plots `plots' ///
+>             (rcap ub lb x`i' if test == "`t'", lcolor(`col') lwidth(medthin))
+>  ///
+>             (connected b x`i' if test == "`t'", color(`col') msymbol(O) lwidt
+> h(medthin))
+ 16.         local legorder `legorder' `= 2*`i'' "`lab'"
+ 17.     }
+ 18.     if `n' == 1 local legend legend(off)
+ 19.     else        local legend legend(order(`legorder') rows(1) region(lstyl
+> e(none)))
+ 20.     twoway `plots', `STYLE' `legend' ///
+>         title("$FIG_TITLE", size(medium)) ///
+>         ytitle("$FIG_YT") xtitle("$FIG_XT") ///
+>         note("$FIG_NOTE", size(vsmall)) ///
+>         xlabel(-4(1)3) name(`out', replace)
+ 21.     graph export "$OUT/`out'.png", replace width(2000)
+ 22. end
+
+. 
+. local XT "Years since investor purchase (0 = purchase year)"
+
+. local YT "Effect on log sale price"
+
+. 
+. * horizon for event-study rows
+. use `coefs', clear
+
+. keep if matrix_type == "event"
+(8 observations deleted)
+
+. * lpdid rownames: pre4..pre1 (leads; pre1 = base) and tau0..tau3 (lags)
+. gen horizon = .
+(32 missing values generated)
+
+. replace horizon = -real(substr(rowname, 4, .)) if strpos(rowname, "pre") == 1
+(16 real changes made)
+
+. replace horizon =  real(substr(rowname, 4, .)) if strpos(rowname, "tau") == 1
+(16 real changes made)
+
+. replace horizon = real(rowname) if missing(horizon)
+(0 real changes made)
+
+. drop if missing(horizon)
+(0 observations deleted)
+
+. tempfile es
+
+. save `es'
+file C:\Users\mva284\AppData\Local\Temp\ST_3c54_000002.tmp saved as .dta
+    format
+
+. 
+. use `es', clear
+
+. global FIG_TESTS  D_0_250 D_250_500 D_500_1000
+
+. global FIG_LABELS `""0-250m" "250-500m" "500-1000m""'
+
+. global FIG_TITLE  Spatial decay: inner rings vs common control band
+
+. global FIG_YT     `YT'
+
+. global FIG_XT     `XT'
+
+. global FIG_NOTE   Each series: that ring vs the common control band (set in d
+> esign1_decay_results.do). Annual lpdid.
+
+. drawfig, out(figD1_es_inner)
+(24 missing values generated)
+(24 missing values generated)
+(24 missing values generated)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD1_es_inner.png saved as PNG format
+
+. 
+. use `es', clear
+
+. global FIG_TESTS  D_1000_1500
+
+. global FIG_LABELS `""1,000-1,500m""'
+
+. global FIG_TITLE  Spatial decay: outermost treated ring vs common control ban
+> d
+
+. global FIG_YT     `YT'
+
+. global FIG_XT     `XT'
+
+. global FIG_NOTE   The ring adjacent to the control band; its estimate bounds 
+> the gradient at the control boundary.
+
+. drawfig, out(figD2_es_outer)
+(24 missing values generated)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD2_es_outer.png saved as PNG format
+
+. 
+. /*===========================================================================
+> =
+>   THE DECAY CURVE (pooled post effect vs distance, with pre-period placebo)
+> ============================================================================*
+> /
+. use `coefs', clear
+
+. keep if matrix_type == "pooled"
+(32 observations deleted)
+
+. gen post = lower(rowname) == "post"
+
+. gen mid = .
+(8 missing values generated)
+
+. replace mid = 125  if test == "D_0_250"
+(2 real changes made)
+
+. replace mid = 375  if test == "D_250_500"
+(2 real changes made)
+
+. replace mid = 750  if test == "D_500_1000"
+(2 real changes made)
+
+. replace mid = 1250 if test == "D_1000_1500"
+(2 real changes made)
+
+. drop if missing(mid)
+(0 observations deleted)
+
+. * offset pre series slightly for visibility
+. gen x = mid + cond(post, 0, 40)
+
+. sort post x   // connected() joins in data order -- must be sorted by x
+
+. 
+. twoway ///
+>     (rcap ub lb x if post, lcolor(navy) lwidth(medthin)) ///
+>     (connected b x if post, color(navy) msymbol(O) lwidth(medthin) sort(x)) /
+> //
+>     (rcap ub lb x if !post, lcolor(gs9) lwidth(thin)) ///
+>     (connected b x if !post, color(gs9) msymbol(Oh) lpattern(dash) lwidth(thi
+> n) sort(x)) ///
+>     , graphregion(color(white)) bgcolor(white) ///
+>     ylabel(, angle(horizontal) format(%9.2f)) ///
+>     yline(0, lcolor(gs8) lwidth(thin)) ///
+>     legend(order(2 "Pooled post-treatment effect" 4 "Pooled pre-period (place
+> bo)") ///
+>            rows(2) position(6) region(lstyle(none))) ///
+>     title("Spatial decay of the price effect", size(medium)) ///
+>     ytitle("Pooled effect on log sale price") ///
+>     xtitle("Distance from investor purchase (ring midpoint, meters)") ///
+>     xlabel(125 "125" 375 "375" 750 "750" 1250 "1,250") ///
+>     note("Each point: one ring vs the common control band (set in design1_dec
+> ay_results.do); annual lpdid, pooled across horizons 0-3." ///
+>          "Gray dashed: the same object for pooled pre-period years -- a dista
+> nce-profile placebo.", size(vsmall)) ///
+>     name(figD3_decay, replace)
+
+. graph export "$OUT/figD3_decay.png", replace width(2000)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD3_decay.png saved as PNG format
+
+. 
+. di as result _n "Decay figures written: figD1_es_inner, figD2_es_outer, figD3
+> _decay"
+
+Decay figures written: figD1_es_inner, figD2_es_outer, figD3_decay
+
+. 
+end of do-file

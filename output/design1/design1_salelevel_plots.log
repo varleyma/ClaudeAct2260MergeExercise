@@ -1,0 +1,187 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign1_salelevel_plots.do 
+
+. /*===========================================================================
+> ===
+>  design1_salelevel_plots.do
+> 
+>  Figure: the near-ring event study estimated two ways --
+>    (a) cell-level lpdid (the paper's baseline, from robustness_coefs.dta
+>        T1_baseline) and
+>    (b) transaction-level stacked OLS (literature convention, S3 from
+>        salelevel_coefs.csv) -- overlaid on one graph, plus the hedonic
+>        variant S4 as a third series.
+> 
+>  Output: output/design1/figD12_salelevel_robustness.png
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global OUT  "$REPO/output/design1"
+
+. 
+. * (a) cell-level lpdid baseline
+. use "$REPO/output/design1/robustness_coefs.dta", clear
+
+. keep if test == "T1_baseline"
+(136 observations deleted)
+
+. * (this dataset predates the pooled-matrix capture: all rows are event rows)
+. gen b  = c1
+
+. gen se = c2
+(1 missing value generated)
+
+. gen lb = c5
+(1 missing value generated)
+
+. gen ub = c6
+(1 missing value generated)
+
+. replace lb = b - 1.96*se if missing(lb) & !missing(se)
+(0 real changes made)
+
+. replace ub = b + 1.96*se if missing(ub) & !missing(se)
+(0 real changes made)
+
+. gen horizon = .
+(8 missing values generated)
+
+. replace horizon = -real(substr(rowname, 4, .)) if strpos(rowname, "pre") == 1
+(4 real changes made)
+
+. replace horizon =  real(substr(rowname, 4, .)) if strpos(rowname, "tau") == 1
+(4 real changes made)
+
+. drop if missing(horizon) | missing(b)
+(0 observations deleted)
+
+. keep horizon b lb ub
+
+. gen spec = "lpdid_cells"
+
+. tempfile a
+
+. save `a'
+file C:\Users\mva284\AppData\Local\Temp\ST_18b0_000001.tmp saved as .dta
+    format
+
+. 
+. * (b) sale-level specs
+. import delimited "$OUT/salelevel_coefs.csv", varnames(1) clear
+(encoding automatically selected: ISO-8859-1)
+(6 vars, 18 obs)
+
+. keep if inlist(spec, "S3_es", "S4_es_hed") & h != 99
+(2 observations deleted)
+
+. rename h horizon
+
+. append using `a'
+(variable horizon was byte, now float to accommodate using data's values)
+(variable spec was str10, now str11 to accommodate using data's values)
+
+. * lpdid coefficients are in log points x1 vs sale-level in logs -> both are
+. * log points already (lpdid ran on lnp in logs; sale-level b in logs). Scale
+. * both x100 for percent display.
+. foreach v in b lb ub {
+  2.     replace `v' = 100 * `v'
+  3. }
+(21 real changes made)
+(21 real changes made)
+(21 real changes made)
+
+. sort spec horizon
+
+. 
+. local STYLE  graphregion(color(white)) bgcolor(white) ///
+>              ylabel(, angle(horizontal) format(%9.0f)) ///
+>              yline(0, lcolor(gs8) lwidth(thin)) ///
+>              xline(-0.5, lcolor(gs11) lpattern(dash))
+
+. capture drop x1 x2 x3
+
+. gen x1 = horizon - 0.12 if spec == "lpdid_cells"
+(16 missing values generated)
+
+. gen x2 = horizon        if spec == "S3_es"
+(16 missing values generated)
+
+. gen x3 = horizon + 0.12 if spec == "S4_es_hed"
+(16 missing values generated)
+
+. 
+. twoway ///
+>     (rcap ub lb x1 if spec == "lpdid_cells", lcolor(navy) lwidth(medthin)) //
+> /
+>     (connected b x1 if spec == "lpdid_cells", color(navy) msymbol(O) lwidth(m
+> edthin) sort(x1)) ///
+>     (rcap ub lb x2 if spec == "S3_es", lcolor(cranberry) lwidth(medthin)) ///
+>     (connected b x2 if spec == "S3_es", color(cranberry) msymbol(D) lwidth(me
+> dthin) sort(x2)) ///
+>     (rcap ub lb x3 if spec == "S4_es_hed", lcolor(dkorange) lwidth(thin)) ///
+>     (connected b x3 if spec == "S4_es_hed", color(dkorange) msymbol(Th) lpatt
+> ern(dash) lwidth(thin) sort(x3)) ///
+>     , `STYLE' ///
+>     legend(order(2 "Cell-level LP-DiD (baseline)" ///
+>                  4 "Sale-level stacked OLS" ///
+>                  6 "Sale-level + hedonics") rows(3) position(6) region(lstyle
+> (none))) ///
+>     title("Ring design: cell-level vs transaction-level estimation", size(med
+> ium)) ///
+>     ytitle("Effect on log sale price (x100)") ///
+>     xtitle("Years since investor purchase (0 = purchase year)") ///
+>     xlabel(-4(1)3) ///
+>     note("Baseline: event x ring x year cell means, lpdid, never-treated far 
+> rings. Sale-level: stacked transactions, event x ring" ///
+>          "and event x calendar-year FE, SEs clustered by event (Linden-Rockof
+> f / stacking convention). Rings 0-250m vs 400-1,000m.", size(vsmall)) ///
+>     name(figD12_salelevel, replace)
+
+. graph export "$OUT/figD12_salelevel_robustness.png", replace width(2000)
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD12_salelevel_robustness.png not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD12_salelevel_robustness.png saved as PNG format
+
+. 
+. di as result _n "Saved figD12_salelevel_robustness.png"
+
+Saved figD12_salelevel_robustness.png
+
+. 
+end of do-file

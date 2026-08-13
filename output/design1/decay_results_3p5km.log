@@ -1,0 +1,279 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/decay_results_3p5km.log
+  log type:  text
+ opened on:  24 Jul 2026, 10:36:54
+
+. 
+. foreach b in 0_250 250_500 500_1000 1000_1750 1750_2500 {
+  2.     use "$OUT/_decay35_sales.dta", clear
+  3.     keep if inlist(bin, "`b'", "control")
+  4.     gen near = bin == "`b'"
+  5.     egen cellid = group(event_id near)
+  6.     collapse (mean) y = lnp (first) near ett (count) nsales = salesamt, //
+> /
+>         by(cellid tt)
+  7.     drop if missing(y)
+  8.     gen treat = near & tt >= ett
+  9.     xtset cellid tt
+ 10.     di as result _n "===== decay bin `b' vs control `CTRL_MIN'-`CTRL_MAX' 
+> ====="
+ 11.     lpdid y, unit(cellid) time(tt) treat(treat) ///
+>         pre_window(4) post_window(3) nevertreated
+ 12.     capture graph rename Graph d35_`b', replace
+ 13.     local tag "D_`b'"
+ 14.     matrix E = e(results)
+ 15.     grabmat E `tag' event
+ 16.     capture matrix P = e(pooled_results)
+ 17.     if !_rc grabmat P `tag' pooled
+ 18. }
+(3,561,230 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== decay bin 0_250 vs control 2500-3500 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0647857   .0222004      -2.92      .0036  -.1083222 
+        pre3 | -.0465402   .0215729      -2.16      .0311  -.0888459 
+        pre2 | -.0243166   .0214437      -1.13      .2569  -.0663687 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0357269   .0215285       1.66      .0972  -.0064909 
+        tau1 |  .0834368   .0214148        3.9      .0001   .0414411 
+        tau2 |   .152429   .0258435        5.9          0   .1017469 
+        tau3 |  .1537413   .0251133       6.12          0    .104489 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 | -.0212492       8868 
+        pre3 | -.0042346      10088 
+        pre2 |  .0177355      11307 
+        pre1 |         .          . 
+        tau0 |  .0779447      12580 
+        tau1 |  .1254325      11284 
+        tau2 |  .2031111       9976 
+        tau3 |  .2029935       8625 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  -.042798   .0168529      -2.54      .0112  -.0758481 
+        Post |  .1330764   .0201328       6.61          0   .0935914 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre | -.0097479       8804 
+        Post |  .1725614       8585 
+(3,460,705 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== decay bin 250_500 vs control 2500-3500 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0490539   .0187768      -2.61       .009   -.085876 
+        pre3 | -.0546315   .0186718      -2.93      .0035  -.0912474 
+        pre2 |  .0293583   .0183118        1.6       .109  -.0065515 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0546278   .0190346       2.87      .0041   .0173008 
+        tau1 |  .0651015   .0196711       3.31      .0009   .0265258 
+        tau2 |  .1509292   .0230594       6.55          0   .1057075 
+        tau3 |  .1939758   .0263195       7.37          0   .1423588 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 | -.0122319       8923 
+        pre3 | -.0180156      10135 
+        pre2 |  .0652682      11357 
+        pre1 |         .          . 
+        tau0 |  .0919547      12600 
+        tau1 |  .1036772      11324 
+        tau2 |  .1961509      10011 
+        tau3 |  .2455928       8677 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0208778   .0139929      -1.49      .1358  -.0483187 
+        Post |  .1456753   .0188612       7.72          0   .1086849 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .0065631       8873 
+        Post |  .1826657       8637 
+(2,999,321 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== decay bin 500_1000 vs control 2500-3500 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0584449    .014796      -3.95      .0001  -.0874595 
+        pre3 | -.0289952   .0139792      -2.07      .0382  -.0564079 
+        pre2 | -.0060231   .0120546        -.5      .6174  -.0296619 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0280071   .0133598        2.1      .0362   .0018091 
+        tau1 |  .0610087    .013932       4.38          0   .0336882 
+        tau2 |  .0781764   .0154621       5.06          0   .0478545 
+        tau3 |   .098515   .0180955       5.44          0   .0630274 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 | -.0294303       9064 
+        pre3 | -.0015824      10263 
+        pre2 |  .0176157      11460 
+        pre1 |         .          . 
+        tau0 |  .0542051      12678 
+        tau1 |  .0883292      11429 
+        tau2 |  .1084984      10103 
+        tau3 |  .1340025       8758 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0287899   .0110077      -2.62       .009  -.0503757 
+        Post |  .0856295   .0124718       6.87          0   .0611708 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre | -.0072041       9045 
+        Post |  .1100883       8750 
+(2,431,661 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== decay bin 1000_1750 vs control 2500-3500 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0352895   .0124496      -2.83      .0046  -.0597026 
+        pre3 | -.0440376   .0106039      -4.15          0  -.0648315 
+        pre2 | -.0250901   .0106383      -2.36      .0184  -.0459513 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0091871    .011319        .81      .4171   -.013009 
+        tau1 |  .0442423   .0110931       3.99      .0001   .0224889 
+        tau2 |  .0642151   .0139486        4.6          0   .0368614 
+        tau3 |   .090139   .0154997       5.82          0   .0597424 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 | -.0108763       9098 
+        pre3 | -.0232437      10293 
+        pre2 | -.0042288      11488 
+        pre1 |         .          . 
+        tau0 |  .0313831      12692 
+        tau1 |  .0659957      11445 
+        tau2 |  .0915687      10127 
+        tau3 |  .1205355       8779 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  -.031331   .0090354      -3.47      .0005  -.0490491 
+        Post |  .0665277   .0111467       5.97          0   .0446678 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre | -.0136129       9090 
+        Post |  .0883876       8773 
+(2,388,439 observations deleted)
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+
+===== decay bin 1750_2500 vs control 2500-3500 =====
+lpdid y, unit(cellid) time(tt) treat(treat) pre_window(4) post_window(3) nevert
+> reated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 | -.0191896   .0116378      -1.65      .0993  -.0420107 
+        pre3 |   -.01399     .01134      -1.23      .2174  -.0362272 
+        pre2 | -.0238733   .0093315      -2.56      .0106  -.0421721 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0257124   .0098503       2.61      .0091   .0063965 
+        tau1 |  .0510899   .0107928       4.73          0   .0299255 
+        tau2 |    .05389   .0125615       4.29          0   .0292565 
+        tau3 |  .0566819    .013566       4.18          0   .0300775 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .0036316       9100 
+        pre3 |  .0082473      10298 
+        pre2 | -.0055746      11493 
+        pre1 |         .          . 
+        tau0 |  .0450283      12697 
+        tau1 |  .0722544      11451 
+        tau2 |  .0785235      10131 
+        tau3 |  .0832863       8784 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre | -.0162159   .0088306      -1.84      .0664  -.0335324 
+        Post |  .0501776   .0102515       4.89          0   .0300734 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .0011006       9092 
+        Post |  .0702819       8777 
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/decay_results_3p5km.log
+  log type:  text
+ closed on:  24 Jul 2026, 10:38:04
+-------------------------------------------------------------------------------

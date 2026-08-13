@@ -130,7 +130,7 @@ NOTE_LPDID = ("LP-DiD pooled estimates; pre and post pooled coefficients are rel
               "(shares in pp). SEs clustered by unit (cell/tract).")
 
 R2MAP = {}
-for _r2file in ("pmd_stats.csv", "pmd_stats_withinevent.csv"):
+for _r2file in ("pmd_stats.csv", "pmd_stats_withinevent.csv", "pmd_stats_netin.csv"):
     _r2path = os.path.join(OUT, _r2file)
     if os.path.exists(_r2path):
         for _r in load_csv(_r2path):
@@ -216,8 +216,9 @@ def main():
           ("T2_comp_subu", "Sub-unit share"), ("T2_comp_vac", "Vacant share")]),
         ("tab_fig7_parties.tex", "Non-Hispanic-named party shares (fig.\\ 7)",
          [("T7_buy_nh", "Buyers"), ("T7_sell_nh", "Sellers")]),
-        ("tab_fig8_transitions.tex", "Transaction transitions (fig.\\ 8)",
-         [("T7_isl2main", "Hisp.$\\to$non-Hisp."), ("T7_main2main", "non-H.$\\to$non-H.")]),
+        ("tab_fig8_transitions.tex", "Transaction transitions (figs.\\ 8, 8b)",
+         [("T7_isl2main", "Hisp.$\\to$non-Hisp."), ("T7_main2main", "non-H.$\\to$non-H."),
+          ("T7_netin", "Net inflow")]),
         ("tab_fig9_inclinvestors.tex", "Buyer-margin decomposition (fig.\\ 9)",
          [("T1_baseline", "Non-investor sales"), ("T8_incl_investors", "All sales")]),
         ("tab_fig10_hispbuyers.tex", "Locals-only prices (fig.\\ 10)",

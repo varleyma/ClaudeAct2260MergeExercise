@@ -1,0 +1,86 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do C:\Users\mva284\Documents\GitHub\ClaudeAct2260MergeExercise\code\stata\des
+> ign1_withinevent_plot.do 
+
+. /*===========================================================================
+> ===
+>  design1_withinevent_plot.do
+>  Event-study figure for the within-event LP-DiD (absorb(event x year)),
+>  coefficients transcribed (x100) from withinevent_results.log.
+>  Output: output/design1/figD13_withinevent_es.png
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global OUT "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/outpu
+> t/design1"
+
+. 
+. import delimited "$OUT/withinevent_es.csv", varnames(1) clear
+(encoding automatically selected: ISO-8859-9)
+(4 vars, 8 obs)
+
+. sort horizon
+
+. 
+. twoway ///
+>     (rcap ub lb horizon, lcolor(navy) lwidth(medthin)) ///
+>     (connected b horizon, color(navy) msymbol(O) lwidth(medthin) sort(horizon
+> )) ///
+>     , graphregion(color(white)) bgcolor(white) ///
+>     ylabel(, angle(horizontal) format(%9.0f)) ///
+>     yline(0, lcolor(gs8) lwidth(thin)) ///
+>     xline(-0.5, lcolor(gs11) lpattern(dash)) ///
+>     legend(off) ///
+>     title("Within-event LP-DiD: near ring vs own far ring", size(medium)) ///
+>     ytitle("Effect on log sale price (x100)") ///
+>     xtitle("Years since investor purchase (0 = purchase year)") ///
+>     xlabel(-4(1)3) ///
+>     note("LP-DiD with event x calendar-year effects absorbed: each near ring'
+> s long difference is contrasted only with its" ///
+>          "own event's far ring. Pooled post +5.10 (2.15), pre -2.57 (1.84, ns
+> ); effective N 1,350. 95% CIs, clustered by cell.", size(vsmall)) ///
+>     name(figD13_withinevent, replace)
+
+. graph export "$OUT/figD13_withinevent_es.png", replace width(2000)
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD13_withinevent_es.png not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD13_withinevent_es.png saved as PNG format
+
+. di as result "Saved figD13_withinevent_es.png"
+Saved figD13_withinevent_es.png
+
+. 
+end of do-file

@@ -329,6 +329,23 @@ boundary.
   \label{fig:transitions}
 \end{figure}
 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{fig8b_netinflow.png}
+  \caption{\textbf{Net compositional inflow.} The two transition series
+  combined into one displacement measure:
+  $1\{$Hispanic seller, non-Hispanic buyer$\}$ minus
+  $1\{$non-Hispanic seller, Hispanic buyer$\}$ per classified sale. A sale
+  changes the ownership composition of the stock only when the parties'
+  classes differ, so within-class churn (including
+  mainlander$\to$mainlander resales) nets out; a positive post-event effect
+  is net conversion of the nearby stock from Hispanic-named to
+  non-Hispanic-named owners. Pre-period flat ($-0.5$pp, s.e.\ $1.0$); the
+  net conversion rate rises to $+2.5$pp and $+3.8$pp per sale in years 2--3;
+  post$-$pre $+2.4$pp (s.e.\ $0.9$, $p<0.01$) per classified sale.}
+  \label{fig:netinflow}
+\end{figure}
+
 \clearpage
 
 \section{The tract-level design and reconciliation (Design 2)}
@@ -462,7 +479,7 @@ capitalization step applies transaction-price effects to the full stock; and
 event effects predating 2019 enter the numerator while the boom clock starts
 in 2019.
 
-\subsection{Mortgage originations: a convincing null}
+\subsection{Mortgage originations: volumes are a convincing null}
 
 HMDA loan-level data for Puerto Rico (2018--2024; 105{,}559 originations,
 aggregated to 2020-vintage tract$\times$year) show no detectable response of
@@ -473,6 +490,54 @@ rate/term and cash-out refinancings, and total originations, and are
 unchanged with county$\times$year fixed effects. Consistent with decree
 investors transacting predominantly in cash, the program's effects appear in
 prices and buyer composition rather than local credit expansion.
+
+\subsection{Who can still buy: borrower composition in treated tracts}
+
+Splitting purchase originations by HMDA's self-reported borrower ethnicity
+(Hispanic or Latino vs.\ not; joint and unavailable excluded) sharpens the
+displacement interpretation. Since decree investors buy in cash, HMDA is
+effectively a census of the \emph{financed} --- overwhelmingly local, 94.6\%
+Hispanic --- side of the market. Two results
+(Figures~\ref{fig:hmdaeth}--\ref{fig:hmdainc}): the \emph{number} of
+Hispanic-borrower purchase originations shows no significant pooled change
+($-0.8$\%, s.e.\ $5.3$), though it drifts negative at longer horizons
+($-16.0$\%, s.e.\ $8.2$ at $h\!\ge\!3$); and the \emph{income} of purchase
+borrowers rises after treatment --- pooled $+10.7$\% (s.e.\ $2.6$), reaching
+$+12.6$\% by $h\!\ge\!3$, nearly identical for Hispanic borrowers alone. The
+income result, however, does not have clean pre-trends: the pre-period
+coefficients climb monotonically into treatment ($-4.5$, $-3.5$, $0$),
+$\approx\!+2.2$ log points per year, and extrapolating that drift accounts
+for the majority of the post-period ramp (drift-adjusted effects
+$\approx\!+2$ to $+6$); with tract-specific linear trends the pooled effect
+falls to $+6.0$ (s.e.\ $3.9$; Hispanic-only $+3.3$, s.e.\ $3.6$), though
+trends over-absorb in a seven-year panel with mid-panel adoption. The
+honest reading: treated tracts were already on rising borrower-income
+trajectories --- consistent with investors selecting gentrifying areas ---
+and the post-treatment acceleration beyond that trajectory is positive but
+modest and imprecise. Income sorting of the marginal financed buyer is
+suggestive, not established.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{../design2/figH4_eth_counts.png}
+  \caption{\textbf{Purchase originations by borrower ethnicity.} Poisson
+  event studies for Hispanic and non-Hispanic borrower purchase counts in
+  treated tracts. Non-Hispanic counts are thin island-wide (a few hundred per
+  year), hence the wide intervals.}
+  \label{fig:hmdaeth}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{../design2/figH5_eth_income.png}
+  \caption{\textbf{Income of purchase borrowers.} Effect on
+  $100\times\ln$(mean borrower income) among purchase originations in treated
+  tracts, all classified borrowers and Hispanic borrowers only. Note the
+  monotone pre-period climb ($\approx\!+2.2$ log points/yr): much of the
+  post-period rise extrapolates that drift, so the acceleration attributable
+  to treatment is modest (see text).}
+  \label{fig:hmdainc}
+\end{figure}
 
 \section{Standing caveats}
 

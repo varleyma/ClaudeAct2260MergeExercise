@@ -27,7 +27,6 @@ local COL_UB c6
   LOAD + STANDARDIZE
 ============================================================================*/
 use "$OUT/robustness_coefs.dta", clear
-di as text "raw matrix columns were: " colnames[1]
 
 gen b  = `COL_B'
 gen se = `COL_SE'
@@ -188,6 +187,20 @@ if r(N) > 0 {
     global FIG_XT     `XT'
     global FIG_NOTE   Among sales where both parties' names classify. Rising islander-to-mainlander = displacement margin; rising mainlander-to-mainlander = churn within the incomer segment.
     drawfig, out(fig8_transitions)
+}
+
+*---- F8b: NET compositional inflow (one displacement measure) ---------------
+use `coefs', clear
+count if test == "T7_netin"
+if r(N) > 0 {
+    use `coefs', clear
+    global FIG_TESTS  T7_netin
+    global FIG_LABELS `""Net inflow""'
+    global FIG_TITLE  Net conversion of the stock to non-Hispanic-named owners
+    global FIG_YT     "Net conversions per classified sale"
+    global FIG_XT     `XT'
+    global FIG_NOTE   Outcome: 1{Hisp seller, non-Hisp buyer} minus 1{non-Hisp seller, Hisp buyer} -- within-class churn nets out.
+    drawfig, out(fig8b_netinflow)
 }
 
 *---- F9: decomposition -- including vs excluding investor transactions ------
