@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  13 AUG 2026 08:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  13 AUG 2026 08:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -447,7 +447,7 @@ texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
 [2]
 
 [3]
-<figD12_salelevel_robustness.png, id=116, 2007.5pt x 1204.5pt>
+<figD12_salelevel_robustness.png, id=120, 2007.5pt x 1204.5pt>
 File: figD12_salelevel_robustness.png Graphic file (type png)
 <use figD12_salelevel_robustness.png>
 Package pdftex.def Info: figD12_salelevel_robustness.png  used on input line 19
@@ -456,62 +456,62 @@ Package pdftex.def Info: figD12_salelevel_robustness.png  used on input line 19
 
 
 [4 <./figD12_salelevel_robustness.png (PNG copy)>]
-<fig1_baseline.png, id=126, 2007.5pt x 1204.5pt>
+<fig1_baseline.png, id=130, 2007.5pt x 1204.5pt>
 File: fig1_baseline.png Graphic file (type png)
 <use fig1_baseline.png>
 Package pdftex.def Info: fig1_baseline.png  used on input line 230.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig2_real_vs_placebo.png, id=127, 2007.5pt x 1204.5pt>
+<fig2_real_vs_placebo.png, id=131, 2007.5pt x 1204.5pt>
 File: fig2_real_vs_placebo.png Graphic file (type png)
 <use fig2_real_vs_placebo.png>
 Package pdftex.def Info: fig2_real_vs_placebo.png  used on input line 241.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig3_gradient.png, id=128, 2007.5pt x 1204.5pt>
+<fig3_gradient.png, id=132, 2007.5pt x 1204.5pt>
 File: fig3_gradient.png Graphic file (type png)
 <use fig3_gradient.png>
 Package pdftex.def Info: fig3_gradient.png  used on input line 254.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig4_dose.png, id=129, 2007.5pt x 1204.5pt>
+<fig4_dose.png, id=133, 2007.5pt x 1204.5pt>
 File: fig4_dose.png Graphic file (type png)
 <use fig4_dose.png>
 Package pdftex.def Info: fig4_dose.png  used on input line 265.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig5_late.png, id=130, 2007.5pt x 1204.5pt>
+<fig5_late.png, id=134, 2007.5pt x 1204.5pt>
 File: fig5_late.png Graphic file (type png)
 <use fig5_late.png>
 Package pdftex.def Info: fig5_late.png  used on input line 283.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig6_comp_lnstru.png, id=131, 2007.5pt x 1204.5pt>
+<fig6_comp_lnstru.png, id=135, 2007.5pt x 1204.5pt>
 File: fig6_comp_lnstru.png Graphic file (type png)
 <use fig6_comp_lnstru.png>
 Package pdftex.def Info: fig6_comp_lnstru.png  used on input line 293.
 (pdftex.def)             Requested size: 225.4804pt x 135.27066pt.
-<fig6_comp_lncab.png, id=132, 2007.5pt x 1204.5pt>
+<fig6_comp_lncab.png, id=136, 2007.5pt x 1204.5pt>
 File: fig6_comp_lncab.png Graphic file (type png)
 <use fig6_comp_lncab.png>
 Package pdftex.def Info: fig6_comp_lncab.png  used on input line 294.
 (pdftex.def)             Requested size: 225.4804pt x 135.27066pt.
-<fig6_comp_subu.png, id=133, 2007.5pt x 1204.5pt>
+<fig6_comp_subu.png, id=137, 2007.5pt x 1204.5pt>
 File: fig6_comp_subu.png Graphic file (type png)
 <use fig6_comp_subu.png>
 Package pdftex.def Info: fig6_comp_subu.png  used on input line 295.
 (pdftex.def)             Requested size: 225.4804pt x 135.27066pt.
-<fig6_comp_vac.png, id=134, 2007.5pt x 1204.5pt>
+<fig6_comp_vac.png, id=138, 2007.5pt x 1204.5pt>
 File: fig6_comp_vac.png Graphic file (type png)
 <use fig6_comp_vac.png>
 Package pdftex.def Info: fig6_comp_vac.png  used on input line 296.
 (pdftex.def)             Requested size: 225.4804pt x 135.27066pt.
-<fig7_parties.png, id=137, 2007.5pt x 1204.5pt>
+<fig7_parties.png, id=141, 2007.5pt x 1204.5pt>
 File: fig7_parties.png Graphic file (type png)
 <use fig7_parties.png>
 Package pdftex.def Info: fig7_parties.png  used on input line 308.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig8_transitions.png, id=138, 2007.5pt x 1204.5pt>
+<fig8_transitions.png, id=142, 2007.5pt x 1204.5pt>
 File: fig8_transitions.png Graphic file (type png)
 <use fig8_transitions.png>
 Package pdftex.def Info: fig8_transitions.png  used on input line 320.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig8b_netinflow.png, id=139, 2007.5pt x 1204.5pt>
+<fig8b_netinflow.png, id=143, 2007.5pt x 1204.5pt>
 File: fig8b_netinflow.png Graphic file (type png)
 <use fig8b_netinflow.png>
 Package pdftex.def Info: fig8b_netinflow.png  used on input line 334.
@@ -531,12 +531,12 @@ ng (PNG copy)>]
 [9 <./fig8_transitions.png (PNG copy)>]
 
 [10 <./fig8b_netinflow.png (PNG copy)>]
-<../design2/figT1_lnhp_es.png, id=176, 2007.5pt x 1204.5pt>
+<../design2/figT1_lnhp_es.png, id=180, 2007.5pt x 1204.5pt>
 File: ../design2/figT1_lnhp_es.png Graphic file (type png)
 <use ../design2/figT1_lnhp_es.png>
 Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 385.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figT2_dose_es.png, id=177, 2007.5pt x 1204.5pt>
+<../design2/figT2_dose_es.png, id=181, 2007.5pt x 1204.5pt>
 File: ../design2/figT2_dose_es.png Graphic file (type png)
 <use ../design2/figT2_dose_es.png>
 Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 394.
@@ -546,7 +546,7 @@ Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 394.
 [11
 
  <../design2/figT1_lnhp_es.png (PNG copy)>]
-<../design2/figT4_reconciliation.png, id=184, 2007.5pt x 1204.5pt>
+<../design2/figT4_reconciliation.png, id=189, 2007.5pt x 1204.5pt>
 File: ../design2/figT4_reconciliation.png Graphic file (type png)
 <use ../design2/figT4_reconciliation.png>
 Package pdftex.def Info: ../design2/figT4_reconciliation.png  used on input lin
@@ -557,23 +557,17 @@ e 417.
 [12 <../design2/figT2_dose_es.png (PNG copy)>]
 
 [13 <../design2/figT4_reconciliation.png (PNG copy)>]
-
-LaTeX Warning: Reference `fig:hmdaeth' on page 14 undefined on input line 501.
-
-
-LaTeX Warning: Reference `fig:hmdainc' on page 14 undefined on input line 501.
-
-<../design2/figH4_eth_counts.png, id=197, 2007.5pt x 1204.5pt>
+<../design2/figH4_eth_counts.png, id=203, 2007.5pt x 1204.5pt>
 File: ../design2/figH4_eth_counts.png Graphic file (type png)
 <use ../design2/figH4_eth_counts.png>
 Package pdftex.def Info: ../design2/figH4_eth_counts.png  used on input line 52
-2.
+4.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figH5_eth_income.png, id=198, 2007.5pt x 1204.5pt>
+<../design2/figH5_eth_income.png, id=204, 2007.5pt x 1204.5pt>
 File: ../design2/figH5_eth_income.png Graphic file (type png)
 <use ../design2/figH5_eth_income.png>
 Package pdftex.def Info: ../design2/figH5_eth_income.png  used on input line 53
-2.
+4.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -589,25 +583,16 @@ L3 programming layer <2024-09-10>
  ***********
 
 
-LaTeX Warning: There were undefined references.
-
-
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
-
-Package rerunfilecheck Warning: File `design1_writeup.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `design1_writeup.out':
-(rerunfilecheck)             Before: 211615D205C98822C5DD91639C78356A;3489
-(rerunfilecheck)             After:  978F338D01261F95E8295FDF062F0F3C;3922.
+Package rerunfilecheck Info: File `design1_writeup.out' has not changed.
+(rerunfilecheck)             Checksum: 978F338D01261F95E8295FDF062F0F3C;3922.
  ) 
 Here is how much of TeX's memory you used:
- 12175 strings out of 473579
- 191757 string characters out of 5732262
- 593170 words of memory out of 5000000
- 34872 multiletter control sequences out of 15000+600000
+ 12176 strings out of 473579
+ 191773 string characters out of 5732262
+ 594534 words of memory out of 5000000
+ 34873 multiletter control sequences out of 15000+600000
  570900 words of font info for 85 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,8n,79p,977b,593s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -626,10 +611,10 @@ type1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/pub
 lic/amsfonts/symbols/msbm10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/
 cm-super/sfrm1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/s
 frm1095.pfb>
-Output written on design1_writeup.pdf (16 pages, 3012267 bytes).
+Output written on design1_writeup.pdf (16 pages, 3021063 bytes).
 PDF statistics:
- 304 PDF objects out of 1000 (max. 8388607)
- 232 compressed objects within 3 object streams
+ 309 PDF objects out of 1000 (max. 8388607)
+ 237 compressed objects within 3 object streams
  62 named destinations out of 1000 (max. 500000)
- 243 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 251 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -52,7 +52,7 @@ Notes:
 . 
 . import delimited "$OUT/hmda_eth_coefs.csv", varnames(1) clear
 (encoding automatically selected: ISO-8859-1)
-(6 vars, 32 obs)
+(6 vars, 36 obs)
 
 . drop if h == 99
 (4 observations deleted)
@@ -63,9 +63,9 @@ Notes:
   2.     replace `v' = 100 * `v' if inlist(outcome, "purch_hisp_n", "purch_nonh
 > isp_n")
   3. }
-(12 real changes made)
-(12 real changes made)
-(12 real changes made)
+(14 real changes made)
+(14 real changes made)
+(14 real changes made)
 
 . rename h horizon
 
@@ -76,7 +76,7 @@ Notes:
 . tempfile coefs
 
 . save `coefs'
-file C:\Users\mva284\AppData\Local\Temp\ST_2fdc_000001.tmp saved as .dta
+file C:\Users\mva284\AppData\Local\Temp\ST_72fc_000001.tmp saved as .dta
     format
 
 . 
@@ -114,7 +114,7 @@ file C:\Users\mva284\AppData\Local\Temp\ST_2fdc_000001.tmp saved as .dta
 >         title("$FIG_TITLE", size(medium)) ///
 >         ytitle("$FIG_YT") xtitle("$FIG_XT") ///
 >         note("$FIG_NOTE1" "$FIG_NOTE2", size(vsmall)) ///
->         xlabel(-3(1)3) name(`out', replace)
+>         xlabel(-4(1)3) name(`out', replace)
  21.     graph export "$OUT/`out'.png", replace width(2000)
  22. end
 
@@ -142,8 +142,8 @@ file C:\Users\mva284\AppData\Local\Temp\ST_2fdc_000001.tmp saved as .dta
 > Es clustered by tract; endpoints binned."
 
 . drawfig, out(figH4_eth_counts)
-(21 missing values generated)
-(21 missing values generated)
+(24 missing values generated)
+(24 missing values generated)
 file
     C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
     > 2/figH4_eth_counts.png saved as PNG format
@@ -165,8 +165,8 @@ file
 > housands), tract and year FE, never-treated controls, clustered by tract."
 
 . drawfig, out(figH5_eth_income)
-(21 missing values generated)
-(21 missing values generated)
+(24 missing values generated)
+(24 missing values generated)
 file
     C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
     > 2/figH5_eth_income.png saved as PNG format

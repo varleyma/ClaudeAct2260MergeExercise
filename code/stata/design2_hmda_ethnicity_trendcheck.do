@@ -41,7 +41,8 @@ merge m:1 tract_geoid using `trt', keep(master match) nogen
 
 gen treat = !missing(first_event_year) & year >= first_event_year
 gen rel = year - first_event_year if !missing(first_event_year)
-gen Dm3 = !missing(rel) & rel <= -3
+gen Dm4 = !missing(rel) & rel <= -4
+gen Dm3 = !missing(rel) & rel == -3
 gen Dm2 = !missing(rel) & rel == -2
 gen D0  = !missing(rel) & rel == 0
 gen D1  = !missing(rel) & rel == 1
@@ -69,8 +70,9 @@ foreach v in lninc_all lninc_hisp {
     post `pf' ("`v'") (99) (_b[treat]) (_se[treat])
 
     di as result _n "===== `v': + tract-specific linear trends, event study ====="
-    reghdfe `v' Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year tract_num#c.year) ///
+    reghdfe `v' Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year tract_num#c.year) ///
         vce(cluster tract_num)
+    post `pf' ("`v'") (-4) (_b[Dm4]) (_se[Dm4])
     post `pf' ("`v'") (-3) (_b[Dm3]) (_se[Dm3])
     post `pf' ("`v'") (-2) (_b[Dm2]) (_se[Dm2])
     post `pf' ("`v'") (-1) (0) (.)

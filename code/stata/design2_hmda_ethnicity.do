@@ -61,7 +61,8 @@ merge m:1 tract_geoid using `trt', keep(master match) nogen
 gen treat = !missing(first_event_year) & year >= first_event_year
 gen rel = year - first_event_year if !missing(first_event_year)
 
-gen Dm3 = !missing(rel) & rel <= -3
+gen Dm4 = !missing(rel) & rel <= -4
+gen Dm3 = !missing(rel) & rel == -3
 gen Dm2 = !missing(rel) & rel == -2
 gen D0  = !missing(rel) & rel == 0
 gen D1  = !missing(rel) & rel == 1
@@ -84,7 +85,8 @@ postfile `pf' str20 outcome double h b se using "$OUT/_hmda_eth.dta", replace
 *---- counts: Poisson ---------------------------------------------------------
 foreach v in purch_hisp_n purch_nonhisp_n {
     di as result _n "===== POISSON event study: `v' ====="
-    ppmlhdfe `v' Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) vce(cluster tract_num)
+    ppmlhdfe `v' Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) vce(cluster tract_num)
+    post `pf' ("`v'") (-4) (_b[Dm4]) (_se[Dm4])
     post `pf' ("`v'") (-3) (_b[Dm3]) (_se[Dm3])
     post `pf' ("`v'") (-2) (_b[Dm2]) (_se[Dm2])
     post `pf' ("`v'") (-1) (0) (.)
@@ -101,7 +103,8 @@ foreach v in purch_hisp_n purch_nonhisp_n {
 *---- borrower income: OLS on 100 x ln(mean income) ---------------------------
 foreach v in lninc_all lninc_hisp {
     di as result _n "===== OLS event study: `v' ====="
-    reghdfe `v' Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) vce(cluster tract_num)
+    reghdfe `v' Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) vce(cluster tract_num)
+    post `pf' ("`v'") (-4) (_b[Dm4]) (_se[Dm4])
     post `pf' ("`v'") (-3) (_b[Dm3]) (_se[Dm3])
     post `pf' ("`v'") (-2) (_b[Dm2]) (_se[Dm2])
     post `pf' ("`v'") (-1) (0) (.)

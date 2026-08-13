@@ -3,7 +3,7 @@
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/hmda_eth_trendcheck.log
   log type:  text
- opened on:  13 Aug 2026, 08:09:54
+ opened on:  13 Aug 2026, 08:17:38
 
 . 
 . tempname pf
@@ -26,17 +26,18 @@
   7. 
 .     di as result _n "===== `v': + tract-specific linear trends, event study =
 > ===="
-  8.     reghdfe `v' Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year tract_num#c.yea
-> r) ///
+  8.     reghdfe `v' Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year tract_num#c
+> .year) ///
 >         vce(cluster tract_num)
-  9.     post `pf' ("`v'") (-3) (_b[Dm3]) (_se[Dm3])
- 10.     post `pf' ("`v'") (-2) (_b[Dm2]) (_se[Dm2])
- 11.     post `pf' ("`v'") (-1) (0) (.)
- 12.     post `pf' ("`v'") (0)  (_b[D0]) (_se[D0])
- 13.     post `pf' ("`v'") (1)  (_b[D1]) (_se[D1])
- 14.     post `pf' ("`v'") (2)  (_b[D2]) (_se[D2])
- 15.     post `pf' ("`v'") (3)  (_b[D3]) (_se[D3])
- 16. }
+  9.     post `pf' ("`v'") (-4) (_b[Dm4]) (_se[Dm4])
+ 10.     post `pf' ("`v'") (-3) (_b[Dm3]) (_se[Dm3])
+ 11.     post `pf' ("`v'") (-2) (_b[Dm2]) (_se[Dm2])
+ 12.     post `pf' ("`v'") (-1) (0) (.)
+ 13.     post `pf' ("`v'") (0)  (_b[D0]) (_se[D0])
+ 14.     post `pf' ("`v'") (1)  (_b[D1]) (_se[D1])
+ 15.     post `pf' ("`v'") (2)  (_b[D2]) (_se[D2])
+ 16.     post `pf' ("`v'") (3)  (_b[D3]) (_se[D3])
+ 17. }
 
 ===== lninc_all: BASELINE (tract + year FE) pooled =====
 (dropped 22 singleton observations)
@@ -105,25 +106,26 @@ Absorbed degrees of freedom:
 (MWFE estimator converged in 592 iterations)
 
 HDFE Linear regression                            Number of obs   =      6,081
-Absorbing 3 HDFE groups                           F(   6,    928) =       0.68
-Statistics robust to heteroskedasticity           Prob > F        =     0.6652
-                                                  R-squared       =     0.7484
-                                                  Adj R-squared   =     0.6368
-                                                  Within R-sq.    =     0.0012
-Number of clusters (tract_num) =        929       Root MSE        =    31.5917
+Absorbing 3 HDFE groups                           F(   7,    928) =       0.66
+Statistics robust to heteroskedasticity           Prob > F        =     0.7099
+                                                  R-squared       =     0.7485
+                                                  Adj R-squared   =     0.6367
+                                                  Within R-sq.    =     0.0013
+Number of clusters (tract_num) =        929       Root MSE        =    31.5930
 
                             (Std. err. adjusted for 929 clusters in tract_num)
 ------------------------------------------------------------------------------
              |               Robust
    lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 -------------+----------------------------------------------------------------
-         Dm3 |   1.403026   6.467581     0.22   0.828    -11.28975    14.09581
-         Dm2 |  -.9834857   4.174566    -0.24   0.814     -9.17617    7.209198
-          D0 |    6.14409   4.556341     1.35   0.178    -2.797837    15.08602
-          D1 |   .1762453   6.175318     0.03   0.977    -11.94296    12.29545
-          D2 |   -.664675   8.064763    -0.08   0.934    -16.49196    15.16261
-          D3 |  -.2156791   11.15026    -0.02   0.985    -22.09833    21.66697
-       _cons |   401.0509   1.148788   349.11   0.000     398.7964    403.3054
+         Dm4 |   7.517611   9.461535     0.79   0.427    -11.05088     26.0861
+         Dm3 |   2.861061    6.70977     0.43   0.670    -10.30702    16.02914
+         Dm2 |     .30161   4.472776     0.07   0.946    -8.476319    9.079539
+          D0 |   4.890788   4.671765     1.05   0.295     -4.27766    14.05924
+          D1 |  -2.131703   6.702054    -0.32   0.751    -15.28464    11.02124
+          D2 |  -3.752225   8.837452    -0.42   0.671    -21.09593    13.59148
+          D3 |  -4.080715   12.14974    -0.34   0.737    -27.92486    19.76343
+       _cons |   401.2534   1.175495   341.35   0.000     398.9464    403.5603
 ------------------------------------------------------------------------------
 
 Absorbed degrees of freedom:
@@ -204,25 +206,26 @@ Absorbed degrees of freedom:
 (MWFE estimator converged in 1207 iterations)
 
 HDFE Linear regression                            Number of obs   =      6,071
-Absorbing 3 HDFE groups                           F(   6,    928) =       0.27
-Statistics robust to heteroskedasticity           Prob > F        =     0.9498
+Absorbing 3 HDFE groups                           F(   7,    928) =       0.25
+Statistics robust to heteroskedasticity           Prob > F        =     0.9730
                                                   R-squared       =     0.7355
-                                                  Adj R-squared   =     0.6178
+                                                  Adj R-squared   =     0.6177
                                                   Within R-sq.    =     0.0004
-Number of clusters (tract_num) =        929       Root MSE        =    30.7390
+Number of clusters (tract_num) =        929       Root MSE        =    30.7424
 
                             (Std. err. adjusted for 929 clusters in tract_num)
 ------------------------------------------------------------------------------
              |               Robust
   lninc_hisp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 -------------+----------------------------------------------------------------
-         Dm3 |   1.380194   7.009643     0.20   0.844     -12.3764    15.13678
-         Dm2 |  -.8908953   4.349054    -0.20   0.838    -9.426017    7.644226
-          D0 |   3.654646   4.040509     0.90   0.366    -4.274949    11.58424
-          D1 |   1.862779   6.219929     0.30   0.765    -10.34398    14.06954
-          D2 |   2.719211   8.251121     0.33   0.742    -13.47381    18.91223
-          D3 |   5.173034   11.29999     0.46   0.647    -17.00346    27.34953
-       _cons |   398.2074   1.127604   353.14   0.000     395.9944    400.4203
+         Dm4 |   3.389398   10.13128     0.33   0.738    -16.49347    23.27227
+         Dm3 |   1.859347   7.355759     0.25   0.800     -12.5765     16.2952
+         Dm2 |  -.4684449   4.719574    -0.10   0.921     -9.73072     8.79383
+          D0 |   3.243122   4.287329     0.76   0.450    -5.170862    11.65711
+          D1 |   1.106693   6.954137     0.16   0.874    -12.54096    14.75435
+          D2 |   1.706581   9.198436     0.19   0.853    -16.34557    19.75873
+          D3 |   3.905453   12.52234     0.31   0.755    -20.66994    28.48085
+       _cons |   398.2732   1.165892   341.60   0.000     395.9851    400.5613
 ------------------------------------------------------------------------------
 
 Absorbed degrees of freedom:
@@ -244,5 +247,5 @@ Absorbed degrees of freedom:
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/hmda_eth_trendcheck.log
   log type:  text
- closed on:  13 Aug 2026, 08:10:42
+ closed on:  13 Aug 2026, 08:18:27
 -------------------------------------------------------------------------------
