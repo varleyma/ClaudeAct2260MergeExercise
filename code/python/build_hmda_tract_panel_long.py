@@ -18,9 +18,17 @@ Hispanic vs Not Hispanic; everything else excluded. Income in $000s.
 2010->2020 tracts via the tab20 largest-land-overlap crosswalk (2012-2021
 files carry 2010 tracts; 2022+ carry 2020 tracts).
 
+Refinancings (same first-lien OO 1-4fam population): historic loan_purpose 3
+= all refis (cash-out indistinguishable before 2018); modern loan_purpose 31
+(rate/term) + 32 (cash-out). refi_* columns are consistent 2012-2024;
+cashout_* and refirt_* columns exist 2018+ ONLY (zero-filled earlier --
+restrict any cash-out analysis to year >= 2018).
+
 Output: data/design2/hmda_tract_year_long.csv with
   tract_geoid, year, purch_n, purch_v,
-  purch_{hisp,nonhisp}_{n,v,inc,incn}
+  purch_{hisp,nonhisp}_{n,v,inc,incn},
+  refi_n, refi_{hisp,nonhisp}_{n,v},
+  cashout_n, cashout_{hisp,nonhisp}_n, refirt_{hisp,nonhisp}_n  (2018+)
 """
 
 import csv, os
@@ -81,11 +89,27 @@ def main():
                 c[f"purch_{eth}_inc"] += inc
                 c[f"purch_{eth}_incn"] += 1
 
+    def add_refi(tract, y, amt, eth, kind):
+        # kind: "" (historic, split unknown) / "cashout" / "refirt" (2018+)
+        c = cells[(tract, y)]
+        c["refi_n"] += 1
+        if eth:
+            c[f"refi_{eth}_n"] += 1
+            c[f"refi_{eth}_v"] += amt
+        if kind == "cashout":
+            c["cashout_n"] += 1
+            if eth:
+                c[f"cashout_{eth}_n"] += 1
+        elif kind == "refirt":
+            if eth:
+                c[f"refirt_{eth}_n"] += 1
+
     # ---- historic 2012-2017 ----
     for y in range(2012, 2018):
         p = os.path.join(RAW, f"hmda_{y}_pr_first-lien-owner-occupied-1-4-family-records_labels.csv")
         for r in csv.DictReader(open(p, newline="", encoding="utf-8", errors="replace")):
-            if (r.get("loan_purpose") or "").strip() != "1":
+            purpose = (r.get("loan_purpose") or "").strip()
+            if purpose not in ("1", "3"):
                 continue
             g = hist_geoid(r)
             g = xw.get(g, "") if y in YEARS_2010 else g
@@ -99,6 +123,9 @@ def main():
             en = (r.get("applicant_ethnicity_name") or "").strip()
             eth = ("hisp" if en == "Hispanic or Latino"
                    else "nonhisp" if en == "Not Hispanic or Latino" else None)
+            if purpose == "3":
+                add_refi(g, y, amt, eth, "")
+                continue
             try:
                 inc = float(r.get("applicant_income_000s") or "")
             except ValueError:
@@ -109,7 +136,8 @@ def main():
     for y in range(2018, 2025):
         p = os.path.join(RAW, f"hmda_PR_{y}.csv")
         for r in csv.DictReader(open(p, newline="", encoding="utf-8", errors="replace")):
-            if (r.get("loan_purpose") or "").strip() != "1":
+            purpose = (r.get("loan_purpose") or "").strip()
+            if purpose not in ("1", "31", "32"):
                 continue
             if (r.get("occupancy_type") or "").strip() != "1":
                 continue
@@ -130,6 +158,10 @@ def main():
             en = (r.get("derived_ethnicity") or "").strip()
             eth = ("hisp" if en == "Hispanic or Latino"
                    else "nonhisp" if en == "Not Hispanic or Latino" else None)
+            if purpose in ("31", "32"):
+                add_refi(g, y, amt, eth,
+                         "cashout" if purpose == "32" else "refirt")
+                continue
             try:
                 inc = float(r.get("income") or "")
             except ValueError:
@@ -138,7 +170,10 @@ def main():
 
     cols = ["purch_n", "purch_v",
             "purch_hisp_n", "purch_hisp_v", "purch_hisp_inc", "purch_hisp_incn",
-            "purch_nonhisp_n", "purch_nonhisp_v", "purch_nonhisp_inc", "purch_nonhisp_incn"]
+            "purch_nonhisp_n", "purch_nonhisp_v", "purch_nonhisp_inc", "purch_nonhisp_incn",
+            "refi_n", "refi_hisp_n", "refi_hisp_v", "refi_nonhisp_n", "refi_nonhisp_v",
+            "cashout_n", "cashout_hisp_n", "cashout_nonhisp_n",
+            "refirt_hisp_n", "refirt_nonhisp_n"]
     with open(OUT, "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
         w.writerow(["tract_geoid", "year"] + cols)
