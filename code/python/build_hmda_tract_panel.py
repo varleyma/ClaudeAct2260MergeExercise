@@ -6,6 +6,11 @@ aggregate to 2020-vintage tract x year:
 
     purch_oo_n,  purch_oo_v    home purchases, owner-occupied (principal res.)
     purch_nonoo_n, purch_nonoo_v  home purchases, second home / investment
+    purch_hisp_*, purch_nonhisp_*  home purchases split by self-reported
+                               derived_ethnicity (Hispanic or Latino vs Not;
+                               Joint/Not Available excluded): _n count,
+                               _v dollar volume, _inc summed borrower income
+                               ($000s) over the _incn loans reporting income
     refi_n, refi_v             rate/term refinancings   (loan_purpose 31)
     cashout_n, cashout_v       cash-out refinancings    (loan_purpose 32)
     total_n, total_v           all originated loans
@@ -85,6 +90,23 @@ def main():
                     else:
                         c["purch_nonoo_n"] += 1
                         c["purch_nonoo_v"] += amt
+                    # self-reported borrower ethnicity + income, purchases only
+                    eth = (r.get("derived_ethnicity") or "").strip()
+                    if eth == "Hispanic or Latino":
+                        ek = "hisp"
+                    elif eth == "Not Hispanic or Latino":
+                        ek = "nonhisp"
+                    else:
+                        ek = None   # Joint / Not Available / Free Form excluded
+                    if ek:
+                        c[f"purch_{ek}_n"] += 1
+                        c[f"purch_{ek}_v"] += amt
+                        try:
+                            inc = float(r.get("income") or "")
+                            c[f"purch_{ek}_inc"] += inc  # $000s
+                            c[f"purch_{ek}_incn"] += 1
+                        except ValueError:
+                            pass
                 elif purpose == "31":
                     c["refi_n"] += 1
                     c["refi_v"] += amt
@@ -94,6 +116,8 @@ def main():
     print(f"loan rows: {n_rows:,} | skipped (no/unmapped tract): {n_skip_tract:,}")
 
     cols = ["purch_oo_n", "purch_oo_v", "purch_nonoo_n", "purch_nonoo_v",
+            "purch_hisp_n", "purch_hisp_v", "purch_hisp_inc", "purch_hisp_incn",
+            "purch_nonhisp_n", "purch_nonhisp_v", "purch_nonhisp_inc", "purch_nonhisp_incn",
             "refi_n", "refi_v", "cashout_n", "cashout_v", "total_n", "total_v"]
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", newline="", encoding="utf-8") as fh:
