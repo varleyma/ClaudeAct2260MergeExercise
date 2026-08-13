@@ -63,24 +63,23 @@ end
 local XT "Years since first investor purchase in tract"
 local YT "Effect on refi counts (100 x Poisson coef ~ %)"
 
+global FIG_NOTE1  "ppmlhdfe with tract and year FE, never-treated controls, clustered by tract; endpoints binned at -4 and +3."
+global FIG_NOTE2  "Consistent population 2012-2024: originated first-lien owner-occupied 1-4 family refinancings (all refi types -- the cash-out split does not exist before 2018)."
+
 use `coefs', clear
-global FIG_TESTS  refi_hisp_n refi_nonhisp_n
-global FIG_LABELS `""Hispanic borrowers" "Non-Hispanic borrowers""'
-global FIG_TITLE  Refinancings by borrower ethnicity (2012-2024 panel)
+global FIG_TESTS  refi_hisp_n
+global FIG_LABELS `""Hispanic borrowers""'
+global FIG_TITLE  Refinancings by Hispanic borrowers (2012-2024 panel)
 global FIG_YT     `YT'
 global FIG_XT     `XT'
-global FIG_NOTE1  "ppmlhdfe with tract and year FE, never-treated controls, clustered by tract; endpoints binned at -4 and +3."
-global FIG_NOTE2  "Consistent population: originated first-lien owner-occupied 1-4 family refinancings (all refi types -- the cash-out split does not exist before 2018)."
-drawfig, out(figH10_refi_eth_long)
+drawfig, out(figH10_refi_hisp)
 
 use `coefs', clear
-global FIG_TESTS  cashout_hisp_n cashout_nonhisp_n
-global FIG_LABELS `""Hispanic borrowers" "Non-Hispanic borrowers""'
-global FIG_TITLE  Cash-out refinancings by borrower ethnicity (2018-2024 only)
-global FIG_YT     "Effect on cash-out counts (100 x Poisson coef ~ %)"
+global FIG_TESTS  refi_nonhisp_n
+global FIG_LABELS `""Non-Hispanic borrowers""'
+global FIG_TITLE  Refinancings by non-Hispanic borrowers (2012-2024 panel)
+global FIG_YT     `YT'
 global FIG_XT     `XT'
-global FIG_NOTE1  "ppmlhdfe with tract and year FE, never-treated controls, clustered by tract; endpoints binned at -4 and +3."
-global FIG_NOTE2  "2018-2024 panel only: HMDA first distinguishes cash-out from rate/term refis in 2018 reporting. Deep pre horizons rest on late adopters."
-drawfig, out(figH11_cashout_eth)
+drawfig, out(figH11_refi_nonhisp)
 
-di as result _n "Refi figures: figH10_refi_eth_long, figH11_cashout_eth"
+di as result _n "Refi figures: figH10_refi_hisp, figH11_refi_nonhisp"
