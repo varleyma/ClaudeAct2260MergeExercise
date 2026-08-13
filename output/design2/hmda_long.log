@@ -1,0 +1,600 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/hmda_long.log
+  log type:  text
+ opened on:  13 Aug 2026, 08:39:08
+
+. 
+. tempname pf
+
+. postfile `pf' str20 test double h b se using "$OUT/_hl.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/_hl.dta not found)
+
+. 
+. capture program drop grabes
+
+. program define grabes
+  1.     args pf test
+  2.     post `pf' ("`test'") (-6) (_b[Dm6]) (_se[Dm6])
+  3.     post `pf' ("`test'") (-5) (_b[Dm5]) (_se[Dm5])
+  4.     post `pf' ("`test'") (-4) (_b[Dm4]) (_se[Dm4])
+  5.     post `pf' ("`test'") (-3) (_b[Dm3]) (_se[Dm3])
+  6.     post `pf' ("`test'") (-2) (_b[Dm2]) (_se[Dm2])
+  7.     post `pf' ("`test'") (-1) (0) (.)
+  8.     post `pf' ("`test'") (0)  (_b[D0]) (_se[D0])
+  9.     post `pf' ("`test'") (1)  (_b[D1]) (_se[D1])
+ 10.     post `pf' ("`test'") (2)  (_b[D2]) (_se[D2])
+ 11.     post `pf' ("`test'") (3)  (_b[D3]) (_se[D3])
+ 12. end
+
+. 
+. *---- A. counts by ethnicity ------------------------------------------------
+> --
+. foreach v in purch_hisp_n purch_nonhisp_n {
+  2.     use `panel', clear
+  3.     di as result _n "===== POISSON `v' (2012-2024) ====="
+  4.     ppmlhdfe `v' `DVARS', absorb(tract_num year) vce(cluster tract_num)
+  5.     grabes `pf' `v'
+  6.     di as result _n "===== POISSON pooled `v' ====="
+  7.     ppmlhdfe `v' treat, absorb(tract_num year) vce(cluster tract_num)
+  8.     post `pf' ("`v'") (99) (_b[treat]) (_se[treat])
+  9. }
+
+===== POISSON purch_hisp_n (2012-2024) =====
+(dropped 403 observations that are either singletons or separated by a fixed ef
+> fect)
+Iteration 1:   deviance = 4.0956e+04  eps = .         iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -1.99  P   
+Iteration 2:   deviance = 3.6469e+04  eps = 1.23e-01  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -2.95      
+Iteration 3:   deviance = 3.6024e+04  eps = 1.24e-02  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.85      
+Iteration 4:   deviance = 3.5957e+04  eps = 1.85e-03  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.61      
+Iteration 5:   deviance = 3.5950e+04  eps = 2.11e-04  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.09      
+Iteration 6:   deviance = 3.5950e+04  eps = 1.09e-05  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.24      
+Iteration 7:   deviance = 3.5950e+04  eps = 6.60e-08  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -5.26   S  
+Iteration 8:   deviance = 3.5950e+04  eps = 3.19e-12  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -5.26   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 17 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =     12,350
+Absorbing 2 HDFE groups                           Residual df     =        949
+Statistics robust to heteroskedasticity           Wald chi2(9)    =      12.45
+Deviance             =  35949.50857               Prob > chi2     =     0.1893
+Log pseudolikelihood = -39655.04076               Pseudo R2       =     0.5499
+
+Number of clusters (tract_num)=       950
+                            (Std. err. adjusted for 950 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+purch_hisp_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm6 |  -.1748525   .0710934    -2.46   0.014    -.3141929   -.0355121
+         Dm5 |  -.1163569   .0705013    -1.65   0.099    -.2545369    .0218231
+         Dm4 |   -.098376   .0605511    -1.62   0.104     -.217054     .020302
+         Dm3 |  -.0825466   .0590179    -1.40   0.162    -.1982196    .0331264
+         Dm2 |  -.0524942   .0433974    -1.21   0.226    -.1375516    .0325631
+          D0 |  -.0090996   .0437017    -0.21   0.835    -.0947534    .0765542
+          D1 |  -.0799632   .0530412    -1.51   0.132    -.1839221    .0239957
+          D2 |  -.0944209   .0559158    -1.69   0.091    -.2040138    .0151721
+          D3 |  -.1319763   .0719665    -1.83   0.067     -.273028    .0090755
+       _cons |   2.768706   .0141302   195.94   0.000     2.741012    2.796401
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       950         950           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== POISSON pooled purch_hisp_n =====
+(dropped 403 observations that are either singletons or separated by a fixed ef
+> fect)
+Iteration 1:   deviance = 4.1109e+04  eps = .         iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -1.98  P   
+Iteration 2:   deviance = 3.6599e+04  eps = 1.23e-01  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -2.95      
+Iteration 3:   deviance = 3.6153e+04  eps = 1.23e-02  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.85      
+Iteration 4:   deviance = 3.6087e+04  eps = 1.85e-03  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.61      
+Iteration 5:   deviance = 3.6079e+04  eps = 2.10e-04  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.08      
+Iteration 6:   deviance = 3.6079e+04  eps = 1.08e-05  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.24      
+Iteration 7:   deviance = 3.6079e+04  eps = 6.58e-08  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -5.26   S  
+Iteration 8:   deviance = 3.6079e+04  eps = 3.18e-12  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -5.26   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 17 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =     12,350
+Absorbing 2 HDFE groups                           Residual df     =        949
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       0.02
+Deviance             =  36078.77497               Prob > chi2     =     0.8889
+Log pseudolikelihood = -39719.67396               Pseudo R2       =     0.5492
+
+Number of clusters (tract_num)=       950
+                            (Std. err. adjusted for 950 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+purch_hisp_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0063442   .0454275     0.14   0.889     -.082692    .0953805
+       _cons |   2.733111   .0061775   442.43   0.000     2.721004    2.745219
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       950         950           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== POISSON purch_nonhisp_n (2012-2024) =====
+(dropped 5720 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 5.0176e+03  eps = .         iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -2.98  P   
+Iteration 2:   deviance = 4.5514e+03  eps = 1.02e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.45      
+Iteration 3:   deviance = 4.5312e+03  eps = 4.47e-03  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.61      
+Iteration 4:   deviance = 4.5311e+03  eps = 1.90e-05  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.62      
+Iteration 5:   deviance = 4.5311e+03  eps = 7.37e-10  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -3.62   S  
+Iteration 6:   deviance = 4.5311e+03  eps = 2.05e-16  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -3.62   S  
+Iteration 7:   deviance = 4.5311e+03  eps = 0.00e+00  iters = 1    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -3.62   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 7 iterations and 17 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      7,033
+Absorbing 2 HDFE groups                           Residual df     =        540
+Statistics robust to heteroskedasticity           Wald chi2(9)    =      16.77
+Deviance             =  4531.082827               Prob > chi2     =     0.0524
+Log pseudolikelihood = -3775.688722               Pseudo R2       =     0.3538
+
+Number of clusters (tract_num)=       541
+                            (Std. err. adjusted for 541 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+purch_non~_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm6 |  -.3330429   .1864561    -1.79   0.074    -.6984901    .0324043
+         Dm5 |  -.0435787   .1754688    -0.25   0.804    -.3874912    .3003338
+         Dm4 |  -.3476101   .2136741    -1.63   0.104    -.7664036    .0711834
+         Dm3 |   .1062294   .1797488     0.59   0.555    -.2460719    .4585306
+         Dm2 |  -.0539718   .1916551    -0.28   0.778    -.4296089    .3216652
+          D0 |   .3039731   .1693537     1.79   0.073    -.0279539    .6359002
+          D1 |   .2398414   .1839921     1.30   0.192    -.1207764    .6004593
+          D2 |   .3100053    .215962     1.44   0.151    -.1132724     .733283
+          D3 |   .4108725   .1916909     2.14   0.032     .0351653    .7865796
+       _cons |  -.3806774   .1002149    -3.80   0.000    -.5770949   -.1842599
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       541         541           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== POISSON pooled purch_nonhisp_n =====
+(dropped 5720 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 5.0260e+03  eps = .         iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -2.77  P   
+Iteration 2:   deviance = 4.5630e+03  eps = 1.01e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.23      
+Iteration 3:   deviance = 4.5430e+03  eps = 4.40e-03  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.41      
+Iteration 4:   deviance = 4.5430e+03  eps = 1.87e-05  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.43      
+Iteration 5:   deviance = 4.5430e+03  eps = 7.21e-10  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -3.43   S  
+Iteration 6:   deviance = 4.5430e+03  eps = 2.05e-16  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -3.43   S  
+Iteration 7:   deviance = 4.5430e+03  eps = 0.00e+00  iters = 1    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -3.43   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 7 iterations and 16 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      7,033
+Absorbing 2 HDFE groups                           Residual df     =        540
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       7.28
+Deviance             =  4542.959412               Prob > chi2     =     0.0070
+Log pseudolikelihood = -3781.627014               Pseudo R2       =     0.3527
+
+Number of clusters (tract_num)=       541
+                            (Std. err. adjusted for 541 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+purch_non~_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |    .373765   .1385441     2.70   0.007     .1022235    .6453065
+       _cons |  -.4091228   .0682054    -6.00   0.000    -.5428029   -.2754428
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       541         541           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. *---- B. borrower income ----------------------------------------------------
+> --
+. foreach v in lninc_all lninc_hisp {
+  2.     use `panel', clear
+  3.     di as result _n "===== OLS `v' (2012-2024) ====="
+  4.     reghdfe `v' `DVARS', absorb(tract_num year) vce(cluster tract_num)
+  5.     grabes `pf' `v'
+  6.     di as result _n "===== OLS pooled `v' ====="
+  7.     reghdfe `v' treat, absorb(tract_num year) vce(cluster tract_num)
+  8.     post `pf' ("`v'") (99) (_b[treat]) (_se[treat])
+  9. }
+
+===== OLS lninc_all (2012-2024) =====
+(dropped 12 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 2 HDFE groups                           F(   9,    937) =       3.39
+Statistics robust to heteroskedasticity           Prob > F        =     0.0004
+                                                  R-squared       =     0.6141
+                                                  Adj R-squared   =     0.5776
+                                                  Within R-sq.    =     0.0045
+Number of clusters (tract_num) =        938       Root MSE        =    31.0705
+
+                            (Std. err. adjusted for 938 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm6 |   -4.76041   2.619962    -1.82   0.070    -9.902083    .3812637
+         Dm5 |  -2.319908    3.07071    -0.76   0.450    -8.346172    3.706357
+         Dm4 |  -1.960167    2.97983    -0.66   0.511     -7.80808    3.887746
+         Dm3 |   -1.08235   2.989402    -0.36   0.717    -6.949048    4.784349
+         Dm2 |  -2.399231    3.34733    -0.72   0.474    -8.968362    4.169901
+          D0 |   7.046659   3.373429     2.09   0.037     .4263088    13.66701
+          D1 |   5.757112   3.399121     1.69   0.091    -.9136586    12.42788
+          D2 |   4.951443   3.530972     1.40   0.161    -1.978086    11.88097
+          D3 |   10.25993   3.204442     3.20   0.001     3.971214    16.54864
+       _cons |   383.9656    .524274   732.38   0.000     382.9367    384.9945
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       938         938           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== OLS pooled lninc_all =====
+(dropped 12 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 2 HDFE groups                           F(   1,    937) =      24.94
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.6138
+                                                  Adj R-squared   =     0.5776
+                                                  Within R-sq.    =     0.0037
+Number of clusters (tract_num) =        938       Root MSE        =    31.0710
+
+                            (Std. err. adjusted for 938 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   9.564814   1.915161     4.99   0.000     5.806312    13.32332
+       _cons |   383.3521   .1848144  2074.25   0.000     382.9894    383.7148
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       938         938           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== OLS lninc_hisp (2012-2024) =====
+(dropped 12 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,074
+Absorbing 2 HDFE groups                           F(   9,    937) =       1.84
+Statistics robust to heteroskedasticity           Prob > F        =     0.0568
+                                                  R-squared       =     0.5979
+                                                  Adj R-squared   =     0.5599
+                                                  Within R-sq.    =     0.0023
+Number of clusters (tract_num) =        938       Root MSE        =    30.0813
+
+                            (Std. err. adjusted for 938 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+  lninc_hisp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm6 |  -5.188631   2.543521    -2.04   0.042    -10.18029   -.1969738
+         Dm5 |  -2.676095   2.999221    -0.89   0.372    -8.562064    3.209874
+         Dm4 |  -3.157788   2.978269    -1.06   0.289    -9.002637    2.687061
+         Dm3 |  -.9060531    2.82023    -0.32   0.748    -6.440752    4.628646
+         Dm2 |  -4.431894   3.020599    -1.47   0.143    -10.35982    1.496028
+          D0 |   2.104302   2.705327     0.78   0.437    -3.204899    7.413503
+          D1 |   2.955712   3.148065     0.94   0.348    -3.222362    9.133786
+          D2 |   2.756743   3.334318     0.83   0.409    -3.786851    9.300338
+          D3 |   4.875936   3.178612     1.53   0.125    -1.362087    11.11396
+       _cons |   383.0247   .5132259   746.31   0.000     382.0174    384.0319
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       938         938           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== OLS pooled lninc_hisp =====
+(dropped 12 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,074
+Absorbing 2 HDFE groups                           F(   1,    937) =      11.62
+Statistics robust to heteroskedasticity           Prob > F        =     0.0007
+                                                  R-squared       =     0.5977
+                                                  Adj R-squared   =     0.5599
+                                                  Within R-sq.    =     0.0016
+Number of clusters (tract_num) =        938       Root MSE        =    30.0800
+
+                            (Std. err. adjusted for 938 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+  lninc_hisp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |    6.10375   1.790259     3.41   0.001     2.590368    9.617131
+       _cons |   382.2338   .1723331  2217.99   0.000     381.8956     382.572
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       938         938           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. *---- C. income dose --------------------------------------------------------
+> --
+. foreach g in hi5 lo14 {
+  2.     use `panel', clear
+  3.     if "`g'" == "hi5"  keep if nevertr | n_events >= 5
+  4.     if "`g'" == "lo14" keep if nevertr | inrange(n_events, 1, 4)
+  5.     di as result _n "===== OLS lninc_all dose `g' (2012-2024) ====="
+  6.     reghdfe lninc_all `DVARS', absorb(tract_num year) vce(cluster tract_nu
+> m)
+  7.     grabes `pf' inc_`g'
+  8.     di as result _n "===== OLS pooled lninc_all dose `g' ====="
+  9.     reghdfe lninc_all treat, absorb(tract_num year) vce(cluster tract_num)
+ 10.     post `pf' ("inc_`g'") (99) (_b[treat]) (_se[treat])
+ 11. }
+(2,483 observations deleted)
+
+===== OLS lninc_all dose hi5 (2012-2024) =====
+(dropped 12 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =      8,783
+Absorbing 2 HDFE groups                           F(   9,    746) =       2.81
+Statistics robust to heteroskedasticity           Prob > F        =     0.0029
+                                                  R-squared       =     0.5968
+                                                  Adj R-squared   =     0.5582
+                                                  Within R-sq.    =     0.0043
+Number of clusters (tract_num) =        747       Root MSE        =    31.1359
+
+                            (Std. err. adjusted for 747 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm6 |  -9.892283   7.911337    -1.25   0.212    -25.42342    5.638851
+         Dm5 |   4.991982   9.662539     0.52   0.606    -13.97702    23.96099
+         Dm4 |   -3.27629   9.361649    -0.35   0.726     -21.6546    15.10202
+         Dm3 |  -.6501195   9.298983    -0.07   0.944    -18.90541    17.60517
+         Dm2 |   .8020734   11.92848     0.07   0.946    -22.61532    24.21947
+          D0 |   13.63208   12.55033     1.09   0.278    -11.00609    38.27024
+          D1 |   13.97039   8.312606     1.68   0.093    -2.348489    30.28928
+          D2 |   11.81472   8.535919     1.38   0.167    -4.942564      28.572
+          D3 |   19.01745   7.532415     2.52   0.012     4.230196     33.8047
+       _cons |   380.0795   .3705064  1025.84   0.000     379.3521    380.8068
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       747         747           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== OLS pooled lninc_all dose hi5 =====
+(dropped 12 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =      8,783
+Absorbing 2 HDFE groups                           F(   1,    746) =      13.03
+Statistics robust to heteroskedasticity           Prob > F        =     0.0003
+                                                  R-squared       =     0.5964
+                                                  Adj R-squared   =     0.5583
+                                                  Within R-sq.    =     0.0036
+Number of clusters (tract_num) =        747       Root MSE        =    31.1323
+
+                            (Std. err. adjusted for 747 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   17.63992   4.885937     3.61   0.000     8.048097    27.23174
+       _cons |    380.011   .1885839  2015.08   0.000     379.6408    380.3812
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       747         747           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(572 observations deleted)
+
+===== OLS lninc_all dose lo14 (2012-2024) =====
+(dropped 12 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =     10,568
+Absorbing 2 HDFE groups                           F(   9,    893) =       2.28
+Statistics robust to heteroskedasticity           Prob > F        =     0.0160
+                                                  R-squared       =     0.5225
+                                                  Adj R-squared   =     0.4773
+                                                  Within R-sq.    =     0.0029
+Number of clusters (tract_num) =        894       Root MSE        =    30.2582
+
+                            (Std. err. adjusted for 894 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm6 |  -5.279992   2.690794    -1.96   0.050    -10.56101    .0010248
+         Dm5 |  -3.819661   3.166849    -1.21   0.228    -10.03499    2.395673
+         Dm4 |  -2.312561   3.087792    -0.75   0.454    -8.372735    3.747613
+         Dm3 |  -1.518715   3.095308    -0.49   0.624    -7.593641    4.556211
+         Dm2 |  -3.121495   3.245225    -0.96   0.336     -9.49065    3.247661
+          D0 |   5.577398   2.864766     1.95   0.052    -.0450604    11.19986
+          D1 |   3.735127   3.669131     1.02   0.309    -3.465997    10.93625
+          D2 |   3.069929   3.882791     0.79   0.429    -4.550531    10.69039
+          D3 |   6.638623   3.291841     2.02   0.044     .1779773    13.09927
+       _cons |   380.0844    .458819   828.40   0.000     379.1839    380.9849
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       894         894           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== OLS pooled lninc_all dose lo14 =====
+(dropped 12 singleton observations)
+(MWFE estimator converged in 5 iterations)
+
+HDFE Linear regression                            Number of obs   =     10,568
+Absorbing 2 HDFE groups                           F(   1,    893) =      15.41
+Statistics robust to heteroskedasticity           Prob > F        =     0.0001
+                                                  R-squared       =     0.5222
+                                                  Adj R-squared   =     0.4774
+                                                  Within R-sq.    =     0.0022
+Number of clusters (tract_num) =        894       Root MSE        =    30.2554
+
+                            (Std. err. adjusted for 894 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+   lninc_all | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   7.872633   2.005582     3.93   0.000     3.936428    11.80884
+       _cons |   379.3648   .1387283  2734.59   0.000     379.0926    379.6371
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       894         894           0    *|
+        year |        13           1          12     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. postclose `pf'
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/hmda_long.log
+  log type:  text
+ closed on:  13 Aug 2026, 08:39:16
+-------------------------------------------------------------------------------
