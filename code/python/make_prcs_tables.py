@@ -163,6 +163,10 @@ def balance_table():
 def ladder_table():
     cr = {(r["outcome"], int(f(r["spec"]))): r
           for r in load_csv(os.path.join(O2, "controls_robustness.csv"))}
+    _ring = os.path.join(REPO, "output", "design1", "controls_robustness_ring.csv")
+    if os.path.exists(_ring):
+        for r in load_csv(_ring):
+            cr[(r["outcome"], int(f(r["spec"])))] = r
 
     def bse(o, s, scale=1.0):
         r = cr[(o, s)]
@@ -186,16 +190,22 @@ def ladder_table():
             "purchase-borrower income (HMDA, 2012--2024), both scaled by 100 "
             "(OLS). Panel B: purchase origination counts by borrower "
             "ethnicity (Poisson; coefficients $\\times$100 $\\approx$ percent "
-            "effects, pseudo R-squared reported). Robust standard errors are "
-            "clustered at the tract level and reported in parentheses. "
-            + SIGNOTE)
+            "effects, pseudo R-squared reported). Panel C: the ring design's "
+            "event$\\times$ring cell panel (near ring $\\times$ post-event "
+            "indicator; cell fixed effects; the county and 2010 controls are "
+            "the event's municipio and tract), for cell mean log price "
+            "($\\times$100) and the net Hispanic-to-non-Hispanic ownership "
+            "conversion rate per classified sale (percentage points). Robust "
+            "standard errors are clustered at the tract (Panels A--B) or "
+            "cell (Panel C) level and reported in parentheses. " + SIGNOTE)
 
     lines = ["\\begin{table}[H]", "\\centering",
              f"\\caption{{\\textbf{{Tract-level treatment effects are robust to county-year shocks and baseline-trend controls}} {note}}}",
              "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccccc}",
              "\\toprule\\midrule"]
 
-    def panel(title, o1, o1lab, o2, o2lab, coef_lab, scale1, scale2, r2lab):
+    def panel(title, o1, o1lab, o2, o2lab, coef_lab, scale1, scale2, r2lab,
+              felabel="Tract FE"):
         out = [f" & \\multicolumn{{3}}{{c}}{{\\textit{{{o1lab}}}}} & \\multicolumn{{3}}{{c}}{{\\textit{{{o2lab}}}}} \\\\",
                "\\cmidrule(lr){2-4} \\cmidrule(lr){5-7}",
                " & (1) & (2) & (3) & (1) & (2) & (3) \\\\", "\\midrule"]
@@ -211,7 +221,7 @@ def ladder_table():
         r2 = [stat(o, s, "r2", "{:.3f}") for o in (o1, o2) for s in (1, 2, 3)]
         out.append("    Observations & " + " & ".join(obs) + " \\\\")
         out.append(f"    {r2lab} & " + " & ".join(r2) + " \\\\")
-        out.append("    Tract FE & Yes & Yes & Yes & Yes & Yes & Yes \\\\")
+        out.append(f"    {felabel} & Yes & Yes & Yes & Yes & Yes & Yes \\\\")
         out.append("    Year FE & Yes & No & No & Yes & No & No \\\\")
         out.append("    County-Year FE & No & Yes & Yes & No & Yes & Yes \\\\")
         out.append("    2010 Controls $\\times$ Post & No & No & Yes & No & No & Yes \\\\")
@@ -224,6 +234,12 @@ def ladder_table():
               "\\multicolumn{7}{l}{\\textbf{Panel B: purchase originations by borrower ethnicity (Poisson)}} \\\\"]
     lines += panel("B", "purch_hisp_n", "Hispanic Purchases", "purch_nonhisp_n",
                    "Non-Hispanic Purchases", "Treated", 100, 100, "Pseudo R-squared")
+    if ("ring_lnp", 1) in cr:
+        lines += ["\\midrule",
+                  "\\multicolumn{7}{l}{\\textbf{Panel C: ring design, event$\\times$ring cells (OLS)}} \\\\"]
+        lines += panel("C", "ring_lnp", "100 $\\times$ Log(Price)", "ring_netin",
+                       "Net H$\\to$NH Conversion (pp)", "Near $\\times$ Post", 100, 100,
+                       "R-squared", felabel="Cell FE")
     lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
               "\\label{tab:controls_robustness}", "\\end{table}"]
     with open(os.path.join(OUT, "tab_controls_robustness.tex"), "w", encoding="utf-8") as fh:

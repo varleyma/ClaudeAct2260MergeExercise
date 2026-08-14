@@ -1,0 +1,240 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/controls_robustness_ring.log
+  log type:  text
+ opened on:  14 Aug 2026, 16:22:31
+
+. 
+. tempname pf
+
+. postfile `pf' str20 outcome double spec b se r2 nobs using "$OUT/_crr.dta", r
+> eplace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/_crr.dta not found)
+
+. 
+. foreach y in lnp netin {
+  2.     forvalues s = 1/3 {
+  3.         if `s' == 1 local abs absorb(cellid tt)
+  4.         else        local abs absorb(cellid cyear)
+  5.         local rhs treat
+  6.         if `s' == 3 local rhs treat $ZP
+  7.         di as result _n "===== ring `y' spec `s' ====="
+  8.         reghdfe `y' `rhs', `abs' vce(cluster cellid)
+  9.         post `pf' ("ring_`y'") (`s') (_b[treat]) (_se[treat]) (e(r2)) (e(N
+> ))
+ 10.     }
+ 11. }
+
+===== ring lnp spec 1 =====
+(dropped 12 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     23,452
+Absorbing 2 HDFE groups                           F(   1,   2377) =      13.88
+Statistics robust to heteroskedasticity           Prob > F        =     0.0002
+                                                  R-squared       =     0.7833
+                                                  Adj R-squared   =     0.7586
+                                                  Within R-sq.    =     0.0010
+Number of clusters (cellid)  =      2,378         Root MSE        =     0.4511
+
+                             (Std. err. adjusted for 2,378 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         lnp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0505062   .0135574     3.73   0.000     .0239206    .0770918
+       _cons |   12.45786   .0028436  4380.96   0.000     12.45229    12.46344
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2378        2378           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== ring lnp spec 2 =====
+(dropped 155 singleton observations)
+(MWFE estimator converged in 16 iterations)
+
+HDFE Linear regression                            Number of obs   =     23,309
+Absorbing 2 HDFE groups                           F(   1,   2371) =      15.42
+Statistics robust to heteroskedasticity           Prob > F        =     0.0001
+                                                  R-squared       =     0.8123
+                                                  Adj R-squared   =     0.7840
+                                                  Within R-sq.    =     0.0011
+Number of clusters (cellid)  =      2,372         Root MSE        =     0.4240
+
+                             (Std. err. adjusted for 2,372 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         lnp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0483338   .0123068     3.93   0.000     .0242005     .072467
+       _cons |   12.46676   .0025956  4803.08   0.000     12.46167    12.47185
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2372        2372           0    *|
+       cyear |       683           1         682     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== ring lnp spec 3 =====
+(dropped 158 singleton observations)
+(MWFE estimator converged in 16 iterations)
+
+HDFE Linear regression                            Number of obs   =     21,313
+Absorbing 2 HDFE groups                           F(  11,   2171) =      14.70
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.8104
+                                                  Adj R-squared   =     0.7811
+                                                  Within R-sq.    =     0.0071
+Number of clusters (cellid)  =      2,172         Root MSE        =     0.4295
+
+                             (Std. err. adjusted for 2,172 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         lnp | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0314577   .0129425     2.43   0.015     .0060766    .0568387
+zp_med_hh_~c |   .0390957   .0243617     1.60   0.109     -.008679    .0868704
+zp_med_value |    .078562   .0163553     4.80   0.000     .0464884    .1106356
+ zp_med_rent |   .0190395   .0153451     1.24   0.215    -.0110531    .0491321
+  zp_poverty |  -.0188107   .0201184    -0.94   0.350     -.058264    .0206426
+ zp_ba_share |   -.017968   .0217637    -0.83   0.409    -.0606478    .0247118
+zp_renter_~e |    .086785   .0210834     4.12   0.000     .0454392    .1281307
+  zp_vacancy |  -.0909366    .030644    -2.97   0.003    -.1510313   -.0308419
+zp_seasona~e |   -.032831    .032071    -1.02   0.306     -.095724     .030062
+zp_mainlan~e |  -.0223489   .0107811    -2.07   0.038    -.0434912   -.0012067
+    zp_lnpop |  -.0101149   .0152967    -0.66   0.509    -.0401126    .0198828
+       _cons |   12.46311   .0027379  4552.07   0.000     12.45774    12.46848
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2172        2172           0    *|
+       cyear |       679           1         678     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== ring netin spec 1 =====
+(dropped 25 singleton observations)
+(MWFE estimator converged in 8 iterations)
+
+HDFE Linear regression                            Number of obs   =     21,960
+Absorbing 2 HDFE groups                           F(   1,   2344) =       6.06
+Statistics robust to heteroskedasticity           Prob > F        =     0.0139
+                                                  R-squared       =     0.2359
+                                                  Adj R-squared   =     0.1437
+                                                  Within R-sq.    =     0.0005
+Number of clusters (cellid)  =      2,345         Root MSE        =     0.2324
+
+                             (Std. err. adjusted for 2,345 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+       netin | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0183736   .0074639     2.46   0.014     .0037371    .0330101
+       _cons |   .0165953   .0014754    11.25   0.000      .013702    .0194886
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2345        2345           0    *|
+          tt |        21           1          20     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== ring netin spec 2 =====
+(dropped 196 singleton observations)
+(MWFE estimator converged in 16 iterations)
+
+HDFE Linear regression                            Number of obs   =     21,789
+Absorbing 2 HDFE groups                           F(   1,   2335) =       6.01
+Statistics robust to heteroskedasticity           Prob > F        =     0.0143
+                                                  R-squared       =     0.3111
+                                                  Adj R-squared   =     0.2022
+                                                  Within R-sq.    =     0.0005
+Number of clusters (cellid)  =      2,336         Root MSE        =     0.2244
+
+                             (Std. err. adjusted for 2,336 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+       netin | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0176518   .0072012     2.45   0.014     .0035303    .0317732
+       _cons |   .0168616   .0014327    11.77   0.000     .0140521    .0196711
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2336        2336           0    *|
+       cyear |       640           1         639     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== ring netin spec 3 =====
+(dropped 200 singleton observations)
+(MWFE estimator converged in 16 iterations)
+
+HDFE Linear regression                            Number of obs   =     19,847
+Absorbing 2 HDFE groups                           F(  11,   2136) =       1.76
+Statistics robust to heteroskedasticity           Prob > F        =     0.0559
+                                                  R-squared       =     0.3131
+                                                  Adj R-squared   =     0.2012
+                                                  Within R-sq.    =     0.0013
+Number of clusters (cellid)  =      2,137         Root MSE        =     0.2236
+
+                             (Std. err. adjusted for 2,137 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+       netin | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .0155151   .0074436     2.08   0.037     .0009176    .0301127
+zp_med_hh_~c |   .0005491   .0102621     0.05   0.957    -.0195757    .0206738
+zp_med_value |   .0093323   .0084253     1.11   0.268    -.0071903    .0258549
+ zp_med_rent |  -.0132913    .008155    -1.63   0.103    -.0292837    .0027012
+  zp_poverty |  -.0086823   .0118052    -0.74   0.462    -.0318333    .0144686
+ zp_ba_share |  -.0083664   .0108798    -0.77   0.442    -.0297026    .0129697
+zp_renter_~e |   -.002949   .0112131    -0.26   0.793    -.0249386    .0190407
+  zp_vacancy |   .0094123   .0161825     0.58   0.561    -.0223229    .0411475
+zp_seasona~e |  -.0246728   .0185655    -1.33   0.184    -.0610811    .0117354
+zp_mainlan~e |   .0080607   .0055986     1.44   0.150    -.0029186      .01904
+    zp_lnpop |   .0167989   .0080995     2.07   0.038     .0009152    .0326826
+       _cons |   .0208716   .0014985    13.93   0.000     .0179329    .0238103
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+      cellid |      2137        2137           0    *|
+       cyear |       634           1         633     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. postclose `pf'
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/controls_robustness_ring.log
+  log type:  text
+ closed on:  14 Aug 2026, 16:22:35
+-------------------------------------------------------------------------------

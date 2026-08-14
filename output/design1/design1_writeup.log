@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 16:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 16:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -570,59 +570,61 @@ Overfull \hbox (64.97578pt too wide) in paragraph at lines 35--37
 [13] (../tables/tab_controls_robustness.tex)
 
 [14]
-<../design2/figT1_lnhp_es.png, id=210, 2007.5pt x 1204.5pt>
-File: ../design2/figT1_lnhp_es.png Graphic file (type png)
-<use ../design2/figT1_lnhp_es.png>
-Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 427.
-(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figT2_dose_es.png, id=211, 2007.5pt x 1204.5pt>
-File: ../design2/figT2_dose_es.png Graphic file (type png)
-<use ../design2/figT2_dose_es.png>
-Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 436.
-(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
+Overfull \vbox (176.57518pt too high) has occurred while \output is active []
+
 
 
 [15]
-
-[16 <../design2/figT1_lnhp_es.png (PNG copy)> <../design2/figT2_dose_es.png (PN
-G copy)>]
-<../design2/figT4_reconciliation.png, id=221, 2007.5pt x 1204.5pt>
+<../design2/figT1_lnhp_es.png, id=214, 2007.5pt x 1204.5pt>
+File: ../design2/figT1_lnhp_es.png Graphic file (type png)
+<use ../design2/figT1_lnhp_es.png>
+Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 434.
+(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
+<../design2/figT2_dose_es.png, id=215, 2007.5pt x 1204.5pt>
+File: ../design2/figT2_dose_es.png Graphic file (type png)
+<use ../design2/figT2_dose_es.png>
+Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 443.
+(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
+<../design2/figT4_reconciliation.png, id=217, 2007.5pt x 1204.5pt>
 File: ../design2/figT4_reconciliation.png Graphic file (type png)
 <use ../design2/figT4_reconciliation.png>
 Package pdftex.def Info: ../design2/figT4_reconciliation.png  used on input lin
-e 459.
+e 466.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
-[17 <../design2/figT4_reconciliation.png (PNG copy)>]
+[16 <../design2/figT1_lnhp_es.png (PNG copy)>]
+
+[17 <../design2/figT2_dose_es.png (PNG copy)> <../design2/figT4_reconciliation.
+png (PNG copy)>]
 
 [18]
-<../design2/figH7_income_long.png, id=234, 2007.5pt x 1204.5pt>
+<../design2/figH7_income_long.png, id=235, 2007.5pt x 1204.5pt>
 File: ../design2/figH7_income_long.png Graphic file (type png)
 <use ../design2/figH7_income_long.png>
 Package pdftex.def Info: ../design2/figH7_income_long.png  used on input line 5
-67.
+81.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figH8_income_dose_long.png, id=235, 2007.5pt x 1204.5pt>
+<../design2/figH8_income_dose_long.png, id=236, 2007.5pt x 1204.5pt>
 File: ../design2/figH8_income_dose_long.png Graphic file (type png)
 <use ../design2/figH8_income_dose_long.png>
 Package pdftex.def Info: ../design2/figH8_income_dose_long.png  used on input l
-ine 578.
+ine 592.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
 [19 <../design2/figH7_income_long.png (PNG copy)>]
-<../design2/figH9b_purch_nonhisp.png, id=249, 2007.5pt x 1204.5pt>
+<../design2/figH9b_purch_nonhisp.png, id=250, 2007.5pt x 1204.5pt>
 File: ../design2/figH9b_purch_nonhisp.png Graphic file (type png)
 <use ../design2/figH9b_purch_nonhisp.png>
 Package pdftex.def Info: ../design2/figH9b_purch_nonhisp.png  used on input lin
-e 621.
+e 635.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figH11_refi_nonhisp.png, id=250, 2007.5pt x 1204.5pt>
+<../design2/figH11_refi_nonhisp.png, id=251, 2007.5pt x 1204.5pt>
 File: ../design2/figH11_refi_nonhisp.png Graphic file (type png)
 <use ../design2/figH11_refi_nonhisp.png>
 Package pdftex.def Info: ../design2/figH11_refi_nonhisp.png  used on input line
- 630.
+ 644.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -641,12 +643,12 @@ Package rerunfilecheck Info: File `design1_writeup.out' has not changed.
  ) 
 Here is how much of TeX's memory you used:
  12327 strings out of 473579
- 194838 string characters out of 5732262
- 619161 words of memory out of 5000000
+ 194852 string characters out of 5732262
+ 621630 words of memory out of 5000000
  34987 multiletter control sequences out of 15000+600000
- 573098 words of font info for 93 fonts, out of 8000000 for 9000
+ 572763 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,10n,79p,1345b,595s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,79p,1707b,595s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
 live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2024/texmf-di
@@ -664,12 +666,11 @@ m/cmsy9.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.p
 fb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb><c:/tex
 live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/texlive/2024/tex
-mf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texlive/2024/texmf-dist/fo
-nts/type1/public/cm-super/sfrm1095.pfb>
-Output written on design1_writeup.pdf (22 pages, 3396689 bytes).
+mf-dist/fonts/type1/public/cm-super/sfrm1095.pfb>
+Output written on design1_writeup.pdf (22 pages, 3395587 bytes).
 PDF statistics:
- 382 PDF objects out of 1000 (max. 8388607)
- 292 compressed objects within 3 object streams
- 76 named destinations out of 1000 (max. 500000)
+ 379 PDF objects out of 1000 (max. 8388607)
+ 291 compressed objects within 3 object streams
+ 77 named destinations out of 1000 (max. 500000)
  269 words of extra memory for PDF output out of 10000 (max. 10000000)
 
