@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{HMDA purchase originations (fig.\ H1)} Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{HMDA purchase originations (fig.\ H1)} Poisson (PPML) origination counts; the Treated coefficient is the pooled treat indicator (1 from the tract's first identified purchase onward), never-treated tracts as controls. 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
 \begin{tabular}{lcc}
@@ -8,12 +8,8 @@
  & Owner-occ.\ purch. & Non-owner purch. \\
  & (1) & (2) \\
 \midrule
-    Pooled pre & -9.23* & +3.53 \\
- & (4.80) & (8.33) \\
-    Pooled post & -0.55 & +3.03 \\
+    Treated & -0.55 & 3.03 \\
  & (5.44) & (11.27) \\
-    Post $-$ pre & +8.68 & -0.50 \\
- & (7.25) & (14.01) \\
  &  &  \\
     Observations & 6,622 & 6,622 \\
     R-squared & 0.581 & 0.580 \\

@@ -145,7 +145,7 @@ def balance_table():
             cc.append(r["tract_geoid"][:5])
         braw, praw = _diff_reg(yy, tt, cc, False)
         badj, padj = _diff_reg(yy, tt, cc, True)
-        dfmt = "{:+,.0f}" if fmt.endswith("0f}") else "{:+.3f}"
+        dfmt = "{:,.0f}" if fmt.endswith("0f}") else "{:.3f}"
         cells = [fmt.format(m1), fmt.format(s1), f"{n1:,}", "",
                  fmt.format(m0), fmt.format(s0), f"{n0:,}", "",
                  dfmt.format(braw) + pstars(praw), "",
@@ -171,7 +171,7 @@ def ladder_table():
     def bse(o, s, scale=1.0):
         r = cr[(o, s)]
         b, se = f(r["b"]) * scale, f(r["se"]) * scale
-        return f"{b:+.2f}{stars(b, se)}", f"({se:.2f})"
+        return f"{b:.2f}{stars(b, se)}", f"({se:.2f})"
 
     def stat(o, s, key, fmt):
         return fmt.format(f(cr[(o, s)][key]))
@@ -257,7 +257,7 @@ def ladder_table():
              "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccccc}",
              "\\toprule\\midrule"]
     lines += panel("A", "ring_lnp", "100 $\\times$ Log(Price)", "ring_netin",
-                   "Net H$\\to$NH Conversion (pp)", "Near $\\times$ Post", 100, 100,
+                   "Net H$\\to$NH Conversion (pp)", "Treated", 100, 100,
                    "R-squared", felabel="Cell FE")
     lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
               "\\label{tab:ring_controls_robustness}", "\\end{table}"]

@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{HMDA refinancing originations (fig.\ H2)} Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{HMDA refinancing originations (fig.\ H2)} Poisson (PPML) origination counts; the Treated coefficient is the pooled treat indicator (1 from the tract's first identified purchase onward), never-treated tracts as controls. 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
 \begin{tabular}{lcc}
@@ -8,12 +8,8 @@
  & Rate/term refi & Cash-out refi \\
  & (1) & (2) \\
 \midrule
-    Pooled pre & -17.51*** & -23.34*** \\
- & (5.25) & (6.23) \\
-    Pooled post & +11.12 & +8.95 \\
+    Treated & 11.12 & 8.95 \\
  & (6.87) & (7.33) \\
-    Post $-$ pre & +28.64*** & +32.28*** \\
- & (8.65) & (9.62) \\
  &  &  \\
     Observations & 5,873 & 6,118 \\
     R-squared & 0.498 & 0.554 \\

@@ -40,7 +40,7 @@ def cell(b, se, scale=1.0):
     if b is None:
         return ("--", "")
     b2, se2 = b * scale, (se * scale if se is not None else None)
-    top = f"{b2:+.2f}{stars(b2, se2)}"
+    top = f"{b2:.2f}{stars(b2, se2)}"
     bot = f"({se2:.2f})" if se2 is not None else ""
     return (top, bot)
 
@@ -81,6 +81,14 @@ class Spec:
             se = math.sqrt(self.post_se**2 + self.pre_se**2)
         return (self.post - self.pre, se)
 
+    def treated(self):
+        # single reported coefficient: PMD post-pre where available, else the
+        # arithmetic post-pre, else the pooled treat coefficient itself
+        b, se = self.postpre()
+        if b is not None:
+            return (b, se)
+        return (self.post, self.post_se)
+
 
 SIGNOTE = ("Statistical significance levels are indicated as follows: "
            "*** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.")
@@ -114,9 +122,7 @@ def emit_table(fname, title, specs, fe_rows, note, scale=1.0, extra_rows=()):
         if any(bots):
             lines.append(" & " + " & ".join(bots) + " \\\\")
 
-    statrows("Pooled pre", [(s.pre, s.pre_se) for s in specs])
-    statrows("Pooled post", [(s.post, s.post_se) for s in specs])
-    statrows("Post $-$ pre", [s.postpre() for s in specs])
+    statrows("Treated", [s.treated() for s in specs])
     for label in extra_rows:
         statrows(label, [s.extra.get(label, (None, None)) for s in specs])
     lines.append(" & " * ncol + " \\\\")
@@ -135,9 +141,8 @@ def emit_table(fname, title, specs, fe_rows, note, scale=1.0, extra_rows=()):
     print("wrote", fname)
 
 
-NOTE_LPDID = ("LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. "
-              "Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing "
-              "(Dube, Girardi, Jord\\`a and Taylor 2023): dependent variable "
+NOTE_LPDID = ("The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via "
+              "pre-mean differencing (Dube, Girardi, Jord\\`a and Taylor 2023): dependent variable "
               "$\\frac{1}{4}\\sum_{h=0}^{3} y_{t+h} - \\frac{1}{4}\\sum_{\\tau=t-4}^{t-1} y_{\\tau}$ "
               "on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and "
               "Observations come from that regression. Coefficients are 100$\\times$log points "
@@ -385,15 +390,14 @@ def main():
             sp.pmd = (sp.pmd[0] * 100, sp.pmd[1] * 100 if sp.pmd[1] else None)
     emit_table("tab_figD12_salelevel.tex",
                "Estimation-approach robustness (fig.\\ D12)", specs, FE_SL,
-               "The Post$-$pre row is the comparable differential across estimators. "
-               "Column (1): cell-level LP-DiD, pooled never-treated controls; post$-$pre, R$^2$ and N "
+               "The Treated row is the comparable post$-$pre differential across estimators. "
+               "Column (1): cell-level LP-DiD, pooled never-treated controls; coefficient, R$^2$ and N "
                "from the single pre-mean-differenced regression (Dube et al.\\ 2023). Column (2): the same "
                "PMD regression with event$\\times$calendar-year effects absorbed (within-event "
-               "identification: each near ring vs its own event's far ring); pooled pre/post are the "
-               "corresponding lpdid coefficients. Columns (3)-(4): stacked sale-level OLS; the "
-               "near$\\times$post coefficient is itself the differential, SEs clustered by event. "
-               "Long-differencing subsumes event$\\times$ring FE in the LP-DiD columns. "
-               "100$\\times$log points.")
+               "identification: each near ring vs its own event's far ring). Columns (3)-(4): stacked "
+               "sale-level OLS; the near$\\times$post coefficient is itself the differential, SEs "
+               "clustered by event. Long-differencing subsumes event$\\times$ring FE in the LP-DiD "
+               "columns. 100$\\times$log points.")
 
     # ================= Design 2 tract tables =================
     d2 = load_csv(os.path.join(O2, "design2_coefs.csv"))
@@ -444,7 +448,7 @@ def main():
         o = obs[g]
         mc, mk = 100 * sum(pc) / len(pc), 100 * sum(pk) / len(pk)
         top, bot = cell(o["post"], o["post_se"])   # design2 lnhp already 100x
-        lines.append(f"    {g} & {top} & {mc:+.2f} & {mk:+.2f} & {o['post']-mc:+.2f} \\\\")
+        lines.append(f"    {g} & {top} & {mc:.2f} & {mk:.2f} & {o['post']-mc:.2f} \\\\")
         lines.append(f" & {bot} & & & \\\\")
     lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
               "\\label{tab:figT4_reconciliation}",
@@ -467,21 +471,17 @@ def main():
         outs = {"purch_oo_n": "Owner-occ.\\ purch.", "purch_nonoo_n": "Non-owner purch.",
                 "refi_n": "Rate/term refi", "cashout_n": "Cash-out refi", "total_n": "Total"}
         def hspec(o, lab, idx):
+            # the pooled treat coefficient IS the DiD effect for these TWFE
+            # Poisson specs -> reported directly as the Treated row
             po = next((x for x in hm if x["outcome"] == o and f(x["h"]) == 99), None)
-            pre_vals = [(f(x["b"]), f(x["se"])) for x in hm
-                        if x["outcome"] == o and f(x["h"]) in (-3, -2)]
-            pre = sum(v[0] for v in pre_vals) / len(pre_vals) if pre_vals else None
-            pre_se = (math.sqrt(sum(v[1] ** 2 for v in pre_vals)) / len(pre_vals)
-                      if pre_vals and all(v[1] for v in pre_vals) else None)
             n, r2 = (stats[idx] if idx < len(stats) else (None, None))
-            return Spec(lab, pre=pre * 100 if pre is not None else None,
-                        pre_se=pre_se * 100 if pre_se else None,
-                        post=f(po["b"]) * 100 if po else None,
+            return Spec(lab, post=f(po["b"]) * 100 if po else None,
                         post_se=f(po["se"]) * 100 if po else None,
                         r2=f"{r2:.3f}" if r2 else "--", nobs=f"{n:,}" if n else "--",
                         fe=dict(fe))
-        note = ("Poisson (PPML) origination counts; pooled post is the single treat coefficient; "
-                "pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\\ SE). "
+        note = ("Poisson (PPML) origination counts; the Treated coefficient is the pooled "
+                "treat indicator (1 from the tract's first identified purchase onward), "
+                "never-treated tracts as controls. "
                 "100$\\times$coefficient $\\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported.")
         idxs = {"purch_oo_n": 0, "purch_nonoo_n": 1, "refi_n": 2, "cashout_n": 3, "total_n": 4}
         emit_table(f"tab_figH1{suffix}_purchases.tex",
@@ -526,11 +526,11 @@ def main():
              "near rings (0--250m) vs never-treated control rings, cell-level "
              "annual LP-DiD. Columns (3)-(4): tract design, treated tracts split "
              "by identified purchases in the tract, each group vs never-treated "
-             "tracts. Pre and post pooled coefficients are relative to the "
-             "$t{-}1$ base; Post$-$pre is the single pre-mean-differenced LP-DiD "
-             "regression (Dube et al.\\ 2023), whose SE, R-squared, and "
-             "Observations are reported. All outcomes 100$\\times$log price; "
-             "SEs clustered by cell (ring) or tract. " + SIGNOTE)
+             "tracts. The Treated coefficient is the post$-$pre effect from the "
+             "single pre-mean-differenced LP-DiD regression (Dube et al.\\ "
+             "2023), whose SE, R-squared, and Observations are reported. All "
+             "outcomes 100$\\times$log price; SEs clustered by cell (ring) or "
+             "tract. " + SIGNOTE)
     lines = ["\\begin{table}[H]", "\\centering",
              f"\\caption{{\\textbf{{Price Effects by Investor Concentration: Ring and Tract Designs}} {dnote}}}",
              "\\scalebox{1.0}{", "\\onehalfspacing",
@@ -547,9 +547,7 @@ def main():
         lines.append("    " + name + " & " + " & ".join(tops) + " \\\\")
         if any(bots):
             lines.append(" & " + " & ".join(bots) + " \\\\")
-    _drows("Pooled pre", [(s.pre, s.pre_se) for s in dose_specs])
-    _drows("Pooled post", [(s.post, s.post_se) for s in dose_specs])
-    _drows("Post $-$ pre", [s.postpre() for s in dose_specs])
+    _drows("Treated", [s.treated() for s in dose_specs])
     lines.append(" & & & & \\\\")
     lines.append("    Observations & " + " & ".join(s.nobs for s in dose_specs) + " \\\\")
     lines.append("    R-squared & " + " & ".join(s.r2 for s in dose_specs) + " \\\\")

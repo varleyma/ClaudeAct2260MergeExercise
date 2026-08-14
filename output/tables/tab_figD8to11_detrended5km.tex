@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{Decay to 4km with linear detrending, 4--5km control (figs.\ D8--D11)} LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Detrended post subtracts the per-bin linear pre-drift (fit through the base period) times the mean post horizon (2.5); its SE is the unadjusted pooled-post SE (trend treated as known). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{Decay to 4km with linear detrending, 4--5km control (figs.\ D8--D11)} The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Detrended post subtracts the per-bin linear pre-drift (fit through the base period) times the mean post horizon (2.5); its SE is the unadjusted pooled-post SE (trend treated as known). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
 \begin{tabular}{lccccccc}
@@ -8,14 +8,10 @@
  & 0--250m & 250--500m & 500--1000m & 1000--1750m & 1750--2500m & 2500--3500m & 3500--4000m \\
  & (1) & (2) & (3) & (4) & (5) & (6) & (7) \\
 \midrule
-    Pooled pre & -6.56*** & -4.40*** & -5.14*** & -5.39*** & -3.89*** & -3.09*** & -2.22** \\
- & (1.67) & (1.38) & (1.08) & (0.88) & (0.87) & (0.91) & (0.90) \\
-    Pooled post & +15.90*** & +17.15*** & +11.14*** & +9.25*** & +7.59*** & +2.46** & -0.60 \\
- & (2.00) & (1.88) & (1.23) & (1.10) & (1.02) & (1.01) & (1.22) \\
-    Post $-$ pre & +15.47*** & +15.14*** & +12.18*** & +11.10*** & +10.43*** & +5.12*** & +1.35 \\
+    Treated & 15.47*** & 15.14*** & 12.18*** & 11.10*** & 10.43*** & 5.12*** & 1.35 \\
  & (1.36) & (1.40) & (1.07) & (0.88) & (0.83) & (0.72) & (0.84) \\
-    Pre-drift (per yr) & +3.33 & +2.74 & +2.82 & +2.67 & +1.89 & +1.51 & +1.06 \\
-    Detrended post & +7.57*** & +10.31*** & +4.10*** & +2.58** & +2.87*** & -1.31 & -3.24*** \\
+    Pre-drift (per yr) & 3.33 & 2.74 & 2.82 & 2.67 & 1.89 & 1.51 & 1.06 \\
+    Detrended post & 7.57*** & 10.31*** & 4.10*** & 2.58** & 2.87*** & -1.31 & -3.24*** \\
  & (2.00) & (1.88) & (1.23) & (1.10) & (1.02) & (1.01) & (1.22) \\
  &  &  &  &  &  &  &  \\
     Observations & 12,586 & 12,602 & 12,674 & 12,688 & 12,693 & 12,695 & 12,691 \\

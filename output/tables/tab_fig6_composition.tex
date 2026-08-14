@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{Composition outcomes (fig.\ 6)} LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{Composition outcomes (fig.\ 6)} The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
 \begin{tabular}{lcccc}
@@ -8,11 +8,7 @@
  & ln structure & ln lot size & Sub-unit share & Vacant share \\
  & (1) & (2) & (3) & (4) \\
 \midrule
-    Pooled pre & +1.17 & +1.22 & -0.19 & -0.17 \\
- & (1.02) & (1.46) & (0.46) & (0.37) \\
-    Pooled post & +2.32* & +2.94* & +0.48 & -0.03 \\
- & (1.29) & (1.66) & (0.52) & (0.47) \\
-    Post $-$ pre & +1.69* & -0.31 & +0.44 & -0.34 \\
+    Treated & 1.69* & -0.31 & 0.44 & -0.34 \\
  & (0.92) & (1.22) & (0.40) & (0.38) \\
  &  &  &  &  \\
     Observations & 12,252 & 12,358 & 12,379 & 12,379 \\

@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{Transaction transitions (figs.\ 8, 8b)} LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{Transaction transitions (figs.\ 8, 8b)} The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
 \begin{tabular}{lccc}
@@ -8,11 +8,7 @@
  & Hisp.$\to$non-Hisp. & non-H.$\to$non-H. & Net inflow \\
  & (1) & (2) & (3) \\
 \midrule
-    Pooled pre & -0.14 & +0.78 & -0.48 \\
- & (0.66) & (0.49) & (0.99) \\
-    Pooled post & +0.91 & +0.41 & +1.48 \\
- & (0.81) & (0.53) & (1.26) \\
-    Post $-$ pre & +2.04*** & +0.23 & +2.37*** \\
+    Treated & 2.04*** & 0.23 & 2.37*** \\
  & (0.65) & (0.45) & (0.88) \\
  &  &  &  \\
     Observations & 12,035 & 12,035 & 12,035 \\

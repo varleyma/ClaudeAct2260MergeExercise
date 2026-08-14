@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{Investor Purchases vs Placebo Luxury Purchases} Placebo events are 1{,}500 purchases by individual non-investor buyers in the investor price band, drawn from the same micro-areas and more than three years from any real event; both series use far rings matched at 400--750m. A price response unique to investor purchases rules out generic luxury-transaction effects. LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{Investor Purchases vs Placebo Luxury Purchases} Placebo events are 1{,}500 purchases by individual non-investor buyers in the investor price band, drawn from the same micro-areas and more than three years from any real event; both series use far rings matched at 400--750m. A price response unique to investor purchases rules out generic luxury-transaction effects. The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
 \begin{tabular}{lcc}
@@ -8,11 +8,7 @@
  & Investor purchases & Placebo purchases \\
  & (1) & (2) \\
 \midrule
-    Pooled pre & +1.03 & +2.57 \\
- & (1.73) & (1.80) \\
-    Pooled post & +6.06*** & -0.68 \\
- & (2.05) & (1.62) \\
-    Post $-$ pre & +4.43*** & -0.33 \\
+    Treated & 4.43*** & -0.33 \\
  & (1.46) & (1.40) \\
  &  &  \\
     Observations & 12,036 & 7,932 \\

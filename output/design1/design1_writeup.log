@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 16:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 16:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -557,7 +557,7 @@ p_lncab.png (PNG copy)> <./fig6_comp_subu.png (PNG copy)> <./fig6_comp_vac.png
 [10 <./fig7_parties.png (PNG copy)> <./fig8_transitions.png (PNG copy)>]
 
 [11 <./fig8b_netinflow.png (PNG copy)>] (../tables/tab_balance_prcs2010.tex
-Overfull \hbox (64.97578pt too wide) in paragraph at lines 35--37
+Overfull \hbox (61.66795pt too wide) in paragraph at lines 35--37
  [][] 
  []
 
@@ -574,19 +574,20 @@ Overfull \hbox (64.97578pt too wide) in paragraph at lines 35--37
 [15] (../tables/tab_dose_crim.tex)
 
 [16] (../tables/tab_placebo.tex)
-
-[17]
-<../design2/figT1_lnhp_es.png, id=228, 2007.5pt x 1204.5pt>
+<../design2/figT1_lnhp_es.png, id=224, 2007.5pt x 1204.5pt>
 File: ../design2/figT1_lnhp_es.png Graphic file (type png)
 <use ../design2/figT1_lnhp_es.png>
 Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 443.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figT2_dose_es.png, id=229, 2007.5pt x 1204.5pt>
+
+
+[17]
+<../design2/figT2_dose_es.png, id=232, 2007.5pt x 1204.5pt>
 File: ../design2/figT2_dose_es.png Graphic file (type png)
 <use ../design2/figT2_dose_es.png>
 Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 452.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figT4_reconciliation.png, id=231, 2007.5pt x 1204.5pt>
+<../design2/figT4_reconciliation.png, id=234, 2007.5pt x 1204.5pt>
 File: ../design2/figT4_reconciliation.png Graphic file (type png)
 <use ../design2/figT4_reconciliation.png>
 Package pdftex.def Info: ../design2/figT4_reconciliation.png  used on input lin
@@ -594,21 +595,19 @@ e 475.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
-[18]
+[18 <../design2/figT1_lnhp_es.png (PNG copy)>]
 
-[19 <../design2/figT1_lnhp_es.png (PNG copy)> <../design2/figT2_dose_es.png (PN
-G copy)>]
+[19 <../design2/figT2_dose_es.png (PNG copy)> <../design2/figT4_reconciliation.
+png (PNG copy)>]
 
-[20 <../design2/figT4_reconciliation.png (PNG copy)>]
-
-[21]
-<../design2/figH7_income_long.png, id=257, 2007.5pt x 1204.5pt>
+[20]
+<../design2/figH7_income_long.png, id=253, 2007.5pt x 1204.5pt>
 File: ../design2/figH7_income_long.png Graphic file (type png)
 <use ../design2/figH7_income_long.png>
 Package pdftex.def Info: ../design2/figH7_income_long.png  used on input line 5
 90.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figH8_income_dose_long.png, id=258, 2007.5pt x 1204.5pt>
+<../design2/figH8_income_dose_long.png, id=254, 2007.5pt x 1204.5pt>
 File: ../design2/figH8_income_dose_long.png Graphic file (type png)
 <use ../design2/figH8_income_dose_long.png>
 Package pdftex.def Info: ../design2/figH8_income_dose_long.png  used on input l
@@ -616,14 +615,14 @@ ine 601.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
-[22 <../design2/figH7_income_long.png (PNG copy)>]
-<../design2/figH9b_purch_nonhisp.png, id=271, 2007.5pt x 1204.5pt>
+[21 <../design2/figH7_income_long.png (PNG copy)>]
+<../design2/figH9b_purch_nonhisp.png, id=267, 2007.5pt x 1204.5pt>
 File: ../design2/figH9b_purch_nonhisp.png Graphic file (type png)
 <use ../design2/figH9b_purch_nonhisp.png>
 Package pdftex.def Info: ../design2/figH9b_purch_nonhisp.png  used on input lin
 e 644.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figH11_refi_nonhisp.png, id=272, 2007.5pt x 1204.5pt>
+<../design2/figH11_refi_nonhisp.png, id=268, 2007.5pt x 1204.5pt>
 File: ../design2/figH11_refi_nonhisp.png Graphic file (type png)
 <use ../design2/figH11_refi_nonhisp.png>
 Package pdftex.def Info: ../design2/figH11_refi_nonhisp.png  used on input line
@@ -631,12 +630,12 @@ Package pdftex.def Info: ../design2/figH11_refi_nonhisp.png  used on input line
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
-[23 <../design2/figH8_income_dose_long.png (PNG copy)>]
+[22 <../design2/figH8_income_dose_long.png (PNG copy)>]
 
-[24 <../design2/figH9b_purch_nonhisp.png (PNG copy)> <../design2/figH11_refi_no
+[23 <../design2/figH9b_purch_nonhisp.png (PNG copy)> <../design2/figH11_refi_no
 nhisp.png (PNG copy)>]
 
-[25] (./design1_writeup.aux)
+[24] (./design1_writeup.aux)
  ***********
 LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-09-10>
@@ -645,9 +644,9 @@ Package rerunfilecheck Info: File `design1_writeup.out' has not changed.
 (rerunfilecheck)             Checksum: A3C38BFA76BCE20968ACD637B66D8DA0;4073.
  ) 
 Here is how much of TeX's memory you used:
- 12354 strings out of 473579
- 195576 string characters out of 5732262
- 624218 words of memory out of 5000000
+ 12353 strings out of 473579
+ 195569 string characters out of 5732262
+ 624126 words of memory out of 5000000
  34999 multiletter control sequences out of 15000+600000
  572763 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -673,10 +672,10 @@ fonts/type1/public/amsfonts/cm/cmti9.pfb><c:/texlive/2024/texmf-dist/fonts/type
 1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/
 amsfonts/symbols/msbm10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-s
 uper/sfrm1095.pfb>
-Output written on design1_writeup.pdf (25 pages, 3427037 bytes).
+Output written on design1_writeup.pdf (24 pages, 3426198 bytes).
 PDF statistics:
- 415 PDF objects out of 1000 (max. 8388607)
- 317 compressed objects within 4 object streams
- 83 named destinations out of 1000 (max. 500000)
+ 410 PDF objects out of 1000 (max. 8388607)
+ 313 compressed objects within 4 object streams
+ 82 named destinations out of 1000 (max. 500000)
  269 words of extra memory for PDF output out of 10000 (max. 10000000)
 
