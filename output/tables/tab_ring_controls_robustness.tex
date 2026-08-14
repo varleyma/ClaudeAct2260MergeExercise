@@ -1,6 +1,6 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{Ring-design treatment effects are robust to county-year shocks and baseline-trend controls} This table subjects the ring design's pooled estimates to the same specification ladder as the tract-level outcomes, on the event$\times$ring cell panel: the coefficient is the near-ring $\times$ post-event indicator (TWFE; by construction below the clean-control LP-DiD pooled post estimate). Specifications: (1) cell and year fixed effects; (2) cell and county$\times$year fixed effects (the county is the event's municipio); (3) adds ten standardized 2010 PRCS characteristics of the event's tract interacted with Post ($1\{\text{year} \ge 2020\}$). Outcomes: cell mean log sale price ($\times$100) and the net Hispanic-to-non-Hispanic ownership conversion rate per classified sale (percentage points). Observation counts exceed those of the LP-DiD tables because TWFE uses the full cell panel, whereas the LP-DiD clean-control sample keeps only newly treated cells at onset plus never-treated cells; the estimates nonetheless agree (e.g.\ price: TWFE 5.1 vs.\ PMD 5.3). Robust standard errors are clustered at the cell level and reported in parentheses. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{Ring-design treatment effects are robust to county-year shocks and baseline-trend controls} This table subjects the ring design's estimates to the same specification ladder as the tract-level outcomes, using the paper's baseline estimator throughout: the pre-mean-differenced LP-DiD on the event$\times$ring cell panel ($H{=}3$, $k{=}4$; clean-control sample: newly treated near cells at onset plus never-treated cells; specification (1) reproduces the baseline table exactly). Specifications: (1) calendar-year effects; (2) county$\times$year effects (the county is the event's municipio); (3) adds ten standardized 2010 PRCS characteristics of the event's tract interacted with Post ($1\{\text{year} \ge 2020\}$). Cell fixed effects are subsumed by the long-differencing. Outcomes: cell mean log sale price ($\times$100) and the net Hispanic-to-non-Hispanic ownership conversion rate per classified sale (percentage points). Robust standard errors are clustered at the cell level and reported in parentheses. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
 \begin{tabular}{lcccccc}
@@ -9,14 +9,14 @@
 \cmidrule(lr){2-4} \cmidrule(lr){5-7}
  & (1) & (2) & (3) & (1) & (2) & (3) \\
 \midrule
-    Treated & 5.05*** & 4.83*** & 3.15** & 1.84** & 1.77** & 1.55** \\
- & (1.36) & (1.23) & (1.29) & (0.75) & (0.72) & (0.74) \\
+    Treated & 5.32*** & 4.23*** & 2.49* & 2.37*** & 2.47*** & 2.22** \\
+ & (1.40) & (1.34) & (1.41) & (0.88) & (0.86) & (0.90) \\
  & & & & & & \\
-    Observations & 23,452 & 23,309 & 21,313 & 21,960 & 21,789 & 19,847 \\
-    R-squared & 0.783 & 0.812 & 0.810 & 0.236 & 0.311 & 0.313 \\
-    Cell FE & Yes & Yes & Yes & Yes & Yes & Yes \\
-    Year FE & Yes & No & No & Yes & No & No \\
-    County-Year FE & No & Yes & Yes & No & Yes & Yes \\
+    Observations & 12,379 & 12,122 & 11,088 & 12,035 & 11,772 & 10,752 \\
+    R-squared & 0.154 & 0.343 & 0.355 & 0.047 & 0.168 & 0.173 \\
+    Cell differencing (LP-DiD) & Yes & Yes & Yes & Yes & Yes & Yes \\
+    Calendar-year effects & Yes & No & No & Yes & No & No \\
+    County-year effects & No & Yes & Yes & No & Yes & Yes \\
     2010 Controls $\times$ Post & No & No & Yes & No & No & Yes \\
 \midrule\bottomrule
 \end{tabular}

@@ -1,16 +1,17 @@
 /*==============================================================================
  design1_controls_robustness.do
 
- Ring-design analog of the tract spec ladder (design2_controls_robustness.do):
- TWFE pooled treat coefficient on the event x ring CELL panel, three specs:
-   (1) base:          cell FE + year FE
-   (2) + county-year: cell FE + county x year FE (county = the event's
-                      municipio, from its tract geoid)
-   (3) + controls:    (2) + standardized 2010 PRCS characteristics of the
-                      EVENT's tract interacted with Post (1{year >= 2020})
+ Ring-design spec ladder, all specs estimated with the PMD LP-DiD
+ (pre-mean differencing, H=3, k=4; clean-control sample: newly treated
+ near cells at onset + never-treated cells), matching the paper's baseline
+ estimator (spec (1) reproduces pmd_stats T1_baseline / T7_netin exactly):
+   (1) base:            calendar-year effects
+   (2) + county-year:   county x year effects (county = event's municipio)
+   (3) + controls:      (2) + standardized 2010 PRCS characteristics of the
+                        EVENT's tract interacted with Post (1{year >= 2020})
 
- treat = near ring x post-event. Outcomes: cell mean log sale price (lnp)
- and net H->NH conversion per classified sale (netin). SEs clustered by cell.
+ Outcomes: cell mean log sale price (lnp) and net H->NH conversion per
+ classified sale (netin). SEs clustered by cell.
 
  Output: output/design1/controls_robustness_ring.csv (outcome,spec,b,se,r2,nobs)
 ==============================================================================*/
@@ -82,6 +83,8 @@ foreach c of global CTRLS {
 }
 gen county = substr(tract_geoid, 1, 5)
 egen cyear = group(county tt)
+tempfile panel
+save `panel'
 
 log using "$OUT/controls_robustness_ring.log", replace text
 
@@ -89,14 +92,31 @@ tempname pf
 postfile `pf' str20 outcome double spec b se r2 nobs using "$OUT/_crr.dta", replace
 
 foreach y in lnp netin {
+    use `panel', clear
+    drop if missing(`y')
+    xtset cellid tt
+    gen y0  = `y'
+    gen yf1 = F1.`y'
+    gen yf2 = F2.`y'
+    gen yf3 = F3.`y'
+    gen yl1 = L1.`y'
+    gen yl2 = L2.`y'
+    gen yl3 = L3.`y'
+    gen yl4 = L4.`y'
+    egen postm = rowmean(y0 yf1 yf2 yf3)
+    egen prem  = rowmean(yl1 yl2 yl3 yl4)
+    gen pmd = postm - prem
+    gen dD = treat == 1 & L1.treat == 0
+    egen evertr = max(treat), by(cellid)
+    keep if dD == 1 | evertr == 0
     forvalues s = 1/3 {
-        if `s' == 1 local abs absorb(cellid tt)
-        else        local abs absorb(cellid cyear)
-        local rhs treat
-        if `s' == 3 local rhs treat $ZP
-        di as result _n "===== ring `y' spec `s' ====="
-        reghdfe `y' `rhs', `abs' vce(cluster cellid)
-        post `pf' ("ring_`y'") (`s') (_b[treat]) (_se[treat]) (e(r2)) (e(N))
+        if `s' == 1 local abs absorb(tt)
+        else        local abs absorb(cyear)
+        local rhs dD
+        if `s' == 3 local rhs dD $ZP
+        di as result _n "===== ring PMD `y' spec `s' ====="
+        reghdfe pmd `rhs', `abs' vce(cluster cellid)
+        post `pf' ("ring_`y'") (`s') (_b[dD]) (_se[dD]) (e(r2)) (e(N))
     }
 }
 

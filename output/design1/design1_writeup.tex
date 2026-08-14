@@ -407,25 +407,24 @@ to four show $+3.8$ ($2.1$) (Figure~\ref{fig:tract_dose}). Transaction
 significantly negative, so parallel trends fails for that outcome and we
 treat it as descriptive only.
 
-Table~\ref{tab:controls_robustness} subjects the pooled tract-level
-estimates --- prices, borrower income, and purchase counts by ethnicity ---
-to a common specification ladder: (1) tract and year fixed effects, (2)
-tract and county$\times$year fixed effects, and (3) additionally the ten
-standardized 2010 PRCS baseline characteristics interacted with the
-boom-era Post indicator. The price effect moves from $+8.4$ to $+7.2$ to
-$+5.6$ (all $p<0.01$), borrower income from $+9.6$ to $+7.5$ to $+6.7$,
-and non-Hispanic purchase entry from $+37$\% to $+26$\% to $+25$\%
-($p<0.05$), while Hispanic purchase counts stay a precise null throughout.
-Table~\ref{tab:ring_controls_robustness} runs the same ladder on the ring
-design's event$\times$ring cell panel (TWFE near$\times$post coefficient;
-the pooled TWFE baseline of $+5.1$ is below the clean-control LP-DiD's
-$+6.9$ by construction): the price effect goes $+5.1$, $+4.8$, $+3.1$ (all
-$p<0.05$) and the net ownership-conversion rate $+1.8$, $+1.8$, $+1.6$pp
---- the ring results, already identified off near--far contrasts, barely
-move when municipio-year shocks and baseline-trend selection are absorbed.
-Overall, roughly a quarter to a third of the raw estimates reflects
-county-level shocks and observable-trend selection; the remainder is
-identified within municipio-year among observably similar units.
+Table~\ref{tab:controls_robustness} subjects the tract-level estimates ---
+prices, borrower income, and purchase counts by ethnicity --- to a common
+specification ladder, all estimated with the paper's baseline
+pre-mean-differenced LP-DiD: (1) calendar-year effects, (2)
+county$\times$year effects, and (3) additionally the ten standardized 2010
+PRCS baseline characteristics interacted with the boom-era Post indicator.
+The price effect moves from $6.4$ to $5.7$ to $5.5$ (all $p<0.01$),
+borrower income is essentially untouched ($8.1$, $7.8$, $7.9$, all
+$p<0.01$), and non-Hispanic purchase entry ($100\times$asinh) goes $12.7$,
+$12.2$, $10.1$ (all $p<0.01$), while Hispanic purchase counts stay a
+precise null throughout. Table~\ref{tab:ring_controls_robustness} runs the
+same ladder on the ring design's cell panel (specification (1) reproduces
+the baseline estimates exactly): the price effect goes $5.3$, $4.2$, $2.5$
+($p<0.01$, $p<0.01$, $p<0.10$) and the net ownership-conversion rate
+$2.4$, $2.5$, $2.2$pp (all $p<0.05$). County-year shocks and
+observable-trend selection account for at most a modest share of every
+estimate; the price effects' third column, identified within
+municipio-year among observably similar units, remains economically large.
 Table~\ref{tab:dose_crim} collects the concentration results of both
 designs on the common 1--4/5+ dose convention, and
 Table~\ref{tab:placebo} reports the placebo contrast in table form.

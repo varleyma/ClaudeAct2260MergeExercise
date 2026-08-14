@@ -176,21 +176,23 @@ def ladder_table():
     def stat(o, s, key, fmt):
         return fmt.format(f(cr[(o, s)][key]))
 
-    note = ("This table reports pooled difference-in-differences estimates of "
-            "the treatment indicator (1 from the tract's first identified "
-            "decree-era purchase onward; never-treated tracts as controls) "
-            "under three specifications per outcome: (1) tract and year fixed "
-            "effects; (2) tract and county$\\times$year fixed effects; (3) "
-            "adds ten standardized 2010 PRCS baseline characteristics (median "
-            "household income, home value, and gross rent; poverty, BA+, "
-            "renter, vacancy, seasonal-home, and mainland-born shares; log "
-            "population) interacted with Post ($1\\{\\text{year} \\ge "
-            "2020\\}$, the boom era). Panel A: tract log price (Red Atlas, "
-            "count-weighted annual mean, 2012--2024) and log mean "
-            "purchase-borrower income (HMDA, 2012--2024), both scaled by 100 "
-            "(OLS). Panel B: purchase origination counts by borrower "
-            "ethnicity (Poisson; coefficients $\\times$100 $\\approx$ percent "
-            "effects, pseudo R-squared reported). Robust standard errors are "
+    note = ("This table reports Treated coefficients from the paper's "
+            "baseline estimator --- the pre-mean-differenced LP-DiD (Dube et "
+            "al.\\ 2023; $H{=}3$, $k{=}4$, clean-control sample: newly "
+            "treated tracts at onset plus never-treated tracts) --- under "
+            "three specifications per outcome: (1) calendar-year effects; "
+            "(2) county$\\times$year effects; (3) adds ten standardized 2010 "
+            "PRCS baseline characteristics (median household income, home "
+            "value, and gross rent; poverty, BA+, renter, vacancy, "
+            "seasonal-home, and mainland-born shares; log population) "
+            "interacted with Post ($1\\{\\text{year} \\ge 2020\\}$, the boom "
+            "era). Tract fixed effects are subsumed by the long-differencing. "
+            "Panel A: tract log price (Red Atlas, count-weighted annual "
+            "mean) and log mean purchase-borrower income (HMDA, 2012--2024), "
+            "both scaled by 100. Panel B: purchase origination counts by "
+            "borrower ethnicity as $100 \\times \\text{asinh}$ (Poisson does "
+            "not compose with pre-mean differencing; the Poisson event "
+            "studies appear in the figures). Robust standard errors are "
             "clustered at the tract level and reported in parentheses. "
             + SIGNOTE)
 
@@ -217,18 +219,20 @@ def ladder_table():
         out.append("    Observations & " + " & ".join(obs) + " \\\\")
         out.append(f"    {r2lab} & " + " & ".join(r2) + " \\\\")
         out.append(f"    {felabel} & Yes & Yes & Yes & Yes & Yes & Yes \\\\")
-        out.append("    Year FE & Yes & No & No & Yes & No & No \\\\")
-        out.append("    County-Year FE & No & Yes & Yes & No & Yes & Yes \\\\")
+        out.append("    Calendar-year effects & Yes & No & No & Yes & No & No \\\\")
+        out.append("    County-year effects & No & Yes & Yes & No & Yes & Yes \\\\")
         out.append("    2010 Controls $\\times$ Post & No & No & Yes & No & No & Yes \\\\")
         return out
 
-    lines += ["\\multicolumn{7}{l}{\\textbf{Panel A: prices and borrower income (OLS)}} \\\\"]
+    lines += ["\\multicolumn{7}{l}{\\textbf{Panel A: prices and borrower income}} \\\\"]
     lines += panel("A", "lnhp", "100 $\\times$ Log(Price)", "lninc_all",
-                   "100 $\\times$ Log(Borrower Income)", "Treated", 1, 1, "R-squared")
+                   "100 $\\times$ Log(Borrower Income)", "Treated", 1, 1, "R-squared",
+                   felabel="Tract differencing (LP-DiD)")
     lines += ["\\midrule",
-              "\\multicolumn{7}{l}{\\textbf{Panel B: purchase originations by borrower ethnicity (Poisson)}} \\\\"]
+              "\\multicolumn{7}{l}{\\textbf{Panel B: purchase originations by borrower ethnicity ($100\\times$asinh)}} \\\\"]
     lines += panel("B", "purch_hisp_n", "Hispanic Purchases", "purch_nonhisp_n",
-                   "Non-Hispanic Purchases", "Treated", 100, 100, "Pseudo R-squared")
+                   "Non-Hispanic Purchases", "Treated", 1, 1, "R-squared",
+                   felabel="Tract differencing (LP-DiD)")
     lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
               "\\label{tab:controls_robustness}", "\\end{table}"]
     with open(os.path.join(OUT, "tab_controls_robustness.tex"), "w", encoding="utf-8") as fh:
@@ -238,31 +242,29 @@ def ladder_table():
     # ---- ring design ladder, own table -------------------------------------
     if ("ring_lnp", 1) not in cr:
         return
-    rnote = ("This table subjects the ring design's pooled estimates to the "
-             "same specification ladder as the tract-level outcomes, on the "
-             "event$\\times$ring cell panel: the coefficient is the near-ring "
-             "$\\times$ post-event indicator (TWFE; by construction below the "
-             "clean-control LP-DiD pooled post estimate). Specifications: (1) "
-             "cell and year fixed effects; (2) cell and county$\\times$year "
-             "fixed effects (the county is the event's municipio); (3) adds "
-             "ten standardized 2010 PRCS characteristics of the event's tract "
-             "interacted with Post ($1\\{\\text{year} \\ge 2020\\}$). "
-             "Outcomes: cell mean log sale price ($\\times$100) and the net "
-             "Hispanic-to-non-Hispanic ownership conversion rate per "
-             "classified sale (percentage points). Observation counts exceed "
-             "those of the LP-DiD tables because TWFE uses the full cell "
-             "panel, whereas the LP-DiD clean-control sample keeps only "
-             "newly treated cells at onset plus never-treated cells; the "
-             "estimates nonetheless agree (e.g.\\ price: TWFE 5.1 vs.\\ PMD "
-             "5.3). Robust standard errors are clustered at the cell level "
-             "and reported in parentheses. " + SIGNOTE)
+    rnote = ("This table subjects the ring design's estimates to the same "
+             "specification ladder as the tract-level outcomes, using the "
+             "paper's baseline estimator throughout: the pre-mean-differenced "
+             "LP-DiD on the event$\\times$ring cell panel ($H{=}3$, $k{=}4$; "
+             "clean-control sample: newly treated near cells at onset plus "
+             "never-treated cells; specification (1) reproduces the baseline "
+             "table exactly). Specifications: (1) calendar-year effects; (2) "
+             "county$\\times$year effects (the county is the event's "
+             "municipio); (3) adds ten standardized 2010 PRCS characteristics "
+             "of the event's tract interacted with Post ($1\\{\\text{year} "
+             "\\ge 2020\\}$). Cell fixed effects are subsumed by the "
+             "long-differencing. Outcomes: cell mean log sale price "
+             "($\\times$100) and the net Hispanic-to-non-Hispanic ownership "
+             "conversion rate per classified sale (percentage points). "
+             "Robust standard errors are clustered at the cell level and "
+             "reported in parentheses. " + SIGNOTE)
     lines = ["\\begin{table}[H]", "\\centering",
              f"\\caption{{\\textbf{{Ring-design treatment effects are robust to county-year shocks and baseline-trend controls}} {rnote}}}",
              "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccccc}",
              "\\toprule\\midrule"]
     lines += panel("A", "ring_lnp", "100 $\\times$ Log(Price)", "ring_netin",
                    "Net H$\\to$NH Conversion (pp)", "Treated", 100, 100,
-                   "R-squared", felabel="Cell FE")
+                   "R-squared", felabel="Cell differencing (LP-DiD)")
     lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
               "\\label{tab:ring_controls_robustness}", "\\end{table}"]
     with open(os.path.join(OUT, "tab_ring_controls_robustness.tex"), "w", encoding="utf-8") as fh:
