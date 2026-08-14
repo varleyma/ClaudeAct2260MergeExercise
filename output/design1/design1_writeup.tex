@@ -413,18 +413,25 @@ specification ladder, all estimated with the paper's baseline
 pre-mean-differenced LP-DiD: (1) calendar-year effects, (2)
 county$\times$year effects, and (3) additionally the ten standardized 2010
 PRCS baseline characteristics interacted with the boom-era Post indicator.
-The price effect moves from $6.4$ to $5.7$ to $5.5$ (all $p<0.01$),
-borrower income is essentially untouched ($8.1$, $7.8$, $7.9$, all
-$p<0.01$), and non-Hispanic purchase entry ($100\times$asinh) goes $12.7$,
-$12.2$, $10.1$ (all $p<0.01$), while Hispanic purchase counts stay a
-precise null throughout. Table~\ref{tab:ring_controls_robustness} runs the
-same ladder on the ring design's cell panel (specification (1) reproduces
-the baseline estimates exactly): the price effect goes $5.3$, $4.2$, $2.5$
-($p<0.01$, $p<0.01$, $p<0.10$) and the net ownership-conversion rate
-$2.4$, $2.5$, $2.2$pp (all $p<0.05$). County-year shocks and
-observable-trend selection account for at most a modest share of every
-estimate; the price effects' third column, identified within
-municipio-year among observably similar units, remains economically large.
+In column (3) the interactions turn on at the unit's own treatment date,
+so its Treated coefficient is the effect at sample-mean 2010
+characteristics, with the interactions absorbing effect heterogeneity
+along observables. The price effect moves from $6.4$ to $5.7$ to $3.9$
+($p<0.01$, $p<0.01$, $p<0.05$); borrower income is essentially untouched
+($8.1$, $7.8$, $7.4$, all $p<0.01$); Hispanic purchase counts stay a
+precise null; and non-Hispanic purchase entry ($100\times$asinh) goes
+$12.7$, $12.2$, then $3.6$ (n.s.) at mean characteristics --- the entry
+margin is genuinely concentrated in high-amenity tracts rather than
+uniform. Table~\ref{tab:ring_controls_robustness} runs the same ladder on
+the ring design's cell panel (specification (1) reproduces the baseline
+estimates exactly): the price effect goes $5.3$, $4.2$, $1.9$ (n.s.\ at
+mean characteristics --- consistent with the dose results, the ring price
+effect lives in high-concentration areas), while the net
+ownership-conversion rate is fully robust: $2.4$, $2.5$, $2.8$pp (all
+$p<0.01$). County-year shocks move no estimate much; the column-(3)
+attenuation of the price and entry effects reflects their concentration in
+high-amenity, high-dose areas rather than confounding, as the dose tables
+show directly.
 Table~\ref{tab:dose_crim} collects the concentration results of both
 designs on the common 1--4/5+ dose convention, and
 Table~\ref{tab:placebo} reports the placebo contrast in table form.

@@ -573,6 +573,16 @@ def main():
                "unique to investor purchases rules out generic "
                "luxury-transaction effects. " + NOTE_LPDID, scale=100)
 
+    # ================= main-tables folder =================
+    import shutil
+    _main = os.path.join(OUT, "main")
+    os.makedirs(_main, exist_ok=True)
+    for t in ("tab_placebo.tex", "tab_fig8_transitions.tex"):
+        p = os.path.join(OUT, t)
+        if os.path.exists(p):
+            shutil.copy(p, _main)
+    print("copied placebo + transitions to output/tables/main/")
+
     # ================= preview wrapper =================
     tabs = sorted(x for x in os.listdir(OUT) if x.startswith("tab_") and x.endswith(".tex"))
     with open(os.path.join(OUT, "tables_preview.tex"), "w", encoding="utf-8") as fh:

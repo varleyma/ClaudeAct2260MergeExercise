@@ -3,7 +3,7 @@
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/controls_robustness.log
   log type:  text
- opened on:  14 Aug 2026, 16:56:19
+ opened on:  14 Aug 2026, 17:07:01
 
 . 
 . tempname pf
@@ -57,7 +57,7 @@ tract_geoid was double now str11
 .     tempfile trt
 
 .     save `trt'
-file C:\Users\mva284\AppData\Local\Temp\ST_6438_000002.tmp saved as .dta
+file C:\Users\mva284\AppData\Local\Temp\ST_8614_000002.tmp saved as .dta
     format
 
 . restore
@@ -89,23 +89,13 @@ file C:\Users\mva284\AppData\Local\Temp\ST_6438_000002.tmp saved as .dta
     -----------------------------------------
 (792 missing values generated)
 (794 missing values generated)
-(794 missing values generated)
-(800 missing values generated)
 (800 missing values generated)
 (1,005 missing values generated)
-(1,005 missing values generated)
-(794 missing values generated)
 (794 missing values generated)
 (792 missing values generated)
-(792 missing values generated)
 (794 missing values generated)
 (794 missing values generated)
 (794 missing values generated)
-(794 missing values generated)
-(794 missing values generated)
-(794 missing values generated)
-(792 missing values generated)
-(792 missing values generated)
 (792 missing values generated)
 (792 missing values generated)
 
@@ -124,6 +114,16 @@ Panel variable: tract_num (unbalanced)
 (923 missing values generated)
 (923 missing values generated)
 (3,939 observations deleted)
+(505 missing values generated)
+(511 missing values generated)
+(682 missing values generated)
+(505 missing values generated)
+(503 missing values generated)
+(505 missing values generated)
+(505 missing values generated)
+(505 missing values generated)
+(503 missing values generated)
+(503 missing values generated)
 
 ===== PMD lnhp spec 1 =====
 (MWFE estimator converged in 1 iterations)
@@ -185,30 +185,30 @@ Absorbed degrees of freedom:
 (MWFE estimator converged in 1 iterations)
 
 HDFE Linear regression                            Number of obs   =     11,047
-Absorbing 1 HDFE group                            F(  11,    851) =       2.05
-Statistics robust to heteroskedasticity           Prob > F        =     0.0213
-                                                  R-squared       =     0.2662
-                                                  Adj R-squared   =     0.1710
-                                                  Within R-sq.    =     0.0048
-Number of clusters (tract_num) =        852       Root MSE        =    24.1813
+Absorbing 1 HDFE group                            F(  11,    851) =       4.27
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.2648
+                                                  Adj R-squared   =     0.1694
+                                                  Within R-sq.    =     0.0029
+Number of clusters (tract_num) =        852       Root MSE        =    24.2042
 
                             (Std. err. adjusted for 852 clusters in tract_num)
 ------------------------------------------------------------------------------
              |               Robust
          pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 -------------+----------------------------------------------------------------
-          dD |   5.537254   1.710056     3.24   0.001     2.180833    8.893675
-zp_med_hh_~c |  -3.035731   2.572007    -1.18   0.238    -8.083951    2.012489
-zp_med_value |   3.798439   2.650208     1.43   0.152    -1.403271     9.00015
- zp_med_rent |  -.3070844   .9231436    -0.33   0.739     -2.11899    1.504821
-  zp_poverty |  -1.273649   1.990767    -0.64   0.522    -5.181037    2.633739
- zp_ba_share |  -.5772092   1.740498    -0.33   0.740     -3.99338    2.838962
-zp_renter_~e |  -1.742435   1.346097    -1.29   0.196    -4.384494    .8996246
-  zp_vacancy |   -1.13364   1.232321    -0.92   0.358    -3.552384    1.285105
-zp_seasona~e |   1.877474   1.165709     1.61   0.108    -.4105269    4.165475
-zp_mainlan~e |   1.586589   1.102859     1.44   0.151    -.5780536    3.751232
-    zp_lnpop |  -.7927998   .8917112    -0.89   0.374    -2.543011    .9574113
-       _cons |   -4.55918   .2894284   -15.75   0.000    -5.127257   -3.991103
+          dD |   3.907379   1.989539     1.96   0.050     .0024002    7.812359
+zpd_med_hh~c |   5.273272   3.548002     1.49   0.138    -1.690588    12.23713
+zpd_med_va~e |   1.267539   1.806281     0.70   0.483    -2.277749    4.812828
+zpd_med_rent |    2.32441    1.43197     1.62   0.105    -.4861976    5.135018
+ zpd_poverty |   1.467063    3.35176     0.44   0.662    -5.111624    8.045749
+zpd_ba_share |  -3.896369    2.79257    -1.40   0.163    -9.377501    1.584764
+zpd_renter~e |   1.707411   2.590362     0.66   0.510    -3.376837    6.791658
+ zpd_vacancy |   6.512484   2.529031     2.58   0.010     1.548615    11.47635
+zpd_season~e |  -2.466042   1.861753    -1.32   0.186    -6.120209    1.188124
+zpd_mainla~e |   -1.53718   2.135098    -0.72   0.472    -5.727855    2.653495
+   zpd_lnpop |    .319196   1.641725     0.19   0.846    -2.903109    3.541501
+       _cons |  -4.767597   .2825634   -16.87   0.000      -5.3222   -4.212994
 ------------------------------------------------------------------------------
 
 Absorbed degrees of freedom:
@@ -242,7 +242,7 @@ Duplicates in terms of all variables
 . tempfile frame
 
 . save `frame'
-file C:\Users\mva284\AppData\Local\Temp\ST_6438_000003.tmp saved as .dta
+file C:\Users\mva284\AppData\Local\Temp\ST_8614_000003.tmp saved as .dta
     format
 
 . 
@@ -284,7 +284,7 @@ file C:\Users\mva284\AppData\Local\Temp\ST_6438_000003.tmp saved as .dta
 .     tempfile trt
 
 .     save `trt'
-file C:\Users\mva284\AppData\Local\Temp\ST_6438_000005.tmp saved as .dta
+file C:\Users\mva284\AppData\Local\Temp\ST_8614_000005.tmp saved as .dta
     format
 
 . restore
@@ -325,23 +325,13 @@ file C:\Users\mva284\AppData\Local\Temp\ST_6438_000005.tmp saved as .dta
     -----------------------------------------
 (1,339 missing values generated)
 (1,378 missing values generated)
-(1,378 missing values generated)
-(1,391 missing values generated)
 (1,391 missing values generated)
 (1,534 missing values generated)
-(1,534 missing values generated)
-(1,352 missing values generated)
 (1,352 missing values generated)
 (1,339 missing values generated)
-(1,339 missing values generated)
 (1,352 missing values generated)
 (1,352 missing values generated)
 (1,352 missing values generated)
-(1,352 missing values generated)
-(1,352 missing values generated)
-(1,352 missing values generated)
-(1,339 missing values generated)
-(1,339 missing values generated)
 (1,339 missing values generated)
 (1,339 missing values generated)
 
@@ -362,6 +352,16 @@ Panel variable: tract_num (strongly balanced)
 (2,084 missing values generated)
 (2,208 missing values generated)
 (2,572 observations deleted)
+(1,210 missing values generated)
+(1,223 missing values generated)
+(1,342 missing values generated)
+(1,184 missing values generated)
+(1,171 missing values generated)
+(1,184 missing values generated)
+(1,184 missing values generated)
+(1,184 missing values generated)
+(1,171 missing values generated)
+(1,171 missing values generated)
 
 ===== PMD lninc_all spec 1 =====
 (MWFE estimator converged in 1 iterations)
@@ -423,30 +423,30 @@ Absorbed degrees of freedom:
 (MWFE estimator converged in 1 iterations)
 
 HDFE Linear regression                            Number of obs   =      7,998
-Absorbing 1 HDFE group                            F(  11,    850) =       2.12
-Statistics robust to heteroskedasticity           Prob > F        =     0.0170
-                                                  R-squared       =     0.1724
-                                                  Adj R-squared   =     0.0680
-                                                  Within R-sq.    =     0.0047
-Number of clusters (tract_num) =        851       Root MSE        =    27.4901
+Absorbing 1 HDFE group                            F(  11,    850) =       3.04
+Statistics robust to heteroskedasticity           Prob > F        =     0.0005
+                                                  R-squared       =     0.1719
+                                                  Adj R-squared   =     0.0674
+                                                  Within R-sq.    =     0.0041
+Number of clusters (tract_num) =        851       Root MSE        =    27.4984
 
                             (Std. err. adjusted for 851 clusters in tract_num)
 ------------------------------------------------------------------------------
              |               Robust
          pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 -------------+----------------------------------------------------------------
-          dD |   7.944795    2.19154     3.63   0.000      3.64333    12.24626
-zp_med_hh_~c |   1.317697   2.919319     0.45   0.652    -4.412222    7.047617
-zp_med_value |   .1206781   2.774525     0.04   0.965    -5.325045    5.566401
- zp_med_rent |   .1530227   1.075496     0.14   0.887    -1.957916    2.263962
-  zp_poverty |  -1.617525   2.148957    -0.75   0.452    -5.835409     2.60036
- zp_ba_share |  -1.572926   1.884829    -0.83   0.404    -5.272391    2.126539
-zp_renter_~e |   1.321385   1.607453     0.82   0.411    -1.833658    4.476428
-  zp_vacancy |  -1.282227   1.923876    -0.67   0.505    -5.058331    2.493877
-zp_seasona~e |   3.456145   1.674593     2.06   0.039     .1693233    6.742967
-zp_mainlan~e |   .4882603   1.141707     0.43   0.669    -1.752636    2.729157
-    zp_lnpop |   .2062958   1.182323     0.17   0.862    -2.114318     2.52691
-       _cons |   8.289883   .3888874    21.32   0.000     7.526591    9.053175
+          dD |    7.37406   2.561146     2.88   0.004     2.347148    12.40097
+zpd_med_hh~c |   10.39996   4.520618     2.30   0.022     1.527073    19.27284
+zpd_med_va~e |  -1.973012   2.990254    -0.66   0.510    -7.842159    3.896134
+zpd_med_rent |  -3.169616   2.162656    -1.47   0.143    -7.414387    1.075155
+ zpd_poverty |   2.185644   4.358399     0.50   0.616    -6.368843    10.74013
+zpd_ba_share |   -3.00327   3.841334    -0.78   0.435    -10.54288    4.536343
+zpd_renter~e |    6.19889   3.975943     1.56   0.119    -1.604928    14.00271
+ zpd_vacancy |   .3436186    3.38276     0.10   0.919    -6.295924    6.983161
+zpd_season~e |   1.749823   2.508209     0.70   0.486    -3.173186    6.672833
+zpd_mainla~e |   1.714281   2.082245     0.82   0.411    -2.372664    5.801226
+   zpd_lnpop |  -.7021848    2.53101    -0.28   0.782    -5.669947    4.265577
+       _cons |   8.093049   .3767251    21.48   0.000     7.353629     8.83247
 ------------------------------------------------------------------------------
 
 Absorbed degrees of freedom:
@@ -471,6 +471,16 @@ Panel variable: tract_num (strongly balanced)
 (981 missing values generated)
 (981 missing values generated)
 (2,572 observations deleted)
+(1,210 missing values generated)
+(1,223 missing values generated)
+(1,342 missing values generated)
+(1,184 missing values generated)
+(1,171 missing values generated)
+(1,184 missing values generated)
+(1,184 missing values generated)
+(1,184 missing values generated)
+(1,171 missing values generated)
+(1,171 missing values generated)
 
 ===== PMD purch_hisp_n spec 1 =====
 (MWFE estimator converged in 1 iterations)
@@ -532,30 +542,30 @@ Absorbed degrees of freedom:
 (MWFE estimator converged in 1 iterations)
 
 HDFE Linear regression                            Number of obs   =      8,124
-Absorbing 1 HDFE group                            F(  11,    850) =       4.53
-Statistics robust to heteroskedasticity           Prob > F        =     0.0000
-                                                  R-squared       =     0.2053
-                                                  Adj R-squared   =     0.1062
-                                                  Within R-sq.    =     0.0195
-Number of clusters (tract_num) =        851       Root MSE        =    54.1604
+Absorbing 1 HDFE group                            F(  11,    850) =       1.65
+Statistics robust to heteroskedasticity           Prob > F        =     0.0800
+                                                  R-squared       =     0.1914
+                                                  Adj R-squared   =     0.0905
+                                                  Within R-sq.    =     0.0023
+Number of clusters (tract_num) =        851       Root MSE        =    54.6342
 
                             (Std. err. adjusted for 851 clusters in tract_num)
 ------------------------------------------------------------------------------
              |               Robust
          pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 -------------+----------------------------------------------------------------
-          dD |   3.213981   4.016293     0.80   0.424    -4.669033      11.097
-zp_med_hh_~c |   3.224595   5.309136     0.61   0.544    -7.195959    13.64515
-zp_med_value |  -14.75499    5.27656    -2.80   0.005    -25.11161   -4.398379
- zp_med_rent |  -5.935424   2.074453    -2.86   0.004    -10.00708   -1.863772
-  zp_poverty |   3.868622   4.318828     0.90   0.371    -4.608194    12.34544
- zp_ba_share |  -.8141707   3.797114    -0.21   0.830     -8.26699    6.638648
-zp_renter_~e |  -4.490639   3.168793    -1.42   0.157    -10.71022    1.728938
-  zp_vacancy |  -.2905788   3.041097    -0.10   0.924    -6.259519    5.678361
-zp_seasona~e |  -.0678651   3.207517    -0.02   0.983    -6.363448    6.227717
-zp_mainlan~e |   4.347142   1.990776     2.18   0.029     .4397292    8.254555
-    zp_lnpop |  -4.051751   2.238052    -1.81   0.071    -8.444507    .3410046
-       _cons |  -.3268614   .9877808    -0.33   0.741    -2.265637    1.611914
+          dD |   3.171423   4.711036     0.67   0.501    -6.075204    12.41805
+zpd_med_hh~c |    10.0599   6.821489     1.47   0.141    -3.329036    23.44884
+zpd_med_va~e |  -9.476503   4.757095    -1.99   0.047    -18.81353   -.1394724
+zpd_med_rent |   .5130163   3.897116     0.13   0.895    -7.136082    8.162114
+ zpd_poverty |   1.824232   8.754867     0.21   0.835    -15.35946    19.00793
+zpd_ba_share |  -6.065941   6.600566    -0.92   0.358    -19.02126    6.889378
+zpd_renter~e |  -7.592212   6.174837    -1.23   0.219    -19.71193    4.527503
+ zpd_vacancy |   1.436798   5.353745     0.27   0.788    -9.071313    11.94491
+zpd_season~e |  -1.228505   4.072521    -0.30   0.763    -9.221882    6.764872
+zpd_mainla~e |   9.374973   3.330292     2.82   0.005     2.838412    15.91153
+   zpd_lnpop |   -9.41411   4.748809    -1.98   0.048    -18.73488   -.0933424
+       _cons |   .7570113   .9458718     0.80   0.424    -1.099507    2.613529
 ------------------------------------------------------------------------------
 
 Absorbed degrees of freedom:
@@ -580,6 +590,16 @@ Panel variable: tract_num (strongly balanced)
 (981 missing values generated)
 (981 missing values generated)
 (2,572 observations deleted)
+(1,210 missing values generated)
+(1,223 missing values generated)
+(1,342 missing values generated)
+(1,184 missing values generated)
+(1,171 missing values generated)
+(1,184 missing values generated)
+(1,184 missing values generated)
+(1,184 missing values generated)
+(1,171 missing values generated)
+(1,171 missing values generated)
 
 ===== PMD purch_nonhisp_n spec 1 =====
 (MWFE estimator converged in 1 iterations)
@@ -641,30 +661,30 @@ Absorbed degrees of freedom:
 (MWFE estimator converged in 1 iterations)
 
 HDFE Linear regression                            Number of obs   =      8,124
-Absorbing 1 HDFE group                            F(  11,    850) =       2.12
-Statistics robust to heteroskedasticity           Prob > F        =     0.0169
-                                                  R-squared       =     0.1341
-                                                  Adj R-squared   =     0.0260
-                                                  Within R-sq.    =     0.0110
-Number of clusters (tract_num) =        851       Root MSE        =    21.7157
+Absorbing 1 HDFE group                            F(  11,    850) =       4.98
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.1461
+                                                  Adj R-squared   =     0.0395
+                                                  Within R-sq.    =     0.0247
+Number of clusters (tract_num) =        851       Root MSE        =    21.5646
 
                             (Std. err. adjusted for 851 clusters in tract_num)
 ------------------------------------------------------------------------------
              |               Robust
          pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 -------------+----------------------------------------------------------------
-          dD |   10.09586   3.323868     3.04   0.002     3.571905    16.61981
-zp_med_hh_~c |  -.6131441   2.502338    -0.25   0.806    -5.524629    4.298341
-zp_med_value |   2.677587   2.092714     1.28   0.201    -1.429904    6.785079
- zp_med_rent |  -1.200758   1.041543    -1.15   0.249    -3.245055    .8435391
-  zp_poverty |   .0448357   1.630222     0.03   0.978    -3.154898    3.244569
- zp_ba_share |  -.3849267    1.83444    -0.21   0.834     -3.98549    3.215637
-zp_renter_~e |   .5968332   1.098268     0.54   0.587    -1.558802    2.752469
-  zp_vacancy |   1.898323     .97983     1.94   0.053    -.0248474    3.821493
-zp_seasona~e |  -1.728976   1.479723    -1.17   0.243    -4.633316    1.175364
-zp_mainlan~e |   2.636773   1.040651     2.53   0.011     .5942264     4.67932
-    zp_lnpop |   .3437053   .9933108     0.35   0.729    -1.605924    2.293335
-       _cons |   .8633739   .3585951     2.41   0.016     .1595382     1.56721
+          dD |   3.589705   2.564172     1.40   0.162    -1.443147    8.622557
+zpd_med_hh~c |   2.570875   7.006904     0.37   0.714    -11.18199    16.32374
+zpd_med_va~e |   13.65253   4.817947     2.83   0.005     4.196061      23.109
+zpd_med_rent |   6.266335   3.699581     1.69   0.091    -.9950498    13.52772
+ zpd_poverty |   2.212545   5.999439     0.37   0.712    -9.562907      13.988
+zpd_ba_share |   -12.9035   5.515387    -2.34   0.020    -23.72887   -2.078125
+zpd_renter~e |   4.260417   4.853621     0.88   0.380    -5.266071    13.78691
+ zpd_vacancy |   8.860043   5.106643     1.74   0.083    -1.163066    18.88315
+zpd_season~e |  -5.330642   4.104567    -1.30   0.194    -13.38692    2.725633
+zpd_mainla~e |   6.020688   3.948984     1.52   0.128    -1.730215    13.77159
+   zpd_lnpop |   5.442292   3.759052     1.45   0.148     -1.93582     12.8204
+       _cons |   .6975818   .3165577     2.20   0.028     .0762553    1.318908
 ------------------------------------------------------------------------------
 
 Absorbed degrees of freedom:
@@ -682,5 +702,5 @@ Absorbed degrees of freedom:
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/controls_robustness.log
   log type:  text
- closed on:  14 Aug 2026, 16:56:25
+ closed on:  14 Aug 2026, 17:07:06
 -------------------------------------------------------------------------------

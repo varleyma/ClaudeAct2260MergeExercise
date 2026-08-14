@@ -3,7 +3,7 @@
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design1/controls_robustness_ring.log
   log type:  text
- opened on:  14 Aug 2026, 16:57:26
+ opened on:  14 Aug 2026, 17:08:09
 
 . 
 . tempname pf
@@ -33,16 +33,23 @@
  16.     gen dD = treat == 1 & L1.treat == 0
  17.     egen evertr = max(treat), by(cellid)
  18.     keep if dD == 1 | evertr == 0
- 19.     forvalues s = 1/3 {
- 20.         if `s' == 1 local abs absorb(tt)
- 21.         else        local abs absorb(cyear)
- 22.         local rhs dD
- 23.         if `s' == 3 local rhs dD $ZP
- 24.         di as result _n "===== ring PMD `y' spec `s' ====="
- 25.         reghdfe pmd `rhs', `abs' vce(cluster cellid)
- 26.         post `pf' ("ring_`y'") (`s') (_b[dD]) (_se[dD]) (e(r2)) (e(N))
- 27.     }
- 28. }
+ 19.     * X x post-treatment: in the differenced clean sample 1{t>=onset} = dD
+.     global ZPD
+ 20.     foreach c of global CTRLS {
+ 21.         capture drop zpd_`c'
+ 22.         gen zpd_`c' = z_`c' * dD
+ 23.         global ZPD $ZPD zpd_`c'
+ 24.     }
+ 25.     forvalues s = 1/3 {
+ 26.         if `s' == 1 local abs absorb(tt)
+ 27.         else        local abs absorb(cyear)
+ 28.         local rhs dD
+ 29.         if `s' == 3 local rhs dD $ZPD
+ 30.         di as result _n "===== ring PMD `y' spec `s' ====="
+ 31.         reghdfe pmd `rhs', `abs' vce(cluster cellid)
+ 32.         post `pf' ("ring_`y'") (`s') (_b[dD]) (_se[dD]) (e(r2)) (e(N))
+ 33.     }
+ 34. }
 (0 observations deleted)
 
 Panel variable: cellid (unbalanced)
@@ -58,6 +65,16 @@ Panel variable: cellid (unbalanced)
 (2,411 missing values generated)
 (2,411 missing values generated)
 (9,852 observations deleted)
+(1,108 missing values generated)
+(1,108 missing values generated)
+(1,128 missing values generated)
+(1,108 missing values generated)
+(1,108 missing values generated)
+(1,108 missing values generated)
+(1,108 missing values generated)
+(1,108 missing values generated)
+(1,108 missing values generated)
+(1,108 missing values generated)
 
 ===== ring PMD lnp spec 1 =====
 (MWFE estimator converged in 1 iterations)
@@ -119,30 +136,30 @@ Absorbed degrees of freedom:
 (MWFE estimator converged in 1 iterations)
 
 HDFE Linear regression                            Number of obs   =     11,088
-Absorbing 1 HDFE group                            F(  11,   2043) =      10.63
+Absorbing 1 HDFE group                            F(  11,   2043) =       5.03
 Statistics robust to heteroskedasticity           Prob > F        =     0.0000
-                                                  R-squared       =     0.3553
-                                                  Adj R-squared   =     0.3254
-                                                  Within R-sq.    =     0.0111
-Number of clusters (cellid)  =      2,044         Root MSE        =     0.3443
+                                                  R-squared       =     0.3505
+                                                  Adj R-squared   =     0.3204
+                                                  Within R-sq.    =     0.0039
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
 
                              (Std. err. adjusted for 2,044 clusters in cellid)
 ------------------------------------------------------------------------------
              |               Robust
          pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 -------------+----------------------------------------------------------------
-          dD |   .0248761   .0141018     1.76   0.078    -.0027792    .0525314
-zp_med_hh_~c |   .0287742   .0170437     1.69   0.092    -.0046506     .062199
-zp_med_value |   .0283887    .012057     2.35   0.019     .0047435    .0520339
- zp_med_rent |  -.0210335   .0133528    -1.58   0.115    -.0472201    .0051532
-  zp_poverty |  -.0165523   .0154683    -1.07   0.285    -.0468876    .0137829
- zp_ba_share |  -.0465357   .0157134    -2.96   0.003    -.0773517   -.0157198
-zp_renter_~e |   .0142127   .0185511     0.77   0.444    -.0221683    .0505937
-  zp_vacancy |  -.0276858     .02076    -1.33   0.182    -.0683988    .0130271
-zp_seasona~e |   .0314165   .0212891     1.48   0.140     -.010334     .073167
-zp_mainlan~e |  -.0101263   .0084755    -1.19   0.232    -.0267479    .0064952
-    zp_lnpop |  -.0517163   .0106954    -4.84   0.000    -.0726912   -.0307413
-       _cons |   .2354307   .0048313    48.73   0.000      .225956    .2449055
+          dD |   .0190664   .0144527     1.32   0.187    -.0092773      .04741
+zpd_med_hh~c |   .0132564    .039982     0.33   0.740    -.0651533    .0916661
+zpd_med_va~e |   .0823839   .0259603     3.17   0.002     .0314725    .1332953
+zpd_med_rent |  -.0076527   .0205656    -0.37   0.710    -.0479844    .0326789
+ zpd_poverty |   .0255667   .0312057     0.82   0.413    -.0356317     .086765
+zpd_ba_share |  -.0119731   .0337229    -0.36   0.723    -.0781079    .0541618
+zpd_renter~e |   .0217755   .0268708     0.81   0.418    -.0309215    .0744726
+ zpd_vacancy |   .0281982   .0370153     0.76   0.446    -.0443935    .1007898
+zpd_season~e |  -.0124043   .0407699    -0.30   0.761    -.0923592    .0675507
+zpd_mainla~e |  -.0221839   .0167565    -1.32   0.186    -.0550454    .0106777
+   zpd_lnpop |   .0054399   .0205876     0.26   0.792    -.0349349    .0458147
+       _cons |   .2348958   .0049394    47.56   0.000      .225209    .2445825
 ------------------------------------------------------------------------------
 
 Absorbed degrees of freedom:
@@ -166,6 +183,16 @@ Panel variable: cellid (unbalanced)
 (2,404 missing values generated)
 (2,404 missing values generated)
 (8,699 observations deleted)
+(1,097 missing values generated)
+(1,097 missing values generated)
+(1,115 missing values generated)
+(1,097 missing values generated)
+(1,097 missing values generated)
+(1,097 missing values generated)
+(1,097 missing values generated)
+(1,097 missing values generated)
+(1,097 missing values generated)
+(1,097 missing values generated)
 
 ===== ring PMD netin spec 1 =====
 (MWFE estimator converged in 1 iterations)
@@ -227,30 +254,30 @@ Absorbed degrees of freedom:
 (MWFE estimator converged in 1 iterations)
 
 HDFE Linear regression                            Number of obs   =     10,752
-Absorbing 1 HDFE group                            F(  11,   1914) =       4.98
-Statistics robust to heteroskedasticity           Prob > F        =     0.0000
-                                                  R-squared       =     0.1733
-                                                  Adj R-squared   =     0.1354
-                                                  Within R-sq.    =     0.0063
-Number of clusters (cellid)  =      1,915         Root MSE        =     0.1709
+Absorbing 1 HDFE group                            F(  11,   1914) =       3.43
+Statistics robust to heteroskedasticity           Prob > F        =     0.0001
+                                                  R-squared       =     0.1761
+                                                  Adj R-squared   =     0.1383
+                                                  Within R-sq.    =     0.0096
+Number of clusters (cellid)  =      1,915         Root MSE        =     0.1706
 
                              (Std. err. adjusted for 1,915 clusters in cellid)
 ------------------------------------------------------------------------------
              |               Robust
          pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
 -------------+----------------------------------------------------------------
-          dD |   .0221943   .0089576     2.48   0.013     .0046266    .0397621
-zp_med_hh_~c |  -.0085962   .0063164    -1.36   0.174    -.0209839    .0037916
-zp_med_value |  -.0055498   .0042141    -1.32   0.188    -.0138146     .002715
- zp_med_rent |  -.0146893   .0040395    -3.64   0.000    -.0226115    -.006767
-  zp_poverty |  -.0074727   .0063907    -1.17   0.242    -.0200061    .0050607
- zp_ba_share |  -.0004524   .0052537    -0.09   0.931    -.0107561    .0098512
-zp_renter_~e |  -.0108059   .0061854    -1.75   0.081    -.0229366    .0013249
-  zp_vacancy |   .0049129   .0078632     0.62   0.532    -.0105085    .0203343
-zp_seasona~e |   .0125369   .0089518     1.40   0.162    -.0050194    .0300933
-zp_mainlan~e |   .0115043   .0033381     3.45   0.001     .0049576    .0180509
-    zp_lnpop |   .0173001   .0045391     3.81   0.000      .008398    .0262022
-       _cons |    .032533   .0024025    13.54   0.000     .0278213    .0372447
+          dD |   .0282647   .0099944     2.83   0.005     .0086637    .0478657
+zpd_med_hh~c |  -.0111646   .0224622    -0.50   0.619    -.0552176    .0328885
+zpd_med_va~e |  -.0366009   .0146363    -2.50   0.012    -.0653058   -.0078961
+zpd_med_rent |  -.0111863   .0129576    -0.86   0.388    -.0365987    .0142262
+ zpd_poverty |   -.013052   .0195703    -0.67   0.505    -.0514333    .0253294
+zpd_ba_share |   .0179769   .0173186     1.04   0.299    -.0159884    .0519421
+zpd_renter~e |   .0041446    .015181     0.27   0.785    -.0256284    .0339176
+ zpd_vacancy |   .0324227   .0222765     1.46   0.146     -.011266    .0761114
+zpd_season~e |    .015962   .0254519     0.63   0.531    -.0339544    .0658785
+zpd_mainla~e |    .006548   .0097466     0.67   0.502    -.0125671    .0256631
+   zpd_lnpop |    .030697   .0125004     2.46   0.014     .0061813    .0552128
+       _cons |    .032397    .002406    13.46   0.000     .0276782    .0371157
 ------------------------------------------------------------------------------
 
 Absorbed degrees of freedom:
@@ -268,5 +295,5 @@ Absorbed degrees of freedom:
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design1/controls_robustness_ring.log
   log type:  text
- closed on:  14 Aug 2026, 16:57:28
+ closed on:  14 Aug 2026, 17:08:11
 -------------------------------------------------------------------------------

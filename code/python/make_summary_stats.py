@@ -178,3 +178,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def _copy_main():
+    import shutil
+    main = os.path.join(OUT, "main")
+    os.makedirs(main, exist_ok=True)
+    shutil.copy(os.path.join(OUT, "tab_summary_stats.tex"), main)
+    print("copied summary stats to output/tables/main/")
+
+
+_copy_main()

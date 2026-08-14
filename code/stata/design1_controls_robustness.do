@@ -8,7 +8,10 @@
    (1) base:            calendar-year effects
    (2) + county-year:   county x year effects (county = event's municipio)
    (3) + controls:      (2) + standardized 2010 PRCS characteristics of the
-                        EVENT's tract interacted with Post (1{year >= 2020})
+                        EVENT's tract interacted with the cell's
+                        POST-TREATMENT indicator (X x 1{t>=onset} = X x dD
+                        in the differenced clean sample -> Treated = effect
+                        at sample-mean baseline characteristics)
 
  Outcomes: cell mean log sale price (lnp) and net H->NH conversion per
  classified sale (netin). SEs clustered by cell.
@@ -73,13 +76,9 @@ rename tract_geoid tract_geoid_raw
 gen tract_geoid = substr(tract_geoid_raw, 1, 11)
 merge m:1 tract_geoid using "$D2/_prcs.dta", keep(master match) nogen
 gen lnpop = ln(pop) if pop > 0
-gen post = tt >= 2020
-global ZP
 foreach c of global CTRLS {
     qui sum `c'
     gen z_`c' = (`c' - r(mean)) / r(sd)
-    gen zp_`c' = z_`c' * post
-    global ZP $ZP zp_`c'
 }
 gen county = substr(tract_geoid, 1, 5)
 egen cyear = group(county tt)
@@ -109,11 +108,18 @@ foreach y in lnp netin {
     gen dD = treat == 1 & L1.treat == 0
     egen evertr = max(treat), by(cellid)
     keep if dD == 1 | evertr == 0
+    * X x post-treatment: in the differenced clean sample 1{t>=onset} = dD
+    global ZPD
+    foreach c of global CTRLS {
+        capture drop zpd_`c'
+        gen zpd_`c' = z_`c' * dD
+        global ZPD $ZPD zpd_`c'
+    }
     forvalues s = 1/3 {
         if `s' == 1 local abs absorb(tt)
         else        local abs absorb(cyear)
         local rhs dD
-        if `s' == 3 local rhs dD $ZP
+        if `s' == 3 local rhs dD $ZPD
         di as result _n "===== ring PMD `y' spec `s' ====="
         reghdfe pmd `rhs', `abs' vce(cluster cellid)
         post `pf' ("ring_`y'") (`s') (_b[dD]) (_se[dD]) (e(r2)) (e(N))

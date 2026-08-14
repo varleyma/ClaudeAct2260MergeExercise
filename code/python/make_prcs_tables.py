@@ -185,8 +185,12 @@ def ladder_table():
             "PRCS baseline characteristics (median household income, home "
             "value, and gross rent; poverty, BA+, renter, vacancy, "
             "seasonal-home, and mainland-born shares; log population) "
-            "interacted with Post ($1\\{\\text{year} \\ge 2020\\}$, the boom "
-            "era). Tract fixed effects are subsumed by the long-differencing. "
+            "interacted with the unit's post-treatment indicator (which "
+            "turns on at the tract's first identified purchase; in the "
+            "differenced clean sample this is $X \\times$ treatment entry), "
+            "so the column (3) Treated coefficient is the effect at "
+            "sample-mean 2010 characteristics. Tract fixed effects are "
+            "subsumed by the long-differencing. "
             "Panel A: tract log price (Red Atlas, count-weighted annual "
             "mean) and log mean purchase-borrower income (HMDA, 2012--2024), "
             "both scaled by 100. Panel B: purchase origination counts by "
@@ -221,7 +225,7 @@ def ladder_table():
         out.append(f"    {felabel} & Yes & Yes & Yes & Yes & Yes & Yes \\\\")
         out.append("    Calendar-year effects & Yes & No & No & Yes & No & No \\\\")
         out.append("    County-year effects & No & Yes & Yes & No & Yes & Yes \\\\")
-        out.append("    2010 Controls $\\times$ Post & No & No & Yes & No & No & Yes \\\\")
+        out.append("    2010 Controls $\\times$ Post-Treat. & No & No & Yes & No & No & Yes \\\\")
         return out
 
     lines += ["\\multicolumn{7}{l}{\\textbf{Panel A: prices and borrower income}} \\\\"]
@@ -251,9 +255,11 @@ def ladder_table():
              "table exactly). Specifications: (1) calendar-year effects; (2) "
              "county$\\times$year effects (the county is the event's "
              "municipio); (3) adds ten standardized 2010 PRCS characteristics "
-             "of the event's tract interacted with Post ($1\\{\\text{year} "
-             "\\ge 2020\\}$). Cell fixed effects are subsumed by the "
-             "long-differencing. Outcomes: cell mean log sale price "
+             "of the event's tract interacted with the cell's post-treatment "
+             "indicator ($X \\times$ treatment entry in the differenced clean "
+             "sample), so the column (3) Treated coefficient is the effect "
+             "at sample-mean 2010 characteristics. Cell fixed effects are "
+             "subsumed by the long-differencing. Outcomes: cell mean log sale price "
              "($\\times$100) and the net Hispanic-to-non-Hispanic ownership "
              "conversion rate per classified sale (percentage points). "
              "Robust standard errors are clustered at the cell level and "
@@ -275,3 +281,17 @@ def ladder_table():
 if __name__ == "__main__":
     balance_table()
     ladder_table()
+
+
+def copy_main():
+    import shutil
+    main = os.path.join(OUT, "main")
+    os.makedirs(main, exist_ok=True)
+    for t in ("tab_controls_robustness.tex", "tab_ring_controls_robustness.tex"):
+        p = os.path.join(OUT, t)
+        if os.path.exists(p):
+            shutil.copy(p, main)
+    print("copied ladders to output/tables/main/")
+
+
+copy_main()

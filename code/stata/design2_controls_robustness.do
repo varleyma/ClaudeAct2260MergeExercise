@@ -8,7 +8,11 @@
    (1) base:            calendar-year effects
    (2) + county-year:   county x year effects
    (3) + controls:      (2) + 2010 PRCS baseline controls (standardized)
-                        interacted with Post (1{year >= 2020})
+                        interacted with the unit's POST-TREATMENT indicator.
+                        In the pre-mean-differenced equation X x 1{t>=onset}
+                        becomes X x dD on the clean sample, so the Treated
+                        coefficient is the effect at sample-mean baseline
+                        characteristics.
 
  Outcomes:
    lnhp            100 x ln tract price (Red Atlas, count-weighted annual mean)
@@ -44,14 +48,10 @@ capture program drop prepctrl
 program define prepctrl
     merge m:1 tract_geoid using "$D2/_prcs.dta", keep(master match) nogen
     gen lnpop = ln(pop) if pop > 0
-    gen post = year >= 2020
-    global ZP
     foreach c of global CTRLS {
         capture drop z_`c'
         qui sum `c'
         gen z_`c' = (`c' - r(mean)) / r(sd)
-        gen zp_`c' = z_`c' * post
-        global ZP $ZP zp_`c'
     }
     gen county = substr(tract_geoid, 1, 5)
     egen cyear = group(county year)
@@ -78,11 +78,18 @@ program define pmdladder
     gen dD = treat == 1 & L1.treat == 0
     egen evertr = max(treat), by(tract_num)
     keep if dD == 1 | evertr == 0
+    * X x post-treatment: in the differenced clean sample 1{t>=onset} = dD
+    global ZPD
+    foreach c of global CTRLS {
+        capture drop zpd_`c'
+        gen zpd_`c' = z_`c' * dD
+        global ZPD $ZPD zpd_`c'
+    }
     forvalues s = 1/3 {
         if `s' == 1 local abs absorb(year)
         else        local abs absorb(cyear)
         local rhs dD
-        if `s' == 3 local rhs dD $ZP
+        if `s' == 3 local rhs dD $ZPD
         di as result _n "===== PMD `name' spec `s' ====="
         reghdfe pmd `rhs', `abs' vce(cluster tract_num)
         post `pf' ("`name'") (`s') (_b[dD]) (_se[dD]) (e(r2)) (e(N))
