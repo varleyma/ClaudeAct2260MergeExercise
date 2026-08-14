@@ -249,9 +249,13 @@ def ladder_table():
              "interacted with Post ($1\\{\\text{year} \\ge 2020\\}$). "
              "Outcomes: cell mean log sale price ($\\times$100) and the net "
              "Hispanic-to-non-Hispanic ownership conversion rate per "
-             "classified sale (percentage points). Robust standard errors "
-             "are clustered at the cell level and reported in parentheses. "
-             + SIGNOTE)
+             "classified sale (percentage points). Observation counts exceed "
+             "those of the LP-DiD tables because TWFE uses the full cell "
+             "panel, whereas the LP-DiD clean-control sample keeps only "
+             "newly treated cells at onset plus never-treated cells; the "
+             "estimates nonetheless agree (e.g.\\ price: TWFE 5.1 vs.\\ PMD "
+             "5.3). Robust standard errors are clustered at the cell level "
+             "and reported in parentheses. " + SIGNOTE)
     lines = ["\\begin{table}[H]", "\\centering",
              f"\\caption{{\\textbf{{Ring-design treatment effects are robust to county-year shocks and baseline-trend controls}} {rnote}}}",
              "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccccc}",
