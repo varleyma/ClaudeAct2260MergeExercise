@@ -130,7 +130,8 @@ NOTE_LPDID = ("LP-DiD pooled estimates; pre and post pooled coefficients are rel
               "(shares in pp). SEs clustered by unit (cell/tract).")
 
 R2MAP = {}
-for _r2file in ("pmd_stats.csv", "pmd_stats_withinevent.csv", "pmd_stats_netin.csv"):
+for _r2file in ("pmd_stats.csv", "pmd_stats_withinevent.csv", "pmd_stats_netin.csv",
+                "pmd_stats_dose2.csv"):
     _r2path = os.path.join(OUT, _r2file)
     if os.path.exists(_r2path):
         for _r in load_csv(_r2path):
@@ -190,6 +191,10 @@ def d1fe(hed="N"):
 def main():
     # ================= Design 1 robustness figures =================
     rob = load_csv(os.path.join(O1, "robustness_coefs.csv"))
+    # two-way dose splits (design1_dose_2way.do) share the suite's grab format
+    _d2w = os.path.join(O1, "dose2_coefs.csv")
+    if os.path.exists(_d2w):
+        rob += load_csv(_d2w)
     have_mt = "matrix_type" in rob[0]
     if not have_mt:
         print("WARNING: robustness_coefs.csv lacks pooled rows; D1 tables skipped")
@@ -207,8 +212,8 @@ def main():
          [("T6_real_far750", "Investor events"), ("T6_placebo", "Placebo events")]),
         ("tab_fig3_gradient.tex", "Spatial gradient (fig.\\ 3)",
          [("T1_baseline", "Near 0--250m"), ("T3_gradient_gap", "Gap 250--400m")]),
-        ("tab_fig4_dose.tex", "By local event density (fig.\\ 4)",
-         [("T4_dose_low", "0--2 events"), ("T4_dose_mid", "3--25"), ("T4_dose_high", "$>$25")]),
+        ("tab_fig4_dose.tex", "By local investor concentration (fig.\\ 4)",
+         [("T4b_lo14", "1--4 purchases"), ("T4b_hi5", "5+ purchases")]),
         ("tab_fig5_late.tex", "Censoring robustness (fig.\\ 5)",
          [("T1_baseline", "All events"), ("T5_late", "Events 2018+")]),
         ("tab_fig6_composition.tex", "Composition outcomes (fig.\\ 6)",
