@@ -87,12 +87,18 @@ def main():
     from collections import defaultdict
     pw, ns = defaultdict(float), defaultdict(float)
     with open(REDATLAS, newline="", encoding="utf-8") as fh:
-        for r in csv.DictReader(fh):
-            p = f(r.get("meantransactionpricepertract"))
-            n = f(r.get("numberoftransactions"))
+        # Red Atlas headers are camelCase (geoTractId, NumberOfTransactions...)
+        rdr = csv.reader(fh)
+        hdr = [h.strip().lower() for h in next(rdr)]
+        ix = {h: i for i, h in enumerate(hdr)}
+        ip, in_, it, im = (ix["meantransactionpricepertract"],
+                           ix["numberoftransactions"],
+                           ix["geotractid"], ix["month"])
+        for row in rdr:
+            p, n = f(row[ip]), f(row[in_])
             if not p or not n or n <= 0:
                 continue
-            key = (r["geotractid"], r["month"][:4])
+            key = (row[it], row[im][:4])
             pw[key] += p * n
             ns[key] += n
     tprice = [pw[k] / ns[k] for k in pw]

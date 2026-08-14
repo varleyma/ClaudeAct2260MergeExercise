@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 16:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 16:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -287,12 +287,11 @@ texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
 
 [2
 
-]
-Overfull \vbox (87.2383pt too high) has occurred while \output is active []
+] (./tab_dose_crim.tex)
 
+[3
 
-
-[3] (./tab_fig10_hispbuyers.tex)
+] (./tab_fig10_hispbuyers.tex)
 
 [4
 
@@ -397,6 +396,14 @@ Overfull \hbox (78.6444pt too wide) in paragraph at lines 28--30
 
 [28
 
+] (./tab_placebo.tex)
+
+[29
+
+] (./tab_ring_controls_robustness.tex)
+
+[30
+
 ] (./tab_summary_stats.tex
 LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 3
 8.
@@ -408,26 +415,22 @@ LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 38.
 )
 
-[29
+[31
 
 ] (./tables_preview.aux)
  ***********
 LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-09-10>
  ***********
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
  ) 
 Here is how much of TeX's memory you used:
- 3449 strings out of 473579
- 56422 string characters out of 5732262
- 471952 words of memory out of 5000000
- 26233 multiletter control sequences out of 15000+600000
+ 3470 strings out of 473579
+ 56933 string characters out of 5732262
+ 472000 words of memory out of 5000000
+ 26245 multiletter control sequences out of 15000+600000
  560117 words of font info for 43 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 59i,10n,67p,1689b,358s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 59i,10n,67p,1327b,358s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
 live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2024/texmf-di
@@ -438,10 +441,10 @@ s/cm/cmr7.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10
 .pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/t
 exlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb><c:/texlive/20
 24/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on tables_preview.pdf (29 pages, 173481 bytes).
+Output written on tables_preview.pdf (31 pages, 179972 bytes).
 PDF statistics:
- 153 PDF objects out of 1000 (max. 8388607)
- 99 compressed objects within 1 object stream
+ 161 PDF objects out of 1000 (max. 8388607)
+ 104 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

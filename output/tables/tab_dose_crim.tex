@@ -1,0 +1,29 @@
+\begin{table}[H]
+\centering
+\caption{\textbf{Price Effects by Investor Concentration: Ring and Tract Designs} This table reports LP-DiD price effects by investor concentration under both designs, on the tract design's dose convention. Columns (1)-(2): ring design, events split by total identified purchases within 1km of the event (the event itself included); each group's near rings (0--250m) vs never-treated control rings, cell-level annual LP-DiD. Columns (3)-(4): tract design, treated tracts split by identified purchases in the tract, each group vs never-treated tracts. Pre and post pooled coefficients are relative to the $t{-}1$ base; Post$-$pre is the single pre-mean-differenced LP-DiD regression (Dube et al.\ 2023), whose SE, R-squared, and Observations are reported. All outcomes 100$\times$log price; SEs clustered by cell (ring) or tract. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
+\begin{tabular}{lcccc}
+\toprule\midrule
+ & \multicolumn{2}{c}{\textit{Ring design}} & \multicolumn{2}{c}{\textit{Tract design}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+ & 1--4 purch. & 5+ purch. & 1--4 purch. & 5+ purch. \\
+ & (1) & (2) & (3) & (4) \\
+\midrule
+    Pooled pre & -5.61 & +1.80 & -2.65 & +3.84 \\
+ & (3.67) & (1.90) & (1.75) & (3.81) \\
+    Pooled post & -0.75 & +7.49*** & +3.76* & +18.31*** \\
+ & (4.56) & (2.25) & (2.12) & (2.88) \\
+    Post $-$ pre & -2.74 & +6.41*** & +4.13*** & +16.30*** \\
+ & (3.45) & (1.50) & (1.59) & (2.54) \\
+ & & & & \\
+    Observations & 2,854 & 9,525 & 11,670 & 11,476 \\
+    R-squared & 0.074 & 0.217 & 0.153 & 0.152 \\
+    Unit differencing (LP-DiD) & Yes & Yes & Yes & Yes \\
+    Calendar-year effects & Yes & Yes & Yes & Yes \\
+    Never-treated controls & Yes & Yes & Yes & Yes \\
+\midrule\bottomrule
+\end{tabular}
+}
+\label{tab:dose_crim}
+\end{table}

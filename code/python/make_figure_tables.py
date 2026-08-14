@@ -502,6 +502,79 @@ def main():
     hmda_tables("hmda_pois_coefs.csv", "hmda_poisson.log", "", False)
     hmda_tables("hmda_pois_cfe_coefs.csv", "hmda_poisson_cfe.log", "cfe", True)
 
+    # ================= paper tables: CRIM dose + placebo =================
+    # combined ring/tract dose table (1-4 vs 5+ under both designs)
+    def _pooled_cells(p, key, scale):
+        sp = Spec("", pre=p["pre"] * scale, pre_se=p["pre_se"] * scale,
+                  post=p["post"] * scale, post_se=p["post_se"] * scale)
+        if key in R2MAP:
+            b, se, r2, n = R2MAP[key]
+            sp.pmd = (b * scale, se * scale)
+            sp.r2 = f"{r2:.3f}"
+            sp.nobs = f"{n:,}"
+        return sp
+    dose_specs = [
+        _pooled_cells(lp_pooled(rob, "T4b_lo14"), "T4b_lo14", 100),
+        _pooled_cells(lp_pooled(rob, "T4b_hi5"), "T4b_hi5", 100),
+        _pooled_cells(lp_pooled(d2, "T_lnhp_dose14"), "T_lnhp_dose14", 1),
+        _pooled_cells(lp_pooled(d2, "T_lnhp_dose5"), "T_lnhp_dose5", 1),
+    ]
+    dnote = ("This table reports LP-DiD price effects by investor concentration "
+             "under both designs, on the tract design's dose convention. Columns "
+             "(1)-(2): ring design, events split by total identified purchases "
+             "within 1km of the event (the event itself included); each group's "
+             "near rings (0--250m) vs never-treated control rings, cell-level "
+             "annual LP-DiD. Columns (3)-(4): tract design, treated tracts split "
+             "by identified purchases in the tract, each group vs never-treated "
+             "tracts. Pre and post pooled coefficients are relative to the "
+             "$t{-}1$ base; Post$-$pre is the single pre-mean-differenced LP-DiD "
+             "regression (Dube et al.\\ 2023), whose SE, R-squared, and "
+             "Observations are reported. All outcomes 100$\\times$log price; "
+             "SEs clustered by cell (ring) or tract. " + SIGNOTE)
+    lines = ["\\begin{table}[H]", "\\centering",
+             f"\\caption{{\\textbf{{Price Effects by Investor Concentration: Ring and Tract Designs}} {dnote}}}",
+             "\\scalebox{1.0}{", "\\onehalfspacing",
+             "\\begin{tabular}{lcccc}", "\\toprule\\midrule",
+             " & \\multicolumn{2}{c}{\\textit{Ring design}} & \\multicolumn{2}{c}{\\textit{Tract design}} \\\\",
+             "\\cmidrule(lr){2-3} \\cmidrule(lr){4-5}",
+             " & 1--4 purch. & 5+ purch. & 1--4 purch. & 5+ purch. \\\\",
+             " & (1) & (2) & (3) & (4) \\\\", "\\midrule"]
+    def _drows(name, vals):
+        tops, bots = [], []
+        for b, se in vals:
+            t, bo = cell(b, se, 1.0)
+            tops.append(t); bots.append(bo)
+        lines.append("    " + name + " & " + " & ".join(tops) + " \\\\")
+        if any(bots):
+            lines.append(" & " + " & ".join(bots) + " \\\\")
+    _drows("Pooled pre", [(s.pre, s.pre_se) for s in dose_specs])
+    _drows("Pooled post", [(s.post, s.post_se) for s in dose_specs])
+    _drows("Post $-$ pre", [s.postpre() for s in dose_specs])
+    lines.append(" & & & & \\\\")
+    lines.append("    Observations & " + " & ".join(s.nobs for s in dose_specs) + " \\\\")
+    lines.append("    R-squared & " + " & ".join(s.r2 for s in dose_specs) + " \\\\")
+    lines.append("    Unit differencing (LP-DiD) & Yes & Yes & Yes & Yes \\\\")
+    lines.append("    Calendar-year effects & Yes & Yes & Yes & Yes \\\\")
+    lines.append("    Never-treated controls & Yes & Yes & Yes & Yes \\\\")
+    lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
+              "\\label{tab:dose_crim}", "\\end{table}"]
+    with open(os.path.join(OUT, "tab_dose_crim.tex"), "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    print("wrote tab_dose_crim.tex")
+
+    # standalone placebo table
+    pspecs = [s for t, lab in [("T6_real_far750", "Investor purchases"),
+                               ("T6_placebo", "Placebo purchases")]
+              if (s := spec_from(t, lab))]
+    emit_table("tab_placebo.tex",
+               "Investor Purchases vs Placebo Luxury Purchases", pspecs, FE_D1,
+               "Placebo events are 1{,}500 purchases by individual non-investor "
+               "buyers in the investor price band, drawn from the same "
+               "micro-areas and more than three years from any real event; both "
+               "series use far rings matched at 400--750m. A price response "
+               "unique to investor purchases rules out generic "
+               "luxury-transaction effects. " + NOTE_LPDID, scale=100)
+
     # ================= preview wrapper =================
     tabs = sorted(x for x in os.listdir(OUT) if x.startswith("tab_") and x.endswith(".tex"))
     with open(os.path.join(OUT, "tables_preview.tex"), "w", encoding="utf-8") as fh:

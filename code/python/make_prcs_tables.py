@@ -190,14 +190,9 @@ def ladder_table():
             "purchase-borrower income (HMDA, 2012--2024), both scaled by 100 "
             "(OLS). Panel B: purchase origination counts by borrower "
             "ethnicity (Poisson; coefficients $\\times$100 $\\approx$ percent "
-            "effects, pseudo R-squared reported). Panel C: the ring design's "
-            "event$\\times$ring cell panel (near ring $\\times$ post-event "
-            "indicator; cell fixed effects; the county and 2010 controls are "
-            "the event's municipio and tract), for cell mean log price "
-            "($\\times$100) and the net Hispanic-to-non-Hispanic ownership "
-            "conversion rate per classified sale (percentage points). Robust "
-            "standard errors are clustered at the tract (Panels A--B) or "
-            "cell (Panel C) level and reported in parentheses. " + SIGNOTE)
+            "effects, pseudo R-squared reported). Robust standard errors are "
+            "clustered at the tract level and reported in parentheses. "
+            + SIGNOTE)
 
     lines = ["\\begin{table}[H]", "\\centering",
              f"\\caption{{\\textbf{{Tract-level treatment effects are robust to county-year shocks and baseline-trend controls}} {note}}}",
@@ -234,17 +229,41 @@ def ladder_table():
               "\\multicolumn{7}{l}{\\textbf{Panel B: purchase originations by borrower ethnicity (Poisson)}} \\\\"]
     lines += panel("B", "purch_hisp_n", "Hispanic Purchases", "purch_nonhisp_n",
                    "Non-Hispanic Purchases", "Treated", 100, 100, "Pseudo R-squared")
-    if ("ring_lnp", 1) in cr:
-        lines += ["\\midrule",
-                  "\\multicolumn{7}{l}{\\textbf{Panel C: ring design, event$\\times$ring cells (OLS)}} \\\\"]
-        lines += panel("C", "ring_lnp", "100 $\\times$ Log(Price)", "ring_netin",
-                       "Net H$\\to$NH Conversion (pp)", "Near $\\times$ Post", 100, 100,
-                       "R-squared", felabel="Cell FE")
     lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
               "\\label{tab:controls_robustness}", "\\end{table}"]
     with open(os.path.join(OUT, "tab_controls_robustness.tex"), "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
     print("wrote tab_controls_robustness.tex")
+
+    # ---- ring design ladder, own table -------------------------------------
+    if ("ring_lnp", 1) not in cr:
+        return
+    rnote = ("This table subjects the ring design's pooled estimates to the "
+             "same specification ladder as the tract-level outcomes, on the "
+             "event$\\times$ring cell panel: the coefficient is the near-ring "
+             "$\\times$ post-event indicator (TWFE; by construction below the "
+             "clean-control LP-DiD pooled post estimate). Specifications: (1) "
+             "cell and year fixed effects; (2) cell and county$\\times$year "
+             "fixed effects (the county is the event's municipio); (3) adds "
+             "ten standardized 2010 PRCS characteristics of the event's tract "
+             "interacted with Post ($1\\{\\text{year} \\ge 2020\\}$). "
+             "Outcomes: cell mean log sale price ($\\times$100) and the net "
+             "Hispanic-to-non-Hispanic ownership conversion rate per "
+             "classified sale (percentage points). Robust standard errors "
+             "are clustered at the cell level and reported in parentheses. "
+             + SIGNOTE)
+    lines = ["\\begin{table}[H]", "\\centering",
+             f"\\caption{{\\textbf{{Ring-design treatment effects are robust to county-year shocks and baseline-trend controls}} {rnote}}}",
+             "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccccc}",
+             "\\toprule\\midrule"]
+    lines += panel("A", "ring_lnp", "100 $\\times$ Log(Price)", "ring_netin",
+                   "Net H$\\to$NH Conversion (pp)", "Near $\\times$ Post", 100, 100,
+                   "R-squared", felabel="Cell FE")
+    lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
+              "\\label{tab:ring_controls_robustness}", "\\end{table}"]
+    with open(os.path.join(OUT, "tab_ring_controls_robustness.tex"), "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    print("wrote tab_ring_controls_robustness.tex")
 
 
 if __name__ == "__main__":
