@@ -1,0 +1,705 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/ring_ctrl_buildup.log
+  log type:  text
+ opened on:  14 Aug 2026, 17:16:12
+
+. 
+. tempname pf
+
+. postfile `pf' str6 mode double step str16 ctrl double b se nobs ///
+>     using "$OUT/_bu.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/_bu.dta not found)
+
+. 
+. * step 0: county x year only
+. reghdfe pmd dD, absorb(cyear) vce(cluster cellid)
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   1,   2043) =       2.90
+Statistics robust to heteroskedasticity           Prob > F        =     0.0889
+                                                  R-squared       =     0.3483
+                                                  Adj R-squared   =     0.3187
+                                                  Within R-sq.    =     0.0004
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3460
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0241956    .014216     1.70   0.089    -.0036839     .052075
+       _cons |   .2348314   .0049399    47.54   0.000     .2251437    .2445191
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+. post `pf' ("cumul") (0) ("none") (_b[dD]) (_se[dD]) (e(N))
+
+. 
+. local rhs dD
+
+. local i = 0
+
+. foreach c of global CTRLS {
+  2.     local ++i
+  3.     local rhs `rhs' zpd_`c'
+  4.     di as result _n "===== cumulative step `i': + `c' ====="
+  5.     reghdfe pmd `rhs', absorb(cyear) vce(cluster cellid)
+  6.     post `pf' ("cumul") (`i') ("`c'") (_b[dD]) (_se[dD]) (e(N))
+  7. }
+
+===== cumulative step 1: + med_hh_inc =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       2.89
+Statistics robust to heteroskedasticity           Prob > F        =     0.0559
+                                                  R-squared       =     0.3485
+                                                  Adj R-squared   =     0.3188
+                                                  Within R-sq.    =     0.0007
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3460
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0229581   .0142344     1.61   0.107    -.0049574    .0508737
+zpd_med_hh~c |   .0214135   .0128152     1.67   0.095    -.0037186    .0465457
+       _cons |   .2348554   .0049405    47.54   0.000     .2251664    .2445445
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== cumulative step 2: + med_value =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   3,   2043) =      14.26
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3500
+                                                  Adj R-squared   =     0.3204
+                                                  Within R-sq.    =     0.0030
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0203665   .0142639     1.43   0.153    -.0076067    .0483398
+zpd_med_hh~c |  -.0414953   .0185266    -2.24   0.025    -.0778282   -.0051623
+zpd_med_va~e |   .0859473   .0168629     5.10   0.000     .0528771    .1190176
+       _cons |   .2349119   .0049382    47.57   0.000     .2252275    .2445963
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== cumulative step 3: + med_rent =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   4,   2043) =      10.84
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3501
+                                                  Adj R-squared   =     0.3204
+                                                  Within R-sq.    =     0.0032
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0206676    .014277     1.45   0.148    -.0073315    .0486667
+zpd_med_hh~c |  -.0329492   .0195758    -1.68   0.092    -.0713398    .0054414
+zpd_med_va~e |   .0916846   .0176887     5.18   0.000     .0569948    .1263744
+zpd_med_rent |   -.019093   .0161808    -1.18   0.238    -.0508256    .0126397
+       _cons |   .2349108   .0049384    47.57   0.000      .225226    .2445957
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== cumulative step 4: + poverty =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   5,   2043) =       8.77
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3502
+                                                  Adj R-squared   =     0.3205
+                                                  Within R-sq.    =     0.0033
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0207204    .014275     1.45   0.147    -.0072747    .0487155
+zpd_med_hh~c |  -.0084988   .0260364    -0.33   0.744    -.0595595    .0425619
+zpd_med_va~e |    .094145   .0179828     5.24   0.000     .0588784    .1294115
+zpd_med_rent |  -.0181979   .0161818    -1.12   0.261    -.0499324    .0135366
+ zpd_poverty |   .0313629   .0247756     1.27   0.206    -.0172253     .079951
+       _cons |   .2348968   .0049387    47.56   0.000     .2252115    .2445821
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== cumulative step 5: + ba_share =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   6,   2043) =       7.31
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3502
+                                                  Adj R-squared   =     0.3204
+                                                  Within R-sq.    =     0.0033
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0205323   .0144065     1.43   0.154    -.0077207    .0487853
+zpd_med_hh~c |  -.0115707   .0264025    -0.44   0.661    -.0633493    .0402078
+zpd_med_va~e |   .0891966   .0169382     5.27   0.000     .0559786    .1224146
+zpd_med_rent |   -.021298   .0186538    -1.14   0.254    -.0578804    .0152843
+ zpd_poverty |   .0345642   .0265944     1.30   0.194    -.0175907    .0867191
+zpd_ba_share |   .0139435   .0266008     0.52   0.600    -.0382239     .066111
+       _cons |   .2348966   .0049388    47.56   0.000     .2252111    .2445822
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== cumulative step 6: + renter_share =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   7,   2043) =       6.64
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3503
+                                                  Adj R-squared   =     0.3205
+                                                  Within R-sq.    =     0.0035
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0195504   .0143938     1.36   0.175    -.0086777    .0477785
+zpd_med_hh~c |    .016906   .0354201     0.48   0.633    -.0525573    .0863692
+zpd_med_va~e |   .0699827   .0234176     2.99   0.003     .0240579    .1159074
+zpd_med_rent |  -.0182516   .0191385    -0.95   0.340    -.0557846    .0192813
+ zpd_poverty |    .031029   .0269658     1.15   0.250    -.0218544    .0839123
+zpd_ba_share |   .0031517    .029329     0.11   0.914    -.0543662    .0606695
+zpd_renter~e |   .0247243   .0204949     1.21   0.228    -.0154688    .0649174
+       _cons |   .2349006   .0049391    47.56   0.000     .2252143    .2445868
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== cumulative step 7: + vacancy =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   8,   2043) =       5.95
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3504
+                                                  Adj R-squared   =     0.3204
+                                                  Within R-sq.    =     0.0036
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0191889   .0145161     1.32   0.186     -.009279    .0476568
+zpd_med_hh~c |   .0192439   .0353155     0.54   0.586    -.0500142    .0885021
+zpd_med_va~e |   .0676029   .0233663     2.89   0.004     .0217787     .113427
+zpd_med_rent |  -.0138279   .0192262    -0.72   0.472    -.0515329    .0238771
+ zpd_poverty |   .0330754   .0272384     1.21   0.225    -.0203426    .0864934
+zpd_ba_share |   .0007575   .0289252     0.03   0.979    -.0559685    .0574835
+zpd_renter~e |   .0266725   .0204725     1.30   0.193    -.0134766    .0668217
+ zpd_vacancy |    .011206   .0145853     0.77   0.442    -.0173975    .0398096
+       _cons |   .2349046   .0049392    47.56   0.000     .2252181     .244591
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== cumulative step 8: + seasonal_share =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   9,   2043) =       5.52
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3504
+                                                  Adj R-squared   =     0.3204
+                                                  Within R-sq.    =     0.0036
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0191537   .0145155     1.32   0.187     -.009313    .0476204
+zpd_med_hh~c |   .0281978   .0390233     0.72   0.470    -.0483317    .1047274
+zpd_med_va~e |   .0720776   .0242607     2.97   0.003     .0244992     .119656
+zpd_med_rent |  -.0167035   .0192514    -0.87   0.386    -.0544579    .0210509
+ zpd_poverty |   .0347565   .0275976     1.26   0.208    -.0193658    .0888789
+zpd_ba_share |  -.0078497    .033249    -0.24   0.813    -.0730552    .0573557
+zpd_renter~e |   .0199493   .0226705     0.88   0.379    -.0245103    .0644089
+ zpd_vacancy |   .0335138   .0344193     0.97   0.330    -.0339869    .1010145
+zpd_season~e |   -.026362   .0381742    -0.69   0.490    -.1012264    .0485024
+       _cons |   .2349057   .0049395    47.56   0.000     .2252186    .2445927
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== cumulative step 9: + mainland_share =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(  10,   2043) =       5.12
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3505
+                                                  Adj R-squared   =     0.3205
+                                                  Within R-sq.    =     0.0039
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |    .019144   .0145096     1.32   0.187    -.0093112    .0475992
+zpd_med_hh~c |   .0140757   .0402738     0.35   0.727    -.0649064    .0930577
+zpd_med_va~e |   .0826902   .0256706     3.22   0.001     .0323469    .1330334
+zpd_med_rent |  -.0078984   .0204791    -0.39   0.700    -.0480605    .0322638
+ zpd_poverty |   .0277276   .0280709     0.99   0.323    -.0273229    .0827781
+zpd_ba_share |   -.012076   .0337524    -0.36   0.721    -.0782687    .0541168
+zpd_renter~e |   .0182766    .022486     0.81   0.416    -.0258212    .0623744
+ zpd_vacancy |   .0242031   .0342704     0.71   0.480    -.0430055    .0914116
+zpd_season~e |  -.0100073   .0391305    -0.26   0.798    -.0867472    .0667326
+zpd_mainla~e |  -.0226421   .0164202    -1.38   0.168    -.0548442      .00956
+       _cons |   .2348925   .0049393    47.56   0.000     .2252059    .2445792
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== cumulative step 10: + lnpop =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(  11,   2043) =       5.03
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3505
+                                                  Adj R-squared   =     0.3204
+                                                  Within R-sq.    =     0.0039
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3456
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0190664   .0144527     1.32   0.187    -.0092773      .04741
+zpd_med_hh~c |   .0132564    .039982     0.33   0.740    -.0651533    .0916661
+zpd_med_va~e |   .0823839   .0259603     3.17   0.002     .0314725    .1332953
+zpd_med_rent |  -.0076527   .0205656    -0.37   0.710    -.0479844    .0326789
+ zpd_poverty |   .0255667   .0312057     0.82   0.413    -.0356317     .086765
+zpd_ba_share |  -.0119731   .0337229    -0.36   0.723    -.0781079    .0541618
+zpd_renter~e |   .0217755   .0268708     0.81   0.418    -.0309215    .0744726
+ zpd_vacancy |   .0281982   .0370153     0.76   0.446    -.0443935    .1007898
+zpd_season~e |  -.0124043   .0407699    -0.30   0.761    -.0923592    .0675507
+zpd_mainla~e |  -.0221839   .0167565    -1.32   0.186    -.0550454    .0106777
+   zpd_lnpop |   .0054399   .0205876     0.26   0.792    -.0349349    .0458147
+       _cons |   .2348958   .0049394    47.56   0.000      .225209    .2445825
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+. local i = 0
+
+. foreach c of global CTRLS {
+  2.     local ++i
+  3.     di as result _n "===== solo: `c' ====="
+  4.     reghdfe pmd dD zpd_`c', absorb(cyear) vce(cluster cellid)
+  5.     post `pf' ("solo") (`i') ("`c'") (_b[dD]) (_se[dD]) (e(N))
+  6. }
+
+===== solo: med_hh_inc =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       2.89
+Statistics robust to heteroskedasticity           Prob > F        =     0.0559
+                                                  R-squared       =     0.3485
+                                                  Adj R-squared   =     0.3188
+                                                  Within R-sq.    =     0.0007
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3460
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0229581   .0142344     1.61   0.107    -.0049574    .0508737
+zpd_med_hh~c |   .0214135   .0128152     1.67   0.095    -.0037186    .0465457
+       _cons |   .2348554   .0049405    47.54   0.000     .2251664    .2445445
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== solo: med_value =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =      15.26
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.3496
+                                                  Adj R-squared   =     0.3201
+                                                  Within R-sq.    =     0.0025
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3457
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0201709   .0143159     1.41   0.159    -.0079043     .048246
+zpd_med_va~e |   .0555514   .0116695     4.76   0.000      .032666    .0784368
+       _cons |   .2349135   .0049393    47.56   0.000      .225227    .2446001
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== solo: med_rent =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       2.51
+Statistics robust to heteroskedasticity           Prob > F        =     0.0814
+                                                  R-squared       =     0.3484
+                                                  Adj R-squared   =     0.3188
+                                                  Within R-sq.    =     0.0005
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3460
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0232046   .0143091     1.62   0.105    -.0048573    .0512664
+zpd_med_rent |     .01563   .0122399     1.28   0.202     -.008374     .039634
+       _cons |    .234847   .0049399    47.54   0.000     .2251592    .2445348
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== solo: poverty =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       2.17
+Statistics robust to heteroskedasticity           Prob > F        =     0.1144
+                                                  R-squared       =     0.3484
+                                                  Adj R-squared   =     0.3187
+                                                  Within R-sq.    =     0.0005
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3460
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0233701   .0142453     1.64   0.101    -.0045668     .051307
+ zpd_poverty |  -.0152227   .0131142    -1.16   0.246    -.0409413    .0104958
+       _cons |   .2348537   .0049406    47.54   0.000     .2251645    .2445429
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== solo: ba_share =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       7.02
+Statistics robust to heteroskedasticity           Prob > F        =     0.0009
+                                                  R-squared       =     0.3488
+                                                  Adj R-squared   =     0.3192
+                                                  Within R-sq.    =     0.0012
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3459
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0215197   .0144546     1.49   0.137    -.0068276     .049867
+zpd_ba_share |   .0340954   .0122055     2.79   0.005     .0101588    .0580319
+       _cons |   .2348764   .0049398    47.55   0.000     .2251888     .244564
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== solo: renter_share =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       7.76
+Statistics robust to heteroskedasticity           Prob > F        =     0.0004
+                                                  R-squared       =     0.3489
+                                                  Adj R-squared   =     0.3193
+                                                  Within R-sq.    =     0.0014
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3459
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0223492   .0142875     1.56   0.118    -.0056703    .0503688
+zpd_renter~e |   .0383448   .0122237     3.14   0.002     .0143727     .062317
+       _cons |   .2348413    .004938    47.56   0.000     .2251572    .2445253
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== solo: vacancy =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       2.53
+Statistics robust to heteroskedasticity           Prob > F        =     0.0798
+                                                  R-squared       =     0.3483
+                                                  Adj R-squared   =     0.3187
+                                                  Within R-sq.    =     0.0005
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3460
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0237852    .014322     1.66   0.097    -.0043019    .0518724
+ zpd_vacancy |    .014221   .0142688     1.00   0.319    -.0137618    .0422039
+       _cons |   .2348391   .0049402    47.54   0.000     .2251508    .2445274
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== solo: seasonal_share =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       1.55
+Statistics robust to heteroskedasticity           Prob > F        =     0.2130
+                                                  R-squared       =     0.3483
+                                                  Adj R-squared   =     0.3186
+                                                  Within R-sq.    =     0.0004
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3460
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0241767   .0142294     1.70   0.089    -.0037289    .0520823
+zpd_season~e |   .0028018   .0132531     0.21   0.833    -.0231891    .0287928
+       _cons |   .2348324   .0049403    47.53   0.000     .2251439    .2445208
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== solo: mainland_share =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       1.57
+Statistics robust to heteroskedasticity           Prob > F        =     0.2077
+                                                  R-squared       =     0.3483
+                                                  Adj R-squared   =     0.3186
+                                                  Within R-sq.    =     0.0004
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3460
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0242644   .0142039     1.71   0.088    -.0035913    .0521201
+zpd_mainla~e |  -.0049982   .0131934    -0.38   0.705    -.0308722    .0208758
+       _cons |   .2348254   .0049399    47.54   0.000     .2251377    .2445132
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+===== solo: lnpop =====
+(dropped 266 singleton observations)
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,088
+Absorbing 1 HDFE group                            F(   2,   2043) =       6.64
+Statistics robust to heteroskedasticity           Prob > F        =     0.0013
+                                                  R-squared       =     0.3487
+                                                  Adj R-squared   =     0.3191
+                                                  Within R-sq.    =     0.0011
+Number of clusters (cellid)  =      2,044         Root MSE        =     0.3459
+
+                             (Std. err. adjusted for 2,044 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0226137   .0144195     1.57   0.117    -.0056647    .0508921
+   zpd_lnpop |  -.0321575   .0132932    -2.42   0.016    -.0582271   -.0060879
+       _cons |   .2348416   .0049383    47.56   0.000      .225157    .2445262
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+       cyear |       481           0         481     |
+-----------------------------------------------------+
+
+. 
+. postclose `pf'
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/ring_ctrl_buildup.log
+  log type:  text
+ closed on:  14 Aug 2026, 17:16:15
+-------------------------------------------------------------------------------

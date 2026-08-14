@@ -1,39 +1,37 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{Tract-level treatment effects are robust to county-year shocks and baseline-trend controls} This table reports Treated coefficients from the paper's baseline estimator --- the pre-mean-differenced LP-DiD (Dube et al.\ 2023; $H{=}3$, $k{=}4$, clean-control sample: newly treated tracts at onset plus never-treated tracts) --- under three specifications per outcome: (1) calendar-year effects; (2) county$\times$year effects; (3) adds ten standardized 2010 PRCS baseline characteristics (median household income, home value, and gross rent; poverty, BA+, renter, vacancy, seasonal-home, and mainland-born shares; log population) interacted with the unit's post-treatment indicator (which turns on at the tract's first identified purchase; in the differenced clean sample this is $X \times$ treatment entry), so the column (3) Treated coefficient is the effect at sample-mean 2010 characteristics. Tract fixed effects are subsumed by the long-differencing. Panel A: tract log price (Red Atlas, count-weighted annual mean) and log mean purchase-borrower income (HMDA, 2012--2024), both scaled by 100. Panel B: purchase origination counts by borrower ethnicity as $100 \times \text{asinh}$ (Poisson does not compose with pre-mean differencing; the Poisson event studies appear in the figures). Robust standard errors are clustered at the tract level and reported in parentheses. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{Tract-level treatment effects are robust to county-year shocks} This table reports Treated coefficients from the paper's baseline estimator --- the pre-mean-differenced LP-DiD (Dube et al.\ 2023; $H{=}3$, $k{=}4$, clean-control sample: newly treated tracts at onset plus never-treated tracts) --- under two specifications per outcome: (1) calendar-year effects; (2) county$\times$year effects, so identification is within municipio-year. Tract fixed effects are subsumed by the long-differencing. Panel A: tract log price (Red Atlas, count-weighted annual mean) and log mean purchase-borrower income (HMDA, 2012--2024), both scaled by 100. Panel B: purchase origination counts by borrower ethnicity as $100 \times \text{asinh}$ (Poisson does not compose with pre-mean differencing; the Poisson event studies appear in the figures). Robust standard errors are clustered at the tract level and reported in parentheses. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
-\begin{tabular}{lcccccc}
+\begin{tabular}{lcccc}
 \toprule\midrule
-\multicolumn{7}{l}{\textbf{Panel A: prices and borrower income}} \\
- & \multicolumn{3}{c}{\textit{100 $\times$ Log(Price)}} & \multicolumn{3}{c}{\textit{100 $\times$ Log(Borrower Income)}} \\
-\cmidrule(lr){2-4} \cmidrule(lr){5-7}
- & (1) & (2) & (3) & (1) & (2) & (3) \\
+\multicolumn{5}{l}{\textbf{Panel A: prices and borrower income}} \\
+ & \multicolumn{2}{c}{\textit{100 $\times$ Log(Price)}} & \multicolumn{2}{c}{\textit{100 $\times$ Log(Borrower Income)}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+ & (1) & (2) & (1) & (2) \\
 \midrule
-    Treated & 6.44*** & 5.66*** & 3.91** & 8.10*** & 7.81*** & 7.37*** \\
- & (1.41) & (1.59) & (1.99) & (1.99) & (2.23) & (2.56) \\
- & & & & & & \\
-    Observations & 11,714 & 11,681 & 11,047 & 8,319 & 8,299 & 7,998 \\
-    R-squared & 0.153 & 0.257 & 0.265 & 0.054 & 0.160 & 0.172 \\
-    Tract differencing (LP-DiD) & Yes & Yes & Yes & Yes & Yes & Yes \\
-    Calendar-year effects & Yes & No & No & Yes & No & No \\
-    County-year effects & No & Yes & Yes & No & Yes & Yes \\
-    2010 Controls $\times$ Post-Treat. & No & No & Yes & No & No & Yes \\
+    Treated & 6.44*** & 5.66*** & 8.10*** & 7.81*** \\
+ & (1.41) & (1.59) & (1.99) & (2.23) \\
+ & & & & \\
+    Observations & 11,714 & 11,681 & 8,319 & 8,299 \\
+    R-squared & 0.153 & 0.257 & 0.054 & 0.160 \\
+    Tract differencing (LP-DiD) & Yes & Yes & Yes & Yes \\
+    Calendar-year effects & Yes & No & Yes & No \\
+    County-year effects & No & Yes & No & Yes \\
 \midrule
-\multicolumn{7}{l}{\textbf{Panel B: purchase originations by borrower ethnicity ($100\times$asinh)}} \\
- & \multicolumn{3}{c}{\textit{Hispanic Purchases}} & \multicolumn{3}{c}{\textit{Non-Hispanic Purchases}} \\
-\cmidrule(lr){2-4} \cmidrule(lr){5-7}
- & (1) & (2) & (3) & (1) & (2) & (3) \\
+\multicolumn{5}{l}{\textbf{Panel B: purchase originations by borrower ethnicity ($100\times$asinh)}} \\
+ & \multicolumn{2}{c}{\textit{Hispanic Purchases}} & \multicolumn{2}{c}{\textit{Non-Hispanic Purchases}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+ & (1) & (2) & (1) & (2) \\
 \midrule
-    Treated & 4.04 & 2.97 & 3.17 & 12.75*** & 12.16*** & 3.59 \\
- & (5.36) & (5.75) & (4.71) & (3.00) & (3.09) & (2.56) \\
- & & & & & & \\
-    Observations & 9,414 & 9,392 & 8,124 & 9,414 & 9,392 & 8,124 \\
-    R-squared & 0.088 & 0.167 & 0.191 & 0.019 & 0.111 & 0.146 \\
-    Tract differencing (LP-DiD) & Yes & Yes & Yes & Yes & Yes & Yes \\
-    Calendar-year effects & Yes & No & No & Yes & No & No \\
-    County-year effects & No & Yes & Yes & No & Yes & Yes \\
-    2010 Controls $\times$ Post-Treat. & No & No & Yes & No & No & Yes \\
+    Treated & 4.04 & 2.97 & 12.75*** & 12.16*** \\
+ & (5.36) & (5.75) & (3.00) & (3.09) \\
+ & & & & \\
+    Observations & 9,414 & 9,392 & 9,414 & 9,392 \\
+    R-squared & 0.088 & 0.167 & 0.019 & 0.111 \\
+    Tract differencing (LP-DiD) & Yes & Yes & Yes & Yes \\
+    Calendar-year effects & Yes & No & Yes & No \\
+    County-year effects & No & Yes & No & Yes \\
 \midrule\bottomrule
 \end{tabular}
 }

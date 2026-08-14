@@ -180,17 +180,10 @@ def ladder_table():
             "baseline estimator --- the pre-mean-differenced LP-DiD (Dube et "
             "al.\\ 2023; $H{=}3$, $k{=}4$, clean-control sample: newly "
             "treated tracts at onset plus never-treated tracts) --- under "
-            "three specifications per outcome: (1) calendar-year effects; "
-            "(2) county$\\times$year effects; (3) adds ten standardized 2010 "
-            "PRCS baseline characteristics (median household income, home "
-            "value, and gross rent; poverty, BA+, renter, vacancy, "
-            "seasonal-home, and mainland-born shares; log population) "
-            "interacted with the unit's post-treatment indicator (which "
-            "turns on at the tract's first identified purchase; in the "
-            "differenced clean sample this is $X \\times$ treatment entry), "
-            "so the column (3) Treated coefficient is the effect at "
-            "sample-mean 2010 characteristics. Tract fixed effects are "
-            "subsumed by the long-differencing. "
+            "two specifications per outcome: (1) calendar-year effects; "
+            "(2) county$\\times$year effects, so identification is within "
+            "municipio-year. Tract fixed effects are subsumed by the "
+            "long-differencing. "
             "Panel A: tract log price (Red Atlas, count-weighted annual "
             "mean) and log mean purchase-borrower income (HMDA, 2012--2024), "
             "both scaled by 100. Panel B: purchase origination counts by "
@@ -201,39 +194,38 @@ def ladder_table():
             + SIGNOTE)
 
     lines = ["\\begin{table}[H]", "\\centering",
-             f"\\caption{{\\textbf{{Tract-level treatment effects are robust to county-year shocks and baseline-trend controls}} {note}}}",
-             "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccccc}",
+             f"\\caption{{\\textbf{{Tract-level treatment effects are robust to county-year shocks}} {note}}}",
+             "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccc}",
              "\\toprule\\midrule"]
 
     def panel(title, o1, o1lab, o2, o2lab, coef_lab, scale1, scale2, r2lab,
               felabel="Tract FE"):
-        out = [f" & \\multicolumn{{3}}{{c}}{{\\textit{{{o1lab}}}}} & \\multicolumn{{3}}{{c}}{{\\textit{{{o2lab}}}}} \\\\",
-               "\\cmidrule(lr){2-4} \\cmidrule(lr){5-7}",
-               " & (1) & (2) & (3) & (1) & (2) & (3) \\\\", "\\midrule"]
+        out = [f" & \\multicolumn{{2}}{{c}}{{\\textit{{{o1lab}}}}} & \\multicolumn{{2}}{{c}}{{\\textit{{{o2lab}}}}} \\\\",
+               "\\cmidrule(lr){2-3} \\cmidrule(lr){4-5}",
+               " & (1) & (2) & (1) & (2) \\\\", "\\midrule"]
         tops, bots = [], []
         for o, sc in ((o1, scale1), (o2, scale2)):
-            for s in (1, 2, 3):
+            for s in (1, 2):
                 t, b = bse(o, s, sc)
                 tops.append(t); bots.append(b)
         out.append(f"    {coef_lab} & " + " & ".join(tops) + " \\\\")
         out.append(" & " + " & ".join(bots) + " \\\\")
-        out.append(" & & & & & & \\\\")
-        obs = [stat(o, s, "nobs", "{:,.0f}") for o in (o1, o2) for s in (1, 2, 3)]
-        r2 = [stat(o, s, "r2", "{:.3f}") for o in (o1, o2) for s in (1, 2, 3)]
+        out.append(" & & & & \\\\")
+        obs = [stat(o, s, "nobs", "{:,.0f}") for o in (o1, o2) for s in (1, 2)]
+        r2 = [stat(o, s, "r2", "{:.3f}") for o in (o1, o2) for s in (1, 2)]
         out.append("    Observations & " + " & ".join(obs) + " \\\\")
         out.append(f"    {r2lab} & " + " & ".join(r2) + " \\\\")
-        out.append(f"    {felabel} & Yes & Yes & Yes & Yes & Yes & Yes \\\\")
-        out.append("    Calendar-year effects & Yes & No & No & Yes & No & No \\\\")
-        out.append("    County-year effects & No & Yes & Yes & No & Yes & Yes \\\\")
-        out.append("    2010 Controls $\\times$ Post-Treat. & No & No & Yes & No & No & Yes \\\\")
+        out.append(f"    {felabel} & Yes & Yes & Yes & Yes \\\\")
+        out.append("    Calendar-year effects & Yes & No & Yes & No \\\\")
+        out.append("    County-year effects & No & Yes & No & Yes \\\\")
         return out
 
-    lines += ["\\multicolumn{7}{l}{\\textbf{Panel A: prices and borrower income}} \\\\"]
+    lines += ["\\multicolumn{5}{l}{\\textbf{Panel A: prices and borrower income}} \\\\"]
     lines += panel("A", "lnhp", "100 $\\times$ Log(Price)", "lninc_all",
                    "100 $\\times$ Log(Borrower Income)", "Treated", 1, 1, "R-squared",
                    felabel="Tract differencing (LP-DiD)")
     lines += ["\\midrule",
-              "\\multicolumn{7}{l}{\\textbf{Panel B: purchase originations by borrower ethnicity ($100\\times$asinh)}} \\\\"]
+              "\\multicolumn{5}{l}{\\textbf{Panel B: purchase originations by borrower ethnicity ($100\\times$asinh)}} \\\\"]
     lines += panel("B", "purch_hisp_n", "Hispanic Purchases", "purch_nonhisp_n",
                    "Non-Hispanic Purchases", "Treated", 1, 1, "R-squared",
                    felabel="Tract differencing (LP-DiD)")
@@ -254,19 +246,16 @@ def ladder_table():
              "never-treated cells; specification (1) reproduces the baseline "
              "table exactly). Specifications: (1) calendar-year effects; (2) "
              "county$\\times$year effects (the county is the event's "
-             "municipio); (3) adds ten standardized 2010 PRCS characteristics "
-             "of the event's tract interacted with the cell's post-treatment "
-             "indicator ($X \\times$ treatment entry in the differenced clean "
-             "sample), so the column (3) Treated coefficient is the effect "
-             "at sample-mean 2010 characteristics. Cell fixed effects are "
-             "subsumed by the long-differencing. Outcomes: cell mean log sale price "
-             "($\\times$100) and the net Hispanic-to-non-Hispanic ownership "
-             "conversion rate per classified sale (percentage points). "
-             "Robust standard errors are clustered at the cell level and "
-             "reported in parentheses. " + SIGNOTE)
+             "municipio), so identification is within municipio-year. Cell "
+             "fixed effects are subsumed by the long-differencing. Outcomes: "
+             "cell mean log sale price ($\\times$100) and the net "
+             "Hispanic-to-non-Hispanic ownership conversion rate per "
+             "classified sale (percentage points). Robust standard errors "
+             "are clustered at the cell level and reported in parentheses. "
+             + SIGNOTE)
     lines = ["\\begin{table}[H]", "\\centering",
-             f"\\caption{{\\textbf{{Ring-design treatment effects are robust to county-year shocks and baseline-trend controls}} {rnote}}}",
-             "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccccc}",
+             f"\\caption{{\\textbf{{Ring-design treatment effects are robust to county-year shocks}} {rnote}}}",
+             "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccc}",
              "\\toprule\\midrule"]
     lines += panel("A", "ring_lnp", "100 $\\times$ Log(Price)", "ring_netin",
                    "Net H$\\to$NH Conversion (pp)", "Treated", 100, 100,

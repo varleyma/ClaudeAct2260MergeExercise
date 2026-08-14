@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 17:11
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 17:20
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -577,7 +577,7 @@ Overfull \hbox (61.66795pt too wide) in paragraph at lines 35--37
 <../design2/figT1_lnhp_es.png, id=224, 2007.5pt x 1204.5pt>
 File: ../design2/figT1_lnhp_es.png Graphic file (type png)
 <use ../design2/figT1_lnhp_es.png>
-Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 449.
+Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 442.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -585,13 +585,13 @@ Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 449.
 <../design2/figT2_dose_es.png, id=232, 2007.5pt x 1204.5pt>
 File: ../design2/figT2_dose_es.png Graphic file (type png)
 <use ../design2/figT2_dose_es.png>
-Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 458.
+Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 451.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 <../design2/figT4_reconciliation.png, id=234, 2007.5pt x 1204.5pt>
 File: ../design2/figT4_reconciliation.png Graphic file (type png)
 <use ../design2/figT4_reconciliation.png>
 Package pdftex.def Info: ../design2/figT4_reconciliation.png  used on input lin
-e 481.
+e 474.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -605,13 +605,13 @@ png (PNG copy)>]
 File: ../design2/figH7_income_long.png Graphic file (type png)
 <use ../design2/figH7_income_long.png>
 Package pdftex.def Info: ../design2/figH7_income_long.png  used on input line 5
-96.
+89.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 <../design2/figH8_income_dose_long.png, id=254, 2007.5pt x 1204.5pt>
 File: ../design2/figH8_income_dose_long.png Graphic file (type png)
 <use ../design2/figH8_income_dose_long.png>
 Package pdftex.def Info: ../design2/figH8_income_dose_long.png  used on input l
-ine 607.
+ine 600.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -620,13 +620,13 @@ ine 607.
 File: ../design2/figH9b_purch_nonhisp.png Graphic file (type png)
 <use ../design2/figH9b_purch_nonhisp.png>
 Package pdftex.def Info: ../design2/figH9b_purch_nonhisp.png  used on input lin
-e 650.
+e 643.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 <../design2/figH11_refi_nonhisp.png, id=268, 2007.5pt x 1204.5pt>
 File: ../design2/figH11_refi_nonhisp.png Graphic file (type png)
 <use ../design2/figH11_refi_nonhisp.png>
 Package pdftex.def Info: ../design2/figH11_refi_nonhisp.png  used on input line
- 659.
+ 652.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -646,11 +646,11 @@ Package rerunfilecheck Info: File `design1_writeup.out' has not changed.
 Here is how much of TeX's memory you used:
  12353 strings out of 473579
  195569 string characters out of 5732262
- 624727 words of memory out of 5000000
+ 624020 words of memory out of 5000000
  34999 multiletter control sequences out of 15000+600000
  572763 words of font info for 92 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,10n,79p,1652b,595s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,79p,1307b,595s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
 live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2024/texmf-di
@@ -672,7 +672,7 @@ fonts/type1/public/amsfonts/cm/cmti9.pfb><c:/texlive/2024/texmf-dist/fonts/type
 1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/
 amsfonts/symbols/msbm10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-s
 uper/sfrm1095.pfb>
-Output written on design1_writeup.pdf (24 pages, 3427669 bytes).
+Output written on design1_writeup.pdf (24 pages, 3426090 bytes).
 PDF statistics:
  410 PDF objects out of 1000 (max. 8388607)
  313 compressed objects within 4 object streams
