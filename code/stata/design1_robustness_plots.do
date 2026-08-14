@@ -126,7 +126,8 @@ global FIG_XT     `XT'
 global FIG_NOTE   Both series vs the same 400-1000m control ring.
 drawfig, out(fig3_gradient)
 
-*---- F4: dose response -------------------------------------------------------
+*---- F4: dose response (LEGACY 3-way split; the canonical fig4_dose.png is
+*      the 2-way 1-4/5+ version from design1_dose_2way.do -- do not overwrite)
 use `coefs', clear
 global FIG_TESTS  T4_dose_low T4_dose_mid T4_dose_high
 global FIG_LABELS `""0-2 other events" "3-25 other events" ">25 other events""'
@@ -134,7 +135,7 @@ global FIG_TITLE  By density of other investor events within 1km
 global FIG_YT     `YT'
 global FIG_XT     `XT'
 global FIG_NOTE   Splits by n_other_events_within_1000m of the event.
-drawfig, out(fig4_dose)
+drawfig, out(fig4_dose_3way_legacy)
 
 *---- F5: censoring robustness -----------------------------------------------
 use `coefs', clear
