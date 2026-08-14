@@ -1,23 +1,27 @@
-\begin{table}[htbp]\centering
-\caption{HMDA refinancing originations (fig.\ H2)}
+\begin{table}[H]
+\centering
+\caption{\textbf{HMDA refinancing originations (fig.\ H2)} Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
 \begin{tabular}{lcc}
-\toprule
- & (1) & (2) \\
+\toprule\midrule
  & Rate/term refi & Cash-out refi \\
+ & (1) & (2) \\
 \midrule
-Pooled pre & -17.51*** & -23.34*** \\
+    Pooled pre & -17.51*** & -23.34*** \\
  & (5.25) & (6.23) \\
-Pooled post & +11.12 & +8.95 \\
+    Pooled post & +11.12 & +8.95 \\
  & (6.87) & (7.33) \\
-Post $-$ pre & +28.64*** & +32.28*** \\
+    Post $-$ pre & +28.64*** & +32.28*** \\
  & (8.65) & (9.62) \\
-\midrule
-Tract FE & Y & Y \\
-Year FE & Y & Y \\
-County$\times$Year FE & N & N \\
-R$^2$ & 0.498 & 0.554 \\
-Observations & 5,873 & 6,118 \\
-\bottomrule
+ &  &  \\
+    Observations & 5,873 & 6,118 \\
+    R-squared & 0.498 & 0.554 \\
+    Tract FE & Yes & Yes \\
+    Year FE & Yes & Yes \\
+    County$\times$Year FE & No & No \\
+\midrule\bottomrule
 \end{tabular}
-\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported.\end{minipage}
+}
+\label{tab:figH2_refis}
 \end{table}

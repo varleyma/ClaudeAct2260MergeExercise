@@ -1,23 +1,27 @@
-\begin{table}[htbp]\centering
-\caption{Baseline ring event study (fig.\ 1)}
+\begin{table}[H]
+\centering
+\caption{\textbf{Baseline ring event study (fig.\ 1)} LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
 \begin{tabular}{lc}
-\toprule
- & (1) \\
+\toprule\midrule
  & Near 0--250m \\
+ & (1) \\
 \midrule
-Pooled pre & +0.34 \\
+    Pooled pre & +0.34 \\
  & (1.71) \\
-Pooled post & +6.95*** \\
+    Pooled post & +6.95*** \\
  & (2.03) \\
-Post $-$ pre & +5.32*** \\
+    Post $-$ pre & +5.32*** \\
  & (1.40) \\
-\midrule
-Calendar-year effects & Y \\
-Event$\times$ring cell differencing & Y \\
-Hedonic controls & N \\
-R$^2$ & 0.154 \\
-Observations & 12,379 \\
-\bottomrule
+ &  \\
+    Observations & 12,379 \\
+    R-squared & 0.154 \\
+    Calendar-year effects & Yes \\
+    Event$\times$ring cell differencing & Yes \\
+    Hedonic controls & No \\
+\midrule\bottomrule
 \end{tabular}
-\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract).\end{minipage}
+}
+\label{tab:fig1_baseline}
 \end{table}

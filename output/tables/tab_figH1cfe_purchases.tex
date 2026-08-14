@@ -1,23 +1,27 @@
-\begin{table}[htbp]\centering
-\caption{HMDA purchase originations (county-adjusted) (fig.\ H1cfe)}
+\begin{table}[H]
+\centering
+\caption{\textbf{HMDA purchase originations (county-adjusted) (fig.\ H1cfe)} Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
 \begin{tabular}{lcc}
-\toprule
- & (1) & (2) \\
+\toprule\midrule
  & Owner-occ.\ purch. & Non-owner purch. \\
+ & (1) & (2) \\
 \midrule
-Pooled pre & -11.68** & +9.40 \\
+    Pooled pre & -11.68** & +9.40 \\
  & (4.53) & (7.45) \\
-Pooled post & +1.30 & +3.07 \\
+    Pooled post & +1.30 & +3.07 \\
  & (5.40) & (12.43) \\
-Post $-$ pre & +12.98* & -6.33 \\
+    Post $-$ pre & +12.98* & -6.33 \\
  & (7.05) & (14.49) \\
-\midrule
-Tract FE & Y & Y \\
-Year FE & -- & -- \\
-County$\times$Year FE & Y & Y \\
-R$^2$ & -- & 0.595 \\
-Observations & -- & 6,613 \\
-\bottomrule
+ &  &  \\
+    Observations & -- & 6,613 \\
+    R-squared & -- & 0.595 \\
+    Tract FE & Yes & Yes \\
+    Year FE & -- & -- \\
+    County$\times$Year FE & Yes & Yes \\
+\midrule\bottomrule
 \end{tabular}
-\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported.\end{minipage}
+}
+\label{tab:figH1cfe_purchases}
 \end{table}

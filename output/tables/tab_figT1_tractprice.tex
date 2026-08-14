@@ -1,23 +1,27 @@
-\begin{table}[htbp]\centering
-\caption{Tract-level price event study (fig.\ T1)}
+\begin{table}[H]
+\centering
+\caption{\textbf{Tract-level price event study (fig.\ T1)} LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
 \begin{tabular}{lccc}
-\toprule
- & (1) & (2) & (3) \\
+\toprule\midrule
  & Weighted price & Weighted price & Simple mean \\
+ & (1) & (2) & (3) \\
 \midrule
-Pooled pre & -1.40 & -1.53 & -2.11 \\
+    Pooled pre & -1.40 & -1.53 & -2.11 \\
  & (1.61) & (1.67) & (1.57) \\
-Pooled post & +7.55*** & +7.51*** & +6.05*** \\
+    Pooled post & +7.55*** & +7.51*** & +6.05*** \\
  & (1.81) & (1.82) & (1.76) \\
-Post $-$ pre & +6.44*** & +6.44*** & +5.69*** \\
+    Post $-$ pre & +6.44*** & +6.44*** & +5.69*** \\
  & (1.41) & (1.41) & (1.45) \\
-\midrule
-Tract differencing (LP-DiD) & Y & Y & Y \\
-Calendar-year effects & Y & Y & Y \\
-County FE & N & Y & N \\
-R$^2$ & 0.153 & 0.153 & 0.168 \\
-Observations & 11,714 & 11,714 & 11,714 \\
-\bottomrule
+ &  &  &  \\
+    Observations & 11,714 & 11,714 & 11,714 \\
+    R-squared & 0.153 & 0.153 & 0.168 \\
+    Tract differencing (LP-DiD) & Yes & Yes & Yes \\
+    Calendar-year effects & Yes & Yes & Yes \\
+    County FE & No & Yes & No \\
+\midrule\bottomrule
 \end{tabular}
-\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize LP-DiD pooled estimates; pre and post pooled coefficients are relative to the $t{-}1$ base. Post$-$pre is estimated in a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract).\end{minipage}
+}
+\label{tab:figT1_tractprice}
 \end{table}

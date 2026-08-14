@@ -1,23 +1,27 @@
-\begin{table}[htbp]\centering
-\caption{HMDA total originations (county-adjusted) (fig.\ H3cfe)}
+\begin{table}[H]
+\centering
+\caption{\textbf{HMDA total originations (county-adjusted) (fig.\ H3cfe)} Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
 \begin{tabular}{lc}
-\toprule
- & (1) \\
+\toprule\midrule
  & Total \\
+ & (1) \\
 \midrule
-Pooled pre & -10.94*** \\
+    Pooled pre & -10.94*** \\
  & (3.73) \\
-Pooled post & +3.06 \\
+    Pooled post & +3.06 \\
  & (5.17) \\
-Post $-$ pre & +14.00** \\
+    Post $-$ pre & +14.00** \\
  & (6.37) \\
-\midrule
-Tract FE & Y \\
-Year FE & -- \\
-County$\times$Year FE & Y \\
-R$^2$ & 0.317 \\
-Observations & 6,102 \\
-\bottomrule
+ &  \\
+    Observations & 6,102 \\
+    R-squared & 0.317 \\
+    Tract FE & Yes \\
+    Year FE & -- \\
+    County$\times$Year FE & Yes \\
+\midrule\bottomrule
 \end{tabular}
-\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize Poisson (PPML) origination counts; pooled post is the single treat coefficient; pooled pre is the average of the $h=-3,-2$ event-study leads (independence-approx.\ SE). 100$\times$coefficient $\approx$ percent. SEs clustered by tract. Pseudo-$R^2$ reported.\end{minipage}
+}
+\label{tab:figH3cfe_total}
 \end{table}

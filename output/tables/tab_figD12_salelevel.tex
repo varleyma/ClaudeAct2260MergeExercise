@@ -1,23 +1,27 @@
-\begin{table}[htbp]\centering
-\caption{Estimation-approach robustness (fig.\ D12)}
+\begin{table}[H]
+\centering
+\caption{\textbf{Estimation-approach robustness (fig.\ D12)} The Post$-$pre row is the comparable differential across estimators. Column (1): cell-level LP-DiD, pooled never-treated controls; post$-$pre, R$^2$ and N from the single pre-mean-differenced regression (Dube et al.\ 2023). Column (2): the same PMD regression with event$\times$calendar-year effects absorbed (within-event identification: each near ring vs its own event's far ring); pooled pre/post are the corresponding lpdid coefficients. Columns (3)-(4): stacked sale-level OLS; the near$\times$post coefficient is itself the differential, SEs clustered by event. Long-differencing subsumes event$\times$ring FE in the LP-DiD columns. 100$\times$log points. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
 \begin{tabular}{lcccc}
-\toprule
- & (1) & (2) & (3) & (4) \\
+\toprule\midrule
  & LP-DiD cells & LP-DiD within-event & Sale-level OLS & Sale-level OLS \\
+ & (1) & (2) & (3) & (4) \\
 \midrule
-Pooled pre & +0.34 & -2.57 & -- & -- \\
+    Pooled pre & +0.34 & -2.57 & -- & -- \\
  & (1.71) & (1.84) &  &  \\
-Pooled post & +6.95*** & +5.10** & -- & -- \\
+    Pooled post & +6.95*** & +5.10** & -- & -- \\
  & (2.03) & (2.15) &  &  \\
-Post $-$ pre & +5.32*** & +3.16** & +7.09*** & +6.72*** \\
+    Post $-$ pre & +5.32*** & +3.16** & +7.09*** & +6.72*** \\
  & (1.40) & (1.43) & (1.58) & (1.32) \\
-\midrule
-Event$\times$ring FE & (diff.) & (diff.) & Y & Y \\
-Event$\times$year FE & (diff.) & Y & Y & Y \\
-Hedonic controls & N & N & N & Y \\
-R$^2$ & 0.154 & 0.650 & 0.172 & 0.344 \\
-Observations & 12,379 & 2,164 & 777,666 & 730,276 \\
-\bottomrule
+ &  &  &  &  \\
+    Observations & 12,379 & 2,164 & 777,666 & 730,276 \\
+    R-squared & 0.154 & 0.650 & 0.172 & 0.344 \\
+    Event$\times$ring FE & (diff.) & (diff.) & Yes & Yes \\
+    Event$\times$year FE & (diff.) & Yes & Yes & Yes \\
+    Hedonic controls & No & No & No & Yes \\
+\midrule\bottomrule
 \end{tabular}
-\begin{minipage}{0.95\textwidth}\vspace{2pt}\scriptsize The Post$-$pre row is the comparable differential across estimators. Column (1): cell-level LP-DiD, pooled never-treated controls; post$-$pre, R$^2$ and N from the single pre-mean-differenced regression (Dube et al.\ 2023). Column (2): the same PMD regression with event$\times$calendar-year effects absorbed (within-event identification: each near ring vs its own event's far ring); pooled pre/post are the corresponding lpdid coefficients. Columns (3)-(4): stacked sale-level OLS; the near$\times$post coefficient is itself the differential, SEs clustered by event. Long-differencing subsumes event$\times$ring FE in the LP-DiD columns. 100$\times$log points.\end{minipage}
+}
+\label{tab:figD12_salelevel}
 \end{table}

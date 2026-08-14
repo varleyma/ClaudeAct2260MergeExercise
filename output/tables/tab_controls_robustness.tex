@@ -1,0 +1,41 @@
+\begin{table}[H]
+\centering
+\caption{\textbf{Tract-level treatment effects are robust to county-year shocks and baseline-trend controls} This table reports pooled difference-in-differences estimates of the treatment indicator (1 from the tract's first identified decree-era purchase onward; never-treated tracts as controls) under three specifications per outcome: (1) tract and year fixed effects; (2) tract and county$\times$year fixed effects; (3) adds ten standardized 2010 PRCS baseline characteristics (median household income, home value, and gross rent; poverty, BA+, renter, vacancy, seasonal-home, and mainland-born shares; log population) interacted with Post ($1\{\text{year} \ge 2020\}$, the boom era). Panel A: tract log price (Red Atlas, count-weighted annual mean, 2012--2024) and log mean purchase-borrower income (HMDA, 2012--2024), both scaled by 100 (OLS). Panel B: purchase origination counts by borrower ethnicity (Poisson; coefficients $\times$100 $\approx$ percent effects, pseudo R-squared reported). Robust standard errors are clustered at the tract level and reported in parentheses. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
+\begin{tabular}{lcccccc}
+\toprule\midrule
+\multicolumn{7}{l}{\textbf{Panel A: prices and borrower income (OLS)}} \\
+ & \multicolumn{3}{c}{\textit{100 $\times$ Log(Price)}} & \multicolumn{3}{c}{\textit{100 $\times$ Log(Borrower Income)}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+ & (1) & (2) & (3) & (1) & (2) & (3) \\
+\midrule
+    Treated & +8.45*** & +7.20*** & +5.59*** & +9.56*** & +7.54*** & +6.69*** \\
+ & (1.46) & (1.49) & (1.48) & (1.92) & (2.03) & (1.96) \\
+ & & & & & & \\
+    Observations & 16,343 & 16,324 & 15,314 & 11,088 & 11,071 & 10,707 \\
+    R-squared & 0.732 & 0.761 & 0.757 & 0.614 & 0.653 & 0.652 \\
+    Tract FE & Yes & Yes & Yes & Yes & Yes & Yes \\
+    Year FE & Yes & No & No & Yes & No & No \\
+    County-Year FE & No & Yes & Yes & No & Yes & Yes \\
+    2010 Controls $\times$ Post & No & No & Yes & No & No & Yes \\
+\midrule
+\multicolumn{7}{l}{\textbf{Panel B: purchase originations by borrower ethnicity (Poisson)}} \\
+ & \multicolumn{3}{c}{\textit{Hispanic Purchases}} & \multicolumn{3}{c}{\textit{Non-Hispanic Purchases}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+ & (1) & (2) & (3) & (1) & (2) & (3) \\
+\midrule
+    Treated & +0.63 & +1.67 & +4.03 & +37.38*** & +26.06** & +24.59** \\
+ & (4.54) & (4.74) & (3.94) & (13.85) & (12.39) & (11.52) \\
+ & & & & & & \\
+    Observations & 12,350 & 12,329 & 11,159 & 7,033 & 5,379 & 4,991 \\
+    Pseudo R-squared & 0.549 & 0.565 & 0.548 & 0.353 & 0.375 & 0.383 \\
+    Tract FE & Yes & Yes & Yes & Yes & Yes & Yes \\
+    Year FE & Yes & No & No & Yes & No & No \\
+    County-Year FE & No & Yes & Yes & No & Yes & Yes \\
+    2010 Controls $\times$ Post & No & No & Yes & No & No & Yes \\
+\midrule\bottomrule
+\end{tabular}
+}
+\label{tab:controls_robustness}
+\end{table}

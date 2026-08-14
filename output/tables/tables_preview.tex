@@ -1,8 +1,16 @@
 \documentclass[10pt]{article}
 \usepackage[margin=0.8in]{geometry}
 \usepackage{booktabs}
+\usepackage{float}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{amsmath}
 \begin{document}
 \section*{Tables: one per figure}
+\input{tab_balance_prcs2010.tex}
+\clearpage
+\input{tab_controls_robustness.tex}
+\clearpage
 \input{tab_fig10_hispbuyers.tex}
 \clearpage
 \input{tab_fig1_baseline.tex}
@@ -52,5 +60,7 @@
 \input{tab_figT3_volume.tex}
 \clearpage
 \input{tab_figT4_reconciliation.tex}
+\clearpage
+\input{tab_summary_stats.tex}
 \clearpage
 \end{document}

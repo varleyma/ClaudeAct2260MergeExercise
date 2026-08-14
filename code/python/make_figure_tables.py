@@ -82,15 +82,27 @@ class Spec:
         return (self.post - self.pre, se)
 
 
+SIGNOTE = ("Statistical significance levels are indicated as follows: "
+           "*** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.")
+
+
+def yesno(v):
+    return {"Y": "Yes", "N": "No"}.get(v, v)
+
+
 def emit_table(fname, title, specs, fe_rows, note, scale=1.0, extra_rows=()):
     ncol = len(specs)
+    lab = "tab:" + fname[len("tab_"):-len(".tex")]
     lines = []
-    lines.append("\\begin{table}[htbp]\\centering")
-    lines.append(f"\\caption{{{title}}}")
+    lines.append("\\begin{table}[H]")
+    lines.append("\\centering")
+    lines.append(f"\\caption{{\\textbf{{{title}}} {note} {SIGNOTE}}}")
+    lines.append("\\scalebox{1.0}{")
+    lines.append("\\onehalfspacing")
     lines.append("\\begin{tabular}{l" + "c"*ncol + "}")
-    lines.append("\\toprule")
-    lines.append(" & " + " & ".join(f"({i+1})" for i in range(ncol)) + " \\\\")
+    lines.append("\\toprule\\midrule")
     lines.append(" & " + " & ".join(s.label for s in specs) + " \\\\")
+    lines.append(" & " + " & ".join(f"({i+1})" for i in range(ncol)) + " \\\\")
     lines.append("\\midrule")
 
     def statrows(name, vals):
@@ -98,7 +110,7 @@ def emit_table(fname, title, specs, fe_rows, note, scale=1.0, extra_rows=()):
         for b, se in vals:
             t, bo = cell(b, se, scale)
             tops.append(t); bots.append(bo)
-        lines.append(name + " & " + " & ".join(tops) + " \\\\")
+        lines.append("    " + name + " & " + " & ".join(tops) + " \\\\")
         if any(bots):
             lines.append(" & " + " & ".join(bots) + " \\\\")
 
@@ -107,14 +119,16 @@ def emit_table(fname, title, specs, fe_rows, note, scale=1.0, extra_rows=()):
     statrows("Post $-$ pre", [s.postpre() for s in specs])
     for label in extra_rows:
         statrows(label, [s.extra.get(label, (None, None)) for s in specs])
-    lines.append("\\midrule")
+    lines.append(" & " * ncol + " \\\\")
+    lines.append("    Observations & " + " & ".join(str(s.nobs) for s in specs) + " \\\\")
+    lines.append("    R-squared & " + " & ".join(str(s.r2) for s in specs) + " \\\\")
     for fe in fe_rows:
-        lines.append(fe + " & " + " & ".join(s.fe.get(fe, "--") for s in specs) + " \\\\")
-    lines.append("R$^2$ & " + " & ".join(str(s.r2) for s in specs) + " \\\\")
-    lines.append("Observations & " + " & ".join(str(s.nobs) for s in specs) + " \\\\")
-    lines.append("\\bottomrule")
+        lines.append("    " + fe + " & "
+                     + " & ".join(yesno(s.fe.get(fe, "--")) for s in specs) + " \\\\")
+    lines.append("\\midrule\\bottomrule")
     lines.append("\\end{tabular}")
-    lines.append(f"\\begin{{minipage}}{{0.95\\textwidth}}\\vspace{{2pt}}\\scriptsize {note}\\end{{minipage}}")
+    lines.append("}")
+    lines.append(f"\\label{{{lab}}}")
     lines.append("\\end{table}")
     with open(os.path.join(OUT, fname), "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
@@ -413,9 +427,14 @@ def main():
     obs = {"All treated": lp_pooled(d2, "T_lnhp_base"),
            "1--4 purchases": lp_pooled(d2, "T_lnhp_dose14"),
            "5+ purchases": lp_pooled(d2, "T_lnhp_dose5")}
-    lines = ["\\begin{table}[htbp]\\centering",
-             "\\caption{Observed tract effects vs ring-implied predictions (fig.\\ T4)}",
-             "\\begin{tabular}{lcccc}", "\\toprule",
+    T4NOTE = ("Observed: LP-DiD pooled post "
+              "(group vs never-treated tracts), SEs clustered by tract. Predictions: stock-value-weighted "
+              "distance-gradient effects over each treated tract's parcels, averaged within group. "
+              "Gap = observed minus central prediction. 100$\\times$log points. " + SIGNOTE)
+    lines = ["\\begin{table}[H]", "\\centering",
+             f"\\caption{{\\textbf{{Observed tract effects vs ring-implied predictions (fig.\\ T4)}} {T4NOTE}}}",
+             "\\scalebox{1.0}{", "\\onehalfspacing",
+             "\\begin{tabular}{lcccc}", "\\toprule\\midrule",
              "Group & Observed & Pred.\\ (central) & Pred.\\ (conserv.) & Gap \\\\", "\\midrule"]
     for g, sel in groups.items():
         pc = [f(r["pred_central_vw"]) for r in pred if r["tract_geoid"] in trt
@@ -425,13 +444,10 @@ def main():
         o = obs[g]
         mc, mk = 100 * sum(pc) / len(pc), 100 * sum(pk) / len(pk)
         top, bot = cell(o["post"], o["post_se"])   # design2 lnhp already 100x
-        lines.append(f"{g} & {top} & {mc:+.2f} & {mk:+.2f} & {o['post']-mc:+.2f} \\\\")
+        lines.append(f"    {g} & {top} & {mc:+.2f} & {mk:+.2f} & {o['post']-mc:+.2f} \\\\")
         lines.append(f" & {bot} & & & \\\\")
-    lines += ["\\bottomrule", "\\end{tabular}",
-              "\\begin{minipage}{0.95\\textwidth}\\vspace{2pt}\\scriptsize Observed: LP-DiD pooled post "
-              "(group vs never-treated tracts), SEs clustered by tract. Predictions: stock-value-weighted "
-              "distance-gradient effects over each treated tract's parcels, averaged within group. "
-              "Gap = observed minus central prediction. 100$\\times$log points.\\end{minipage}",
+    lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
+              "\\label{tab:figT4_reconciliation}",
               "\\end{table}"]
     with open(os.path.join(OUT, "tab_figT4_reconciliation.tex"), "w", encoding="utf-8") as fh:
         fh.write("\n".join(lines) + "\n")
@@ -490,7 +506,8 @@ def main():
     tabs = sorted(x for x in os.listdir(OUT) if x.startswith("tab_") and x.endswith(".tex"))
     with open(os.path.join(OUT, "tables_preview.tex"), "w", encoding="utf-8") as fh:
         fh.write("\\documentclass[10pt]{article}\n\\usepackage[margin=0.8in]{geometry}\n"
-                 "\\usepackage{booktabs}\n\\begin{document}\n"
+                 "\\usepackage{booktabs}\n\\usepackage{float}\n\\usepackage{setspace}\n"
+                 "\\usepackage{graphicx}\n\\usepackage{amsmath}\n\\begin{document}\n"
                  "\\section*{Tables: one per figure}\n")
         for t in tabs:
             fh.write(f"\\input{{{t}}}\n\\clearpage\n")

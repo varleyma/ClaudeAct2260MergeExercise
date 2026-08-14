@@ -4,6 +4,7 @@
 \usepackage{amsmath, amssymb}
 \usepackage{booktabs}
 \usepackage{setspace}
+\usepackage{float}
 \usepackage[hidelinks]{hyperref}
 \usepackage{enumitem}
 \usepackage{graphicx}
@@ -98,6 +99,15 @@ versus 10\% of surrounding market sales. \emph{Caveat:} the proxy captures
 \emph{name} origin --- stateside Puerto Ricans and other Hispanic-named
 mainlanders classify as local, so mainland penetration and displacement effects
 are understated.
+
+\subsection{Summary statistics}
+
+Table~\ref{tab:summary_stats} summarizes the estimation samples: the
+ring-design sale sample, the Red Atlas tract price panel, the HMDA purchase
+panel, and the 2010 PRCS baseline tract characteristics used for balance
+and robustness.
+
+\input{../tables/tab_summary_stats.tex}
 
 \section{Empirical design}
 
@@ -368,6 +378,19 @@ tracts; 1{,}200 events), with never-treated tracts as controls. Estimation is
 annual LP-DiD (pre-window 4, post-window 3) on $100 \times \ln(\text{price})$,
 with and without county fixed effects.
 
+Table~\ref{tab:balance_prcs2010} compares treated and never-treated tracts
+on 2010 PRCS characteristics, all pre-determined relative to Act 22.
+Treated tracts are richer, more educated, more mainlander- and
+seasonal-home-oriented, and less poor --- large raw gaps, as expected when
+investors select coastal-amenity areas. Residualizing out municipio fixed
+effects removes most of the imbalance (the treated--never differences
+shrink by roughly two-thirds and several lose significance), which is why
+the county$\times$year specifications below are the natural robustness
+check; Table~\ref{tab:controls_robustness} pushes further, interacting the
+full 2010 covariate vector with the boom era.
+
+\input{../tables/tab_balance_prcs2010.tex}
+
 \subsection{Results}
 
 Prices in treated tracts rise by a pooled $+7.6$ log points
@@ -381,6 +404,21 @@ to four show $+3.8$ ($2.1$) (Figure~\ref{fig:tract_dose}). Transaction
 \emph{volume} falls in treated tracts, but its pre-period coefficients are
 significantly negative, so parallel trends fails for that outcome and we
 treat it as descriptive only.
+
+Table~\ref{tab:controls_robustness} subjects the pooled tract-level
+estimates --- prices, borrower income, and purchase counts by ethnicity ---
+to a common specification ladder: (1) tract and year fixed effects, (2)
+tract and county$\times$year fixed effects, and (3) additionally the ten
+standardized 2010 PRCS baseline characteristics interacted with the
+boom-era Post indicator. The price effect moves from $+8.4$ to $+7.2$ to
+$+5.6$ (all $p<0.01$), borrower income from $+9.6$ to $+7.5$ to $+6.7$,
+and non-Hispanic purchase entry from $+37$\% to $+26$\% to $+25$\%
+($p<0.05$), while Hispanic purchase counts stay a precise null throughout.
+Roughly a quarter to a third of the raw estimates reflects
+county-level shocks and observable-trend selection; the remainder is
+identified within municipio-year among observably similar tracts.
+
+\input{../tables/tab_controls_robustness.tex}
 
 \begin{figure}[htbp]
   \centering
