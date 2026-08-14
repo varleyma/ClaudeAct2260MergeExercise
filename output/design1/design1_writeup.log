@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 16:14
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  14 AUG 2026 16:16
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -573,12 +573,12 @@ Overfull \hbox (64.97578pt too wide) in paragraph at lines 35--37
 <../design2/figT1_lnhp_es.png, id=210, 2007.5pt x 1204.5pt>
 File: ../design2/figT1_lnhp_es.png Graphic file (type png)
 <use ../design2/figT1_lnhp_es.png>
-Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 425.
+Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 427.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 <../design2/figT2_dose_es.png, id=211, 2007.5pt x 1204.5pt>
 File: ../design2/figT2_dose_es.png Graphic file (type png)
 <use ../design2/figT2_dose_es.png>
-Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 434.
+Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 436.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -590,7 +590,7 @@ G copy)>]
 File: ../design2/figT4_reconciliation.png Graphic file (type png)
 <use ../design2/figT4_reconciliation.png>
 Package pdftex.def Info: ../design2/figT4_reconciliation.png  used on input lin
-e 457.
+e 459.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -601,13 +601,13 @@ e 457.
 File: ../design2/figH7_income_long.png Graphic file (type png)
 <use ../design2/figH7_income_long.png>
 Package pdftex.def Info: ../design2/figH7_income_long.png  used on input line 5
-65.
+67.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 <../design2/figH8_income_dose_long.png, id=235, 2007.5pt x 1204.5pt>
 File: ../design2/figH8_income_dose_long.png Graphic file (type png)
 <use ../design2/figH8_income_dose_long.png>
 Package pdftex.def Info: ../design2/figH8_income_dose_long.png  used on input l
-ine 576.
+ine 578.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -616,13 +616,13 @@ ine 576.
 File: ../design2/figH9b_purch_nonhisp.png Graphic file (type png)
 <use ../design2/figH9b_purch_nonhisp.png>
 Package pdftex.def Info: ../design2/figH9b_purch_nonhisp.png  used on input lin
-e 619.
+e 621.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 <../design2/figH11_refi_nonhisp.png, id=250, 2007.5pt x 1204.5pt>
 File: ../design2/figH11_refi_nonhisp.png Graphic file (type png)
 <use ../design2/figH11_refi_nonhisp.png>
 Package pdftex.def Info: ../design2/figH11_refi_nonhisp.png  used on input line
- 628.
+ 630.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
 
 
@@ -666,7 +666,7 @@ live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/texlive/2024/tex
 mf-dist/fonts/type1/public/cm-super/sfrm1000.pfb><c:/texlive/2024/texmf-dist/fo
 nts/type1/public/cm-super/sfrm1095.pfb>
-Output written on design1_writeup.pdf (22 pages, 3396509 bytes).
+Output written on design1_writeup.pdf (22 pages, 3396689 bytes).
 PDF statistics:
  382 PDF objects out of 1000 (max. 8388607)
  292 compressed objects within 3 object streams
