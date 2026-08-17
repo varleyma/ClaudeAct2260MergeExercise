@@ -220,6 +220,10 @@ def main():
     def spec_from(test, label):
         p = lp_pooled(rob, test)
         if p is None:
+            # outcomes with a PMD estimate but no suite lpdid run (e.g. the
+            # NH->H transition direction): the Treated row is the PMD anyway
+            if test in R2MAP:
+                return apply_r2(Spec(label, fe=d1fe()), test)
             return None
         return apply_r2(Spec(label, pre=p["pre"], pre_se=p["pre_se"], post=p["post"],
                     post_se=p["post_se"], nobs=p["nobs"], fe=d1fe()), test)
@@ -240,19 +244,30 @@ def main():
           ("T2_comp_subu", "Sub-unit share"), ("T2_comp_vac", "Vacant share")]),
         ("tab_fig7_parties.tex", "Non-Hispanic-named party shares (fig.\\ 7)",
          [("T7_buy_nh", "Buyers"), ("T7_sell_nh", "Sellers")]),
-        ("tab_fig8_transitions.tex", "Transaction transitions (figs.\\ 8, 8b)",
-         [("T7_isl2main", "Hisp.$\\to$non-Hisp."), ("T7_main2main", "non-H.$\\to$non-H."),
-          ("T7_netin", "Net inflow")]),
+        ("tab_fig8_transitions.tex", "Ownership Transitions and Net Conversion (figs.\\ 8, 8b, 8d)",
+         [("T7_isl2main", "Hisp.$\\to$non-Hisp."), ("T7_main2isl", "non-Hisp.$\\to$Hisp."),
+          ("T7_netin", "Net conversion (1)$-$(2)")]),
         ("tab_fig9_inclinvestors.tex", "Buyer-margin decomposition (fig.\\ 9)",
          [("T1_baseline", "Non-investor sales"), ("T8_incl_investors", "All sales")]),
         ("tab_fig10_hispbuyers.tex", "Locals-only prices (fig.\\ 10)",
          [("T1_baseline", "All market sales"), ("T8_hisp_buyers", "Hispanic-named buyers")]),
     ]
+    TRANS_NOTE = ("Outcomes are shares of near-ring sales in which both parties' "
+                  "surnames classify: (1) Hispanic seller to non-Hispanic buyer; "
+                  "(2) non-Hispanic seller to Hispanic buyer; (3) their "
+                  "difference --- the net rate at which the housing stock "
+                  "converts to non-Hispanic-named ownership per classified "
+                  "sale. Within-class churn nets out of column (3), and because "
+                  "the PMD estimator is linear, column (3) equals column (1) "
+                  "minus column (2) exactly. ")
     if have_mt:
         for fname, title, series in figs:
             specs = [s for t, lab in series if (s := spec_from(t, lab))]
             if specs:
-                emit_table(fname, title, specs, FE_D1, NOTE_LPDID, scale=100)
+                note = NOTE_LPDID
+                if fname == "tab_fig8_transitions.tex":
+                    note = TRANS_NOTE + NOTE_LPDID
+                emit_table(fname, title, specs, FE_D1, note, scale=100)
 
     # ================= Decay / ladder =================
     dec = load_csv(os.path.join(O1, "decay_coefs.csv"))

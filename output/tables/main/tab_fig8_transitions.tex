@@ -1,18 +1,18 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{Transaction transitions (figs.\ 8, 8b)} The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{Ownership Transitions and Net Conversion (figs.\ 8, 8b, 8d)} Outcomes are shares of near-ring sales in which both parties' surnames classify: (1) Hispanic seller to non-Hispanic buyer; (2) non-Hispanic seller to Hispanic buyer; (3) their difference --- the net rate at which the housing stock converts to non-Hispanic-named ownership per classified sale. Within-class churn nets out of column (3), and because the PMD estimator is linear, column (3) equals column (1) minus column (2) exactly. The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
 \begin{tabular}{lccc}
 \toprule\midrule
- & Hisp.$\to$non-Hisp. & non-H.$\to$non-H. & Net inflow \\
+ & Hisp.$\to$non-Hisp. & non-Hisp.$\to$Hisp. & Net conversion (1)$-$(2) \\
  & (1) & (2) & (3) \\
 \midrule
-    Treated & 2.04*** & 0.23 & 2.37*** \\
- & (0.65) & (0.45) & (0.88) \\
+    Treated & 2.04*** & -0.33 & 2.37*** \\
+ & (0.65) & (0.52) & (0.88) \\
  &  &  &  \\
     Observations & 12,035 & 12,035 & 12,035 \\
-    R-squared & 0.020 & 0.007 & 0.047 \\
+    R-squared & 0.020 & 0.053 & 0.047 \\
     Calendar-year effects & Yes & Yes & Yes \\
     Event$\times$ring cell differencing & Yes & Yes & Yes \\
     Hedonic controls & No & No & No \\
