@@ -629,11 +629,51 @@ def main():
             fh.write("\n".join(pl) + "\n")
         print("wrote tab_placebo.tex")
 
+    # ================= censoring robustness (late-event cuts) =================
+    _late = os.path.join(OUT, "pmd_stats_late.csv")
+    if os.path.exists(_late):
+        lr = {r["test"]: r for r in load_csv(_late)}
+        order = [("T5_all", "All events (2012+)"), ("T5_2018", "2018+"),
+                 ("T5_2020", "2020+"), ("T5_2022", "2022+")]
+        if all(k in lr for k, _ in order):
+            lnote = ("This table addresses last-sale censoring in the CRIM cadastre, "
+                     "which records only each parcel's most recent sale: pre-period "
+                     "sales near early events are survivors that never resold, so "
+                     "old transactions are ``stale'' and progressively selected. "
+                     "Restricting to later events shortens the censoring window. "
+                     "Columns restrict the event set by purchase year; the number "
+                     "of events in each set is reported. Outcome: cell mean log "
+                     "sale price ($\\times$100), near ring (0--250m) vs never-treated "
+                     "control rings. " + NOTE_LPDID)
+            L = ["\\begin{table}[H]", "\\centering",
+                 f"\\caption{{\\textbf{{Robustness to Last-Sale Censoring: Later Event Cohorts}} {lnote} {SIGNOTE}}}",
+                 "\\scalebox{1.0}{", "\\onehalfspacing",
+                 "\\begin{tabular}{lcccc}", "\\toprule\\midrule",
+                 " & " + " & ".join(lab for _, lab in order) + " \\\\",
+                 " & (1) & (2) & (3) & (4) \\\\", "\\midrule"]
+            tops, bots = [], []
+            for k, _ in order:
+                t, bo = cell(f(lr[k]["b"]), f(lr[k]["se"]), 100)
+                tops.append(t); bots.append(bo)
+            L.append("    Treated & " + " & ".join(tops) + " \\\\")
+            L.append(" & " + " & ".join(bots) + " \\\\")
+            L.append(" & & & & \\\\")
+            L.append("    Events & " + " & ".join(f"{int(f(lr[k]['nevents'])):,}" for k, _ in order) + " \\\\")
+            L.append("    Observations & " + " & ".join(f"{int(f(lr[k]['nobs'])):,}" for k, _ in order) + " \\\\")
+            L.append("    R-squared & " + " & ".join(f"{f(lr[k]['r2']):.3f}" for k, _ in order) + " \\\\")
+            for fe in FE_D1:
+                L.append("    " + fe + " & " + " & ".join(yesno(d1fe().get(fe, "--")) for _ in order) + " \\\\")
+            L += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
+                  "\\label{tab:censoring}", "\\end{table}"]
+            with open(os.path.join(OUT, "tab_censoring.tex"), "w", encoding="utf-8") as fh:
+                fh.write("\n".join(L) + "\n")
+            print("wrote tab_censoring.tex")
+
     # ================= main-tables folder =================
     import shutil
     _main = os.path.join(OUT, "main")
     os.makedirs(_main, exist_ok=True)
-    for t in ("tab_placebo.tex", "tab_fig8_transitions.tex"):
+    for t in ("tab_placebo.tex", "tab_fig8_transitions.tex", "tab_censoring.tex"):
         p = os.path.join(OUT, t)
         if os.path.exists(p):
             shutil.copy(p, _main)

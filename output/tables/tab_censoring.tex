@@ -1,0 +1,24 @@
+\begin{table}[H]
+\centering
+\caption{\textbf{Robustness to Last-Sale Censoring: Later Event Cohorts} This table addresses last-sale censoring in the CRIM cadastre, which records only each parcel's most recent sale: pre-period sales near early events are survivors that never resold, so old transactions are ``stale'' and progressively selected. Restricting to later events shortens the censoring window. Columns restrict the event set by purchase year; the number of events in each set is reported. Outcome: cell mean log sale price ($\times$100), near ring (0--250m) vs never-treated control rings. The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
+\begin{tabular}{lcccc}
+\toprule\midrule
+ & All events (2012+) & 2018+ & 2020+ & 2022+ \\
+ & (1) & (2) & (3) & (4) \\
+\midrule
+    Treated & 5.32*** & 5.63*** & 6.64*** & 4.29** \\
+ & (1.40) & (1.45) & (1.53) & (1.86) \\
+ & & & & \\
+    Events & 1,200 & 1,089 & 968 & 653 \\
+    Observations & 12,379 & 11,140 & 9,722 & 6,063 \\
+    R-squared & 0.154 & 0.115 & 0.078 & 0.055 \\
+    Calendar-year effects & Yes & Yes & Yes & Yes \\
+    Event$\times$ring cell differencing & Yes & Yes & Yes & Yes \\
+    Hedonic controls & No & No & No & No \\
+\midrule\bottomrule
+\end{tabular}
+}
+\label{tab:censoring}
+\end{table}

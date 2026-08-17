@@ -1,0 +1,220 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /tables/pmd_stats_late.log
+  log type:  text
+ opened on:  17 Aug 2026, 18:29:53
+
+. 
+. tempname pf
+
+. postfile `pf' str24 test double b se r2 nobs nevents using "$OUT/_late.dta", 
+> replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/tables
+    > /_late.dta not found)
+
+. 
+. foreach cut in 2012 2018 2020 2022 {
+  2.     use `panel', clear
+  3.     keep if ett >= `cut'
+  4.     qui tab event_id
+  5.     local ne = r(r)
+  6.     xtset cellid tt
+  7.     gen y0  = y
+  8.     gen yf1 = F1.y
+  9.     gen yf2 = F2.y
+ 10.     gen yf3 = F3.y
+ 11.     gen yl1 = L1.y
+ 12.     gen yl2 = L2.y
+ 13.     gen yl3 = L3.y
+ 14.     gen yl4 = L4.y
+ 15.     egen postm = rowmean(y0 yf1 yf2 yf3)
+ 16.     egen prem  = rowmean(yl1 yl2 yl3 yl4)
+ 17.     gen pmd = postm - prem
+ 18.     gen dD = treat == 1 & L1.treat == 0
+ 19.     egen evertr = max(treat), by(cellid)
+ 20.     keep if dD == 1 | evertr == 0
+ 21.     local key = cond(`cut' == 2012, "T5_all", "T5_`cut'")
+ 22.     di as result _n "===== PMD lnp, events >= `cut' (`ne' events) ====="
+ 23.     reghdfe pmd dD, absorb(tt) vce(cluster cellid)
+ 24.     post `pf' ("`key'") (_b[dD]) (_se[dD]) (e(r2)) (e(N)) (`ne')
+ 25. }
+(0 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2006 to 2026, but with gaps
+         Delta: 1 unit
+(2,862 missing values generated)
+(5,064 missing values generated)
+(7,287 missing values generated)
+(2,862 missing values generated)
+(5,064 missing values generated)
+(7,287 missing values generated)
+(9,470 missing values generated)
+(2,411 missing values generated)
+(2,411 missing values generated)
+(9,852 observations deleted)
+
+===== PMD lnp, events >= 2012 (1200 events) =====
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     12,379
+Absorbing 1 HDFE group                            F(   1,   2251) =      14.45
+Statistics robust to heteroskedasticity           Prob > F        =     0.0001
+                                                  R-squared       =     0.1543
+                                                  Adj R-squared   =     0.1530
+                                                  Within R-sq.    =     0.0014
+Number of clusters (cellid)  =      2,252         Root MSE        =     0.3823
+
+                             (Std. err. adjusted for 2,252 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0532455   .0140062     3.80   0.000     .0257791    .0807119
+       _cons |   .2295484   .0054494    42.12   0.000      .218862    .2402347
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+          tt |        20           0          20     |
+-----------------------------------------------------+
+(2,295 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2012 to 2026, but with gaps
+         Delta: 1 unit
+(2,552 missing values generated)
+(4,569 missing values generated)
+(6,597 missing values generated)
+(2,552 missing values generated)
+(4,569 missing values generated)
+(6,597 missing values generated)
+(8,606 missing values generated)
+(2,184 missing values generated)
+(2,184 missing values generated)
+(8,914 observations deleted)
+
+===== PMD lnp, events >= 2018 (1089 events) =====
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =     11,140
+Absorbing 1 HDFE group                            F(   1,   2055) =      15.15
+Statistics robust to heteroskedasticity           Prob > F        =     0.0001
+                                                  R-squared       =     0.1146
+                                                  Adj R-squared   =     0.1135
+                                                  Within R-sq.    =     0.0017
+Number of clusters (cellid)  =      2,056         Root MSE        =     0.3787
+
+                             (Std. err. adjusted for 2,056 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0563416    .014475     3.89   0.000     .0279544    .0847288
+       _cons |   .2572918   .0056896    45.22   0.000     .2461338    .2684498
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+          tt |        14           0          14     |
+-----------------------------------------------------+
+(4,991 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2014 to 2026, but with gaps
+         Delta: 1 unit
+(2,245 missing values generated)
+(4,042 missing values generated)
+(5,845 missing values generated)
+(2,245 missing values generated)
+(4,042 missing values generated)
+(5,845 missing values generated)
+(7,630 missing values generated)
+(1,940 missing values generated)
+(1,940 missing values generated)
+(7,757 observations deleted)
+
+===== PMD lnp, events >= 2020 (968 events) =====
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =      9,722
+Absorbing 1 HDFE group                            F(   1,   1835) =      18.77
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.0783
+                                                  Adj R-squared   =     0.0772
+                                                  Within R-sq.    =     0.0024
+Number of clusters (cellid)  =      1,836         Root MSE        =     0.3714
+
+                             (Std. err. adjusted for 1,836 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0663656   .0153193     4.33   0.000     .0363205    .0964107
+       _cons |   .2696822   .0059964    44.97   0.000     .2579218    .2814426
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+          tt |        12           0          12     |
+-----------------------------------------------------+
+(11,901 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: tt, 2016 to 2026, but with gaps
+         Delta: 1 unit
+(1,475 missing values generated)
+(2,704 missing values generated)
+(3,930 missing values generated)
+(1,475 missing values generated)
+(2,704 missing values generated)
+(3,930 missing values generated)
+(5,144 missing values generated)
+(1,308 missing values generated)
+(1,308 missing values generated)
+(4,824 observations deleted)
+
+===== PMD lnp, events >= 2022 (653 events) =====
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =      6,063
+Absorbing 1 HDFE group                            F(   1,   1251) =       5.32
+Statistics robust to heteroskedasticity           Prob > F        =     0.0212
+                                                  R-squared       =     0.0551
+                                                  Adj R-squared   =     0.0535
+                                                  Within R-sq.    =     0.0012
+Number of clusters (cellid)  =      1,252         Root MSE        =     0.3494
+
+                             (Std. err. adjusted for 1,252 clusters in cellid)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0429227   .0186098     2.31   0.021     .0064128    .0794326
+       _cons |   .2637516   .0070719    37.30   0.000     .2498776    .2776256
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+          tt |        10           0          10     |
+-----------------------------------------------------+
+
+. postclose `pf'
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /tables/pmd_stats_late.log
+  log type:  text
+ closed on:  17 Aug 2026, 18:29:56
+-------------------------------------------------------------------------------
