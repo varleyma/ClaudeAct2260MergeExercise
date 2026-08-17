@@ -1,22 +1,23 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{Ring-design treatment effects are robust to county-year shocks} This table subjects the ring design's estimates to the same specification ladder as the tract-level outcomes, using the paper's baseline estimator throughout: the pre-mean-differenced LP-DiD on the event$\times$ring cell panel ($H{=}3$, $k{=}4$; clean-control sample: newly treated near cells at onset plus never-treated cells; specification (1) reproduces the baseline table exactly). Specifications: (1) calendar-year effects; (2) county$\times$year effects (the county is the event's municipio), so identification is within municipio-year. Cell fixed effects are subsumed by the long-differencing. Outcomes: cell mean log sale price ($\times$100) and the net Hispanic-to-non-Hispanic ownership conversion rate per classified sale (percentage points). Robust standard errors are clustered at the cell level and reported in parentheses. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{Ring-design treatment effects: county-year shocks and house-characteristic controls} This table subjects the ring design's estimates to a specification ladder, using the paper's baseline estimator throughout: the pre-mean-differenced LP-DiD on the event$\times$ring cell panel ($H{=}3$, $k{=}4$; clean-control sample: newly treated near cells at onset plus never-treated cells; specification (1) reproduces the baseline table exactly). Specifications: (1) calendar-year effects; (2) county$\times$year effects (the county is the event's municipio), so identification is within municipio-year; (3) adds house-characteristic controls from the transaction data --- cell-year means of log assessed structure value, log lot size (cabida), sub-unit share, and vacant-land share, each pre-mean differenced exactly like the outcome --- so the column (3) Treated coefficient is a constant-composition price effect. Cell fixed effects are subsumed by the long-differencing. Outcomes: cell mean log sale price ($\times$100) and the net Hispanic-to-non-Hispanic ownership conversion rate per classified sale (percentage points). Robust standard errors are clustered at the cell level and reported in parentheses. Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
-\begin{tabular}{lcccc}
+\begin{tabular}{lcccccc}
 \toprule\midrule
- & \multicolumn{2}{c}{\textit{100 $\times$ Log(Price)}} & \multicolumn{2}{c}{\textit{Net H$\to$NH Conversion (pp)}} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5}
- & (1) & (2) & (1) & (2) \\
+ & \multicolumn{3}{c}{\textit{100 $\times$ Log(Price)}} & \multicolumn{3}{c}{\textit{Net H$\to$NH Conversion (pp)}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+ & (1) & (2) & (3) & (1) & (2) & (3) \\
 \midrule
-    Treated & 5.32*** & 4.23*** & 2.37*** & 2.47*** \\
- & (1.40) & (1.34) & (0.88) & (0.86) \\
- & & & & \\
-    Observations & 12,379 & 12,122 & 12,035 & 11,772 \\
-    R-squared & 0.154 & 0.343 & 0.047 & 0.168 \\
-    Cell differencing (LP-DiD) & Yes & Yes & Yes & Yes \\
-    Calendar-year effects & Yes & No & Yes & No \\
-    County-year effects & No & Yes & No & Yes \\
+    Treated & 5.32*** & 4.23*** & 3.02*** & 2.37*** & 2.47*** & 2.28*** \\
+ & (1.40) & (1.34) & (1.13) & (0.88) & (0.86) & (0.85) \\
+ & & & & & & \\
+    Observations & 12,379 & 12,122 & 12,058 & 12,035 & 11,772 & 11,723 \\
+    R-squared & 0.154 & 0.343 & 0.531 & 0.047 & 0.168 & 0.174 \\
+    Cell differencing (LP-DiD) & Yes & Yes & Yes & Yes & Yes & Yes \\
+    Calendar-year effects & Yes & No & No & Yes & No & No \\
+    County-year effects & No & Yes & Yes & No & Yes & Yes \\
+    House-characteristic controls & No & No & Yes & No & No & Yes \\
 \midrule\bottomrule
 \end{tabular}
 }

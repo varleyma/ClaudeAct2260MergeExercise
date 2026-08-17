@@ -238,28 +238,54 @@ def ladder_table():
     # ---- ring design ladder, own table -------------------------------------
     if ("ring_lnp", 1) not in cr:
         return
-    rnote = ("This table subjects the ring design's estimates to the same "
-             "specification ladder as the tract-level outcomes, using the "
-             "paper's baseline estimator throughout: the pre-mean-differenced "
-             "LP-DiD on the event$\\times$ring cell panel ($H{=}3$, $k{=}4$; "
-             "clean-control sample: newly treated near cells at onset plus "
-             "never-treated cells; specification (1) reproduces the baseline "
-             "table exactly). Specifications: (1) calendar-year effects; (2) "
+    rnote = ("This table subjects the ring design's estimates to a "
+             "specification ladder, using the paper's baseline estimator "
+             "throughout: the pre-mean-differenced LP-DiD on the "
+             "event$\\times$ring cell panel ($H{=}3$, $k{=}4$; clean-control "
+             "sample: newly treated near cells at onset plus never-treated "
+             "cells; specification (1) reproduces the baseline table "
+             "exactly). Specifications: (1) calendar-year effects; (2) "
              "county$\\times$year effects (the county is the event's "
-             "municipio), so identification is within municipio-year. Cell "
-             "fixed effects are subsumed by the long-differencing. Outcomes: "
-             "cell mean log sale price ($\\times$100) and the net "
-             "Hispanic-to-non-Hispanic ownership conversion rate per "
-             "classified sale (percentage points). Robust standard errors "
-             "are clustered at the cell level and reported in parentheses. "
-             + SIGNOTE)
+             "municipio), so identification is within municipio-year; (3) "
+             "adds house-characteristic controls from the transaction data "
+             "--- cell-year means of log assessed structure value, log lot "
+             "size (cabida), sub-unit share, and vacant-land share, each "
+             "pre-mean differenced exactly like the outcome --- so the "
+             "column (3) Treated coefficient is a constant-composition "
+             "price effect. Cell fixed effects are subsumed by the "
+             "long-differencing. Outcomes: cell mean log sale price "
+             "($\\times$100) and the net Hispanic-to-non-Hispanic ownership "
+             "conversion rate per classified sale (percentage points). "
+             "Robust standard errors are clustered at the cell level and "
+             "reported in parentheses. " + SIGNOTE)
+
+    def rbse(o, s):
+        return bse(o, s, 100)
+
     lines = ["\\begin{table}[H]", "\\centering",
-             f"\\caption{{\\textbf{{Ring-design treatment effects are robust to county-year shocks}} {rnote}}}",
-             "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccc}",
-             "\\toprule\\midrule"]
-    lines += panel("A", "ring_lnp", "100 $\\times$ Log(Price)", "ring_netin",
-                   "Net H$\\to$NH Conversion (pp)", "Treated", 100, 100,
-                   "R-squared", felabel="Cell differencing (LP-DiD)")
+             f"\\caption{{\\textbf{{Ring-design treatment effects: county-year shocks and house-characteristic controls}} {rnote}}}",
+             "\\scalebox{1.0}{", "\\onehalfspacing", "\\begin{tabular}{lcccccc}",
+             "\\toprule\\midrule",
+             " & \\multicolumn{3}{c}{\\textit{100 $\\times$ Log(Price)}} & "
+             "\\multicolumn{3}{c}{\\textit{Net H$\\to$NH Conversion (pp)}} \\\\",
+             "\\cmidrule(lr){2-4} \\cmidrule(lr){5-7}",
+             " & (1) & (2) & (3) & (1) & (2) & (3) \\\\", "\\midrule"]
+    tops, bots = [], []
+    for o in ("ring_lnp", "ring_netin"):
+        for s in (1, 2, 3):
+            t, b = rbse(o, s)
+            tops.append(t); bots.append(b)
+    lines.append("    Treated & " + " & ".join(tops) + " \\\\")
+    lines.append(" & " + " & ".join(bots) + " \\\\")
+    lines.append(" & & & & & & \\\\")
+    obs = [stat(o, s, "nobs", "{:,.0f}") for o in ("ring_lnp", "ring_netin") for s in (1, 2, 3)]
+    r2 = [stat(o, s, "r2", "{:.3f}") for o in ("ring_lnp", "ring_netin") for s in (1, 2, 3)]
+    lines.append("    Observations & " + " & ".join(obs) + " \\\\")
+    lines.append("    R-squared & " + " & ".join(r2) + " \\\\")
+    lines.append("    Cell differencing (LP-DiD) & Yes & Yes & Yes & Yes & Yes & Yes \\\\")
+    lines.append("    Calendar-year effects & Yes & No & No & Yes & No & No \\\\")
+    lines.append("    County-year effects & No & Yes & Yes & No & Yes & Yes \\\\")
+    lines.append("    House-characteristic controls & No & No & Yes & No & No & Yes \\\\")
     lines += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
               "\\label{tab:ring_controls_robustness}", "\\end{table}"]
     with open(os.path.join(OUT, "tab_ring_controls_robustness.tex"), "w", encoding="utf-8") as fh:
