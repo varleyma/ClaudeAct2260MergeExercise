@@ -1,21 +1,23 @@
 \begin{table}[H]
 \centering
-\caption{\textbf{Investor Purchases vs Placebo Luxury Purchases} Placebo events are 1{,}500 purchases by individual non-investor buyers in the investor price band, drawn from the same micro-areas and more than three years from any real event; both series use far rings matched at 400--750m. A price response unique to investor purchases rules out generic luxury-transaction effects. The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\caption{\textbf{Investor Purchases vs Placebo Luxury Purchases} Placebo events are 1{,}500 purchases by individual non-investor buyers in the investor price band, drawn from the same micro-areas and more than three years from any real event; both series use far rings matched at 400--750m. Columns (1)-(2): cell mean log sale price ($\times$100). Columns (3)-(4): net Hispanic-to-non-Hispanic ownership conversion per classified sale (percentage points; 1\{Hisp.\ seller, non-Hisp.\ buyer\} minus 1\{non-Hisp.\ seller, Hisp.\ buyer\}). Responses unique to investor purchases rule out generic luxury-transaction effects on both prices and neighborhood ownership composition. The Treated coefficient is the post$-$pre effect from a single LP-DiD regression via pre-mean differencing (Dube, Girardi, Jord\`a and Taylor 2023): dependent variable $\frac{1}{4}\sum_{h=0}^{3} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry with calendar-time effects, clean-control sample; its SE, $R^2$ and Observations come from that regression. Coefficients are 100$\times$log points (shares in pp). SEs clustered by unit (cell/tract). Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
 \scalebox{1.0}{
 \onehalfspacing
-\begin{tabular}{lcc}
+\begin{tabular}{lcccc}
 \toprule\midrule
- & Investor purchases & Placebo purchases \\
- & (1) & (2) \\
+ & \multicolumn{2}{c}{\textit{100 $\times$ Log(Price)}} & \multicolumn{2}{c}{\textit{Net H$\to$NH Conversion (pp)}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+ & Investor & Placebo & Investor & Placebo \\
+ & (1) & (2) & (3) & (4) \\
 \midrule
-    Treated & 4.43*** & -0.33 \\
- & (1.46) & (1.40) \\
- &  &  \\
-    Observations & 12,036 & 7,932 \\
-    R-squared & 0.109 & 0.258 \\
-    Calendar-year effects & Yes & Yes \\
-    Event$\times$ring cell differencing & Yes & Yes \\
-    Hedonic controls & No & No \\
+    Treated & 4.43*** & -0.33 & 2.17** & -0.28 \\
+ & (1.46) & (1.40) & (0.90) & (0.87) \\
+ & & & & \\
+    Observations & 12,036 & 7,932 & 11,425 & 7,680 \\
+    R-squared & 0.109 & 0.258 & 0.023 & 0.025 \\
+    Calendar-year effects & Yes & Yes & Yes & Yes \\
+    Event$\times$ring cell differencing & Yes & Yes & Yes & Yes \\
+    Hedonic controls & No & No & No & No \\
 \midrule\bottomrule
 \end{tabular}
 }

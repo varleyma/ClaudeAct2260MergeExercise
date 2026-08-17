@@ -150,7 +150,7 @@ NOTE_LPDID = ("The Treated coefficient is the post$-$pre effect from a single LP
 
 R2MAP = {}
 for _r2file in ("pmd_stats.csv", "pmd_stats_withinevent.csv", "pmd_stats_netin.csv",
-                "pmd_stats_dose2.csv"):
+                "pmd_stats_dose2.csv", "pmd_stats_placebo_netin.csv"):
     _r2path = os.path.join(OUT, _r2file)
     if os.path.exists(_r2path):
         for _r in load_csv(_r2path):
@@ -575,18 +575,59 @@ def main():
         fh.write("\n".join(lines) + "\n")
     print("wrote tab_dose_crim.tex")
 
-    # standalone placebo table
-    pspecs = [s for t, lab in [("T6_real_far750", "Investor purchases"),
-                               ("T6_placebo", "Placebo purchases")]
-              if (s := spec_from(t, lab))]
-    emit_table("tab_placebo.tex",
-               "Investor Purchases vs Placebo Luxury Purchases", pspecs, FE_D1,
-               "Placebo events are 1{,}500 purchases by individual non-investor "
-               "buyers in the investor price band, drawn from the same "
-               "micro-areas and more than three years from any real event; both "
-               "series use far rings matched at 400--750m. A price response "
-               "unique to investor purchases rules out generic "
-               "luxury-transaction effects. " + NOTE_LPDID, scale=100)
+    # standalone placebo table: price AND net conversion, investor vs placebo
+    def _pmd_spec(key, label, scale):
+        if key not in R2MAP:
+            return None
+        sp = Spec(label, fe=d1fe())
+        b, se, r2, n = R2MAP[key]
+        sp.pmd = (b * scale, se * scale)
+        sp.r2 = f"{r2:.3f}"
+        sp.nobs = f"{n:,}"
+        return sp
+    pl_price = [_pmd_spec("T6_real_far750", "Investor", 100),
+                _pmd_spec("T6_placebo", "Placebo", 100)]
+    pl_net = [_pmd_spec("T6n_real_far750", "Investor", 100),
+              _pmd_spec("T6n_placebo", "Placebo", 100)]
+    if all(pl_price) and all(pl_net):
+        pnote = ("Placebo events are 1{,}500 purchases by individual "
+                 "non-investor buyers in the investor price band, drawn from "
+                 "the same micro-areas and more than three years from any real "
+                 "event; both series use far rings matched at 400--750m. "
+                 "Columns (1)-(2): cell mean log sale price ($\\times$100). "
+                 "Columns (3)-(4): net Hispanic-to-non-Hispanic ownership "
+                 "conversion per classified sale (percentage points; "
+                 "1\\{Hisp.\\ seller, non-Hisp.\\ buyer\\} minus 1\\{non-Hisp.\\ "
+                 "seller, Hisp.\\ buyer\\}). Responses unique to investor "
+                 "purchases rule out generic luxury-transaction effects on "
+                 "both prices and neighborhood ownership composition. "
+                 + NOTE_LPDID)
+        pl = ["\\begin{table}[H]", "\\centering",
+              f"\\caption{{\\textbf{{Investor Purchases vs Placebo Luxury Purchases}} {pnote} {SIGNOTE}}}",
+              "\\scalebox{1.0}{", "\\onehalfspacing",
+              "\\begin{tabular}{lcccc}", "\\toprule\\midrule",
+              " & \\multicolumn{2}{c}{\\textit{100 $\\times$ Log(Price)}} & "
+              "\\multicolumn{2}{c}{\\textit{Net H$\\to$NH Conversion (pp)}} \\\\",
+              "\\cmidrule(lr){2-3} \\cmidrule(lr){4-5}",
+              " & Investor & Placebo & Investor & Placebo \\\\",
+              " & (1) & (2) & (3) & (4) \\\\", "\\midrule"]
+        allp = pl_price + pl_net
+        tops, bots = [], []
+        for s in allp:
+            t, bo = cell(*s.treated(), 1.0)
+            tops.append(t); bots.append(bo)
+        pl.append("    Treated & " + " & ".join(tops) + " \\\\")
+        pl.append(" & " + " & ".join(bots) + " \\\\")
+        pl.append(" & & & & \\\\")
+        pl.append("    Observations & " + " & ".join(s.nobs for s in allp) + " \\\\")
+        pl.append("    R-squared & " + " & ".join(s.r2 for s in allp) + " \\\\")
+        for fe in FE_D1:
+            pl.append("    " + fe + " & " + " & ".join(yesno(s.fe.get(fe, "--")) for s in allp) + " \\\\")
+        pl += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
+               "\\label{tab:placebo}", "\\end{table}"]
+        with open(os.path.join(OUT, "tab_placebo.tex"), "w", encoding="utf-8") as fh:
+            fh.write("\n".join(pl) + "\n")
+        print("wrote tab_placebo.tex")
 
     # ================= main-tables folder =================
     import shutil
