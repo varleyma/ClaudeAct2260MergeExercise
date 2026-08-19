@@ -353,9 +353,12 @@ def main():
                       "Hedonic controls": "N"})
         apply_r2(sp, "T1_baseline")
         specs.append(sp)
-    # within-event LP-DiD column (absorb(event x year)), parsed from its log
+    # within-event LP-DiD column (absorb(event x year)), parsed from its log.
+    # DROPPED from the table at user request (2026-08-14); parsing retained
+    # behind the flag for the record.
+    INCLUDE_WITHIN_EVENT = False
     _wlog = os.path.join(O1, "withinevent_results.log")
-    if os.path.exists(_wlog):
+    if INCLUDE_WITHIN_EVENT and os.path.exists(_wlog):
         seg = open(_wlog, encoding="utf-8", errors="replace").read()
         # "WITHIN-EVENT" appears twice (command echo + printed banner): take the
         # last segment, which follows the banner and contains the matrices
@@ -407,12 +410,10 @@ def main():
                "Estimation-approach robustness (fig.\\ D12)", specs, FE_SL,
                "The Treated row is the comparable post$-$pre differential across estimators. "
                "Column (1): cell-level LP-DiD, pooled never-treated controls; coefficient, R$^2$ and N "
-               "from the single pre-mean-differenced regression (Dube et al.\\ 2023). Column (2): the same "
-               "PMD regression with event$\\times$calendar-year effects absorbed (within-event "
-               "identification: each near ring vs its own event's far ring). Columns (3)-(4): stacked "
-               "sale-level OLS; the near$\\times$post coefficient is itself the differential, SEs "
-               "clustered by event. Long-differencing subsumes event$\\times$ring FE in the LP-DiD "
-               "columns. 100$\\times$log points.")
+               "from the single pre-mean-differenced regression (Dube et al.\\ 2023). Columns (2)-(3): "
+               "stacked sale-level OLS; the near$\\times$post coefficient is itself the differential, "
+               "SEs clustered by event. Long-differencing subsumes event$\\times$ring FE in the LP-DiD "
+               "column. 100$\\times$log points.")
 
     # ================= Design 2 tract tables =================
     d2 = load_csv(os.path.join(O2, "design2_coefs.csv"))
