@@ -55,7 +55,7 @@ Notes:
 . 
 . import delimited "$OUT/entity_fig_year.csv", varnames(1) clear
 (encoding automatically selected: ISO-8859-1)
-(6 vars, 27 obs)
+(8 vars, 27 obs)
 
 . gen sh_core  = 100 * n_core  / n_total
 
@@ -94,43 +94,48 @@ Notes:
 >     name(figE1, replace)
 
 . graph export "$OUT/figE1_entity_share.png", replace width(2000)
-(file
-    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/crim_e
-    > ntities/figE1_entity_share.png not found)
 file
     C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/crim_e
     > ntities/figE1_entity_share.png saved as PNG format
 
 . 
-. twoway ///
->     (connected sh_c2 year, color(navy) msymbol(O) lwidth(medthin)) ///
->     (connected sh_c3 year, color(cranberry) msymbol(O) lwidth(medthin)) ///
->     , `STYLE' ///
->     legend(order(1 "Address shared by 2+ entities" 2 "Address shared by 3+ en
-> tities") ///
->            rows(1) position(6) region(lstyle(none))) ///
->     title("Purchases by entities at shared mailing addresses", size(medium)) 
-> ///
->     ytitle("Share of all purchases (%)") xtitle("Year of purchase") ///
->     note("Purchases by non-bank entities whose owner mailing address is share
-> d by 2+ (3+) distinct entity buyer names -- the" ///
->          "one-LLC-per-property structure through which institutional buyers w
-> ould appear. Banks, coops, and GSEs excluded" ///
->          "(foreclosure REO). Dashed line = Act 22/60 (2012), dotted = post-20
-> 19 boom. 2026 is a partial year.", size(vsmall)) ///
->     name(figE2, replace)
+. gen sh_p10 = 100 * n_port10 / n_total
 
-. graph export "$OUT/figE2_cluster_share.png", replace width(2000)
-(file
-    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/crim_e
-    > ntities/figE2_cluster_share.png not found)
-file
-    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/crim_e
-    > ntities/figE2_cluster_share.png saved as PNG format
+. gen sh_p25 = 100 * n_port25 / n_total
 
 . 
-. di as result "Saved figE1_entity_share.png, figE2_cluster_share.png"
-Saved figE1_entity_share.png, figE2_cluster_share.png
+. twoway ///
+>     (connected sh_p10 year, color(navy) msymbol(O) lwidth(medthin)) ///
+>     (connected sh_p25 year, color(cranberry) msymbol(O) lwidth(medthin)) ///
+>     , `STYLE' ///
+>     legend(order(1 "Cluster holds 10+ properties" 2 "Cluster holds 25+ proper
+> ties") ///
+>            rows(1) position(6) region(lstyle(none))) ///
+>     title("Purchases by portfolio-scale entity buyers", size(medium)) ///
+>     ytitle("Share of all purchases (%)") xtitle("Year of purchase") ///
+>     note("A purchase counts if its non-bank entity buyer belongs to a portfol
+> io cluster: the same buyer NAME holds 10+ (25+)" ///
+>          "parcels, or its owner mailing ADDRESS accumulates 10+ (25+) parcels
+>  across distinct entity names (rolling up" ///
+>          "one-LLC-per-property structures). Banks, coops, and GSEs excluded (
+> foreclosure REO). This is an upper bound on" ///
+>          "institutional-scale buying: the clusters include local developers, 
+> landlords, and law-office-administered LLCs." ///
+>          "Dashed line = Act 22/60 (2012), dotted = post-2019 boom. 2026 is a 
+> partial year.", size(vsmall)) ///
+>     name(figE2, replace)
+
+. graph export "$OUT/figE2_portfolio_share.png", replace width(2000)
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/crim_e
+    > ntities/figE2_portfolio_share.png not found)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/crim_e
+    > ntities/figE2_portfolio_share.png saved as PNG format
+
+. 
+. di as result "Saved figE1_entity_share.png, figE2_portfolio_share.png"
+Saved figE1_entity_share.png, figE2_portfolio_share.png
 
 . 
 end of do-file

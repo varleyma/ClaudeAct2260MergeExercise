@@ -80,14 +80,36 @@ def main():
         if a in clust3:
             n_c3[y] += 1
 
+    # PORTFOLIO-SCALE buyers: an entity belongs to a portfolio cluster if its
+    # NAME bought >=K parcels, or its mailing ADDRESS accumulates >=K parcels
+    # across entity buyers (one-LLC-per-property rolls up here). Banks already
+    # excluded from ent_rows.
+    name_n = defaultdict(int)
+    addr_n = defaultdict(int)
+    for y, b, a in ent_rows:
+        name_n[b] += 1
+        addr_n[a] += 1
+    n_p10, n_p25 = defaultdict(int), defaultdict(int)
+    for y, b, a in ent_rows:
+        big10 = name_n[b] >= 10 or addr_n[a] >= 10
+        big25 = name_n[b] >= 25 or addr_n[a] >= 25
+        if big10:
+            n_p10[y] += 1
+        if big25:
+            n_p25[y] += 1
+
     with open(os.path.join(OUT, "entity_fig_year.csv"), "w", newline="",
               encoding="utf-8") as fh:
         w = csv.writer(fh)
-        w.writerow(["year", "n_total", "n_core", "n_broad", "n_clust2", "n_clust3"])
+        w.writerow(["year", "n_total", "n_core", "n_broad", "n_clust2",
+                    "n_clust3", "n_port10", "n_port25"])
         for y in sorted(n_total):
             w.writerow([y, n_total[y], n_core[y], n_broad[y],
-                        n_c2.get(y, 0), n_c3.get(y, 0)])
+                        n_c2.get(y, 0), n_c3.get(y, 0),
+                        n_p10.get(y, 0), n_p25.get(y, 0)])
     print(f"addresses with >=2 entities: {len(clust2):,}; >=3: {len(clust3):,}")
+    print(f"portfolio names >=10: {sum(1 for v in name_n.values() if v >= 10):,}; "
+          f"portfolio addresses >=10: {sum(1 for v in addr_n.values() if v >= 10):,}")
     print("wrote entity_fig_year.csv")
 
 
