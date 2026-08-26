@@ -59,6 +59,7 @@ gen D2  = !missing(rel) & rel == 2
 gen D3  = !missing(rel) & rel >= 3
 local DVARS Dm4 Dm3 Dm2 D0 D1 D2 D3
 
+gen D2p = !missing(rel) & rel >= 2      // endpoint bin for the t<=2 window
 gen anyport = port10_n > 0
 gen port_cap = min(port10_n, 3)
 gen blip = 0
@@ -72,31 +73,49 @@ save `panel'
 log using "$OUT/entity_did_robust.log", replace text
 
 tempname pf
-postfile `pf' str16 spec double h b se using "$OUT/_er.dta", replace
+postfile `pf' str16 spec double win h b se using "$OUT/_er.dta", replace
 
 capture program drop runes
 program define runes
-    args yvar spec cond pf
+    * runes <yvar> <spec> <cond> <win: 2|3> <pf>
+    args yvar spec cond win pf
     preserve
     if "`cond'" != "" keep if `cond'
-    di as result _n "===== `spec' ====="
-    reghdfe `yvar' Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) vce(cluster tract_num)
-    foreach h in -4 -3 -2 0 1 2 3 {
-        local d = cond(`h' < 0, "Dm" + string(-`h'), "D" + string(`h'))
-        post `pf' ("`spec'") (`h') (_b[`d']) (_se[`d'])
+    di as result _n "===== `spec' (window +`win') ====="
+    if `win' == 3 {
+        reghdfe `yvar' Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) vce(cluster tract_num)
+        local hs -4 -3 -2 0 1 2 3
+        local ds Dm4 Dm3 Dm2 D0 D1 D2 D3
     }
-    post `pf' ("`spec'") (-1) (0) (.)
+    else {
+        reghdfe `yvar' Dm4 Dm3 Dm2 D0 D1 D2p, absorb(tract_num year) vce(cluster tract_num)
+        local hs -4 -3 -2 0 1 2
+        local ds Dm4 Dm3 Dm2 D0 D1 D2p
+    }
+    local i = 0
+    foreach h of local hs {
+        local ++i
+        local d : word `i' of `ds'
+        post `pf' ("`spec'") (`win') (`h') (_b[`d']) (_se[`d'])
+    }
+    post `pf' ("`spec'") (`win') (-1) (0) (.)
     restore
 end
 
-use `panel', clear
-runes port10_n baseline "" `pf'
-use `panel', clear
-runes port10_n dropblip "blip == 0" `pf'
-use `panel', clear
-runes anyport extensive "" `pf'
-use `panel', clear
-runes port_cap capped "" `pf'
+foreach w in 3 2 {
+    use `panel', clear
+    runes port10_n baseline "" `w' `pf'
+    use `panel', clear
+    runes port10_n dropblip "blip == 0" `w' `pf'
+    use `panel', clear
+    runes anyport extensive "" `w' `pf'
+    use `panel', clear
+    runes port_cap capped "" `w' `pf'
+    * cohort cut: post-2014 adopters only -- avoids the Cobian Plaza 2014
+    * acquisition without outcome-based tract selection
+    use `panel', clear
+    runes port10_n post2014 "missing(first_event_year) | first_event_year >= 2015" `w' `pf'
+}
 
 postclose `pf'
 log close
@@ -104,7 +123,7 @@ log close
 use "$OUT/_er.dta", clear
 gen lb = b - 1.96*se
 gen ub = b + 1.96*se
-sort spec h
+sort win spec h
 export delimited "$OUT/entity_did_robust_coefs.csv", replace
 capture erase "$OUT/_er.dta"
-list, noobs sep(8)
+list, noobs sepby(spec win)

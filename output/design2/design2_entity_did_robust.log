@@ -87,7 +87,7 @@ Duplicates in terms of all variables
 . tempfile frame
 
 . save `frame'
-file C:\Users\mva284\AppData\Local\Temp\ST_3b5c_000001.tmp saved as .dta
+file C:\Users\mva284\AppData\Local\Temp\ST_5580_000001.tmp saved as .dta
     format
 
 . 
@@ -128,7 +128,7 @@ file C:\Users\mva284\AppData\Local\Temp\ST_3b5c_000001.tmp saved as .dta
 .     tempfile trt
 
 .     save `trt'
-file C:\Users\mva284\AppData\Local\Temp\ST_3b5c_000003.tmp saved as .dta
+file C:\Users\mva284\AppData\Local\Temp\ST_5580_000003.tmp saved as .dta
     format
 
 . restore
@@ -166,6 +166,8 @@ file C:\Users\mva284\AppData\Local\Temp\ST_3b5c_000003.tmp saved as .dta
 . local DVARS Dm4 Dm3 Dm2 D0 D1 D2 D3
 
 . 
+. gen D2p = !missing(rel) & rel >= 2      // endpoint bin for the t<=2 window
+
 . gen anyport = port10_n > 0
 
 . gen port_cap = min(port10_n, 3)
@@ -186,25 +188,22 @@ file C:\Users\mva284\AppData\Local\Temp\ST_3b5c_000003.tmp saved as .dta
 . tempfile panel
 
 . save `panel'
-file C:\Users\mva284\AppData\Local\Temp\ST_3b5c_000004.tmp saved as .dta
+file C:\Users\mva284\AppData\Local\Temp\ST_5580_000004.tmp saved as .dta
     format
 
 . 
 . log using "$OUT/entity_did_robust.log", replace text
-(file
-    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
-    > 2/entity_did_robust.log not found)
 -------------------------------------------------------------------------------
       name:  <unnamed>
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/entity_did_robust.log
   log type:  text
- opened on:  25 Aug 2026, 21:10:54
+ opened on:  25 Aug 2026, 21:16:40
 
 . 
 . tempname pf
 
-. postfile `pf' str16 spec double h b se using "$OUT/_er.dta", replace
+. postfile `pf' str16 spec double win h b se using "$OUT/_er.dta", replace
 (file
     C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
     > 2/_er.dta not found)
@@ -213,26 +212,51 @@ file C:\Users\mva284\AppData\Local\Temp\ST_3b5c_000004.tmp saved as .dta
 . capture program drop runes
 
 . program define runes
-  1.     args yvar spec cond pf
+  1.     * runes <yvar> <spec> <cond> <win: 2|3> <pf>
+.     args yvar spec cond win pf
   2.     preserve
   3.     if "`cond'" != "" keep if `cond'
-  4.     di as result _n "===== `spec' ====="
-  5.     reghdfe `yvar' Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) vce(clu
-> ster tract_num)
-  6.     foreach h in -4 -3 -2 0 1 2 3 {
-  7.         local d = cond(`h' < 0, "Dm" + string(-`h'), "D" + string(`h'))
-  8.         post `pf' ("`spec'") (`h') (_b[`d']) (_se[`d'])
+  4.     di as result _n "===== `spec' (window +`win') ====="
+  5.     if `win' == 3 {
+  6.         reghdfe `yvar' Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) vce
+> (cluster tract_num)
+  7.         local hs -4 -3 -2 0 1 2 3
+  8.         local ds Dm4 Dm3 Dm2 D0 D1 D2 D3
   9.     }
- 10.     post `pf' ("`spec'") (-1) (0) (.)
- 11.     restore
- 12. end
+ 10.     else {
+ 11.         reghdfe `yvar' Dm4 Dm3 Dm2 D0 D1 D2p, absorb(tract_num year) vce(c
+> luster tract_num)
+ 12.         local hs -4 -3 -2 0 1 2
+ 13.         local ds Dm4 Dm3 Dm2 D0 D1 D2p
+ 14.     }
+ 15.     local i = 0
+ 16.     foreach h of local hs {
+ 17.         local ++i
+ 18.         local d : word `i' of `ds'
+ 19.         post `pf' ("`spec'") (`win') (`h') (_b[`d']) (_se[`d'])
+ 20.     }
+ 21.     post `pf' ("`spec'") (`win') (-1) (0) (.)
+ 22.     restore
+ 23. end
 
 . 
-. use `panel', clear
+. foreach w in 3 2 {
+  2.     use `panel', clear
+  3.     runes port10_n baseline "" `w' `pf'
+  4.     use `panel', clear
+  5.     runes port10_n dropblip "blip == 0" `w' `pf'
+  6.     use `panel', clear
+  7.     runes anyport extensive "" `w' `pf'
+  8.     use `panel', clear
+  9.     runes port_cap capped "" `w' `pf'
+ 10.     * cohort cut: post-2014 adopters only -- avoids the Cobian Plaza 2014
+.     * acquisition without outcome-based tract selection
+.     use `panel', clear
+ 11.     runes port10_n post2014 "missing(first_event_year) | first_event_year 
+> >= 2015" `w' `pf'
+ 12. }
 
-. runes port10_n baseline "" `pf'
-
-===== baseline =====
+===== baseline (window +3) =====
 (MWFE estimator converged in 2 iterations)
 
 HDFE Linear regression                            Number of obs   =     13,734
@@ -266,13 +290,9 @@ Absorbed degrees of freedom:
         year |        14           1          13     |
 -----------------------------------------------------+
 * = FE nested within cluster; treated as redundant for DoF computation
-
-. use `panel', clear
-
-. runes port10_n dropblip "blip == 0" `pf'
 (70 observations deleted)
 
-===== dropblip =====
+===== dropblip (window +3) =====
 (MWFE estimator converged in 2 iterations)
 
 HDFE Linear regression                            Number of obs   =     13,664
@@ -307,11 +327,7 @@ Absorbed degrees of freedom:
 -----------------------------------------------------+
 * = FE nested within cluster; treated as redundant for DoF computation
 
-. use `panel', clear
-
-. runes anyport extensive "" `pf'
-
-===== extensive =====
+===== extensive (window +3) =====
 (MWFE estimator converged in 2 iterations)
 
 HDFE Linear regression                            Number of obs   =     13,734
@@ -346,11 +362,7 @@ Absorbed degrees of freedom:
 -----------------------------------------------------+
 * = FE nested within cluster; treated as redundant for DoF computation
 
-. use `panel', clear
-
-. runes port_cap capped "" `pf'
-
-===== capped =====
+===== capped (window +3) =====
 (MWFE estimator converged in 2 iterations)
 
 HDFE Linear regression                            Number of obs   =     13,734
@@ -384,6 +396,214 @@ Absorbed degrees of freedom:
         year |        14           1          13     |
 -----------------------------------------------------+
 * = FE nested within cluster; treated as redundant for DoF computation
+(294 observations deleted)
+
+===== post2014 (window +3) =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,440
+Absorbing 2 HDFE groups                           F(   7,    959) =       2.93
+Statistics robust to heteroskedasticity           Prob > F        =     0.0049
+                                                  R-squared       =     0.1493
+                                                  Adj R-squared   =     0.0824
+                                                  Within R-sq.    =     0.0032
+Number of clusters (tract_num) =        960       Root MSE        =     2.0432
+
+                            (Std. err. adjusted for 960 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.3447969   .3354016    -1.03   0.304    -1.003003    .3134088
+         Dm3 |  -.5353925   .3532339    -1.52   0.130    -1.228593     .157808
+         Dm2 |  -.3566614   .3566546    -1.00   0.318    -1.056575    .3432522
+          D0 |  -.0411014   .4299118    -0.10   0.924    -.8847779     .802575
+          D1 |  -.1554923   .4102723    -0.38   0.705    -.9606273    .6496427
+          D2 |  -.1666519   .3868755    -0.43   0.667    -.9258722    .5925684
+          D3 |   .3952914   .5156222     0.77   0.443    -.6165867    1.407169
+       _cons |   .3275322   .0737668     4.44   0.000     .1827692    .4722953
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       960         960           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== baseline (window +2) =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   6,    980) =       3.28
+Statistics robust to heteroskedasticity           Prob > F        =     0.0034
+                                                  R-squared       =     0.1029
+                                                  Adj R-squared   =     0.0325
+                                                  Within R-sq.    =     0.0037
+Number of clusters (tract_num) =        981       Root MSE        =     4.6192
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.0897963   .3682633    -0.24   0.807    -.8124716    .6328791
+         Dm3 |  -.3055396   .3805251    -0.80   0.422    -1.052277    .4411982
+         Dm2 |  -.3035934   .3346413    -0.91   0.365    -.9602893    .3531025
+          D0 |   2.035578   2.104938     0.97   0.334    -2.095126    6.166281
+          D1 |  -.1917157   .3822605    -0.50   0.616     -.941859    .5584276
+         D2p |  -.0100143   .5224483    -0.02   0.985     -1.03526    1.015232
+       _cons |   .3292451   .0815053     4.04   0.000     .1693001      .48919
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(70 observations deleted)
+
+===== dropblip (window +2) =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,664
+Absorbing 2 HDFE groups                           F(   6,    975) =       3.41
+Statistics robust to heteroskedasticity           Prob > F        =     0.0025
+                                                  R-squared       =     0.1262
+                                                  Adj R-squared   =     0.0577
+                                                  Within R-sq.    =     0.0026
+Number of clusters (tract_num) =        976       Root MSE        =     2.0663
+
+                            (Std. err. adjusted for 976 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.3306763   .3168288    -1.04   0.297    -.9524212    .2910686
+         Dm3 |  -.4869388   .3366349    -1.45   0.148    -1.147551    .1736736
+         Dm2 |  -.3169471   .3393748    -0.93   0.351    -.9829362     .349042
+          D0 |  -.4427666   .3378406    -1.31   0.190    -1.105745    .2202118
+          D1 |  -.2039068   .3840512    -0.53   0.596    -.9575689    .5497553
+         D2p |   .2153083   .4144271     0.52   0.604    -.5979634     1.02858
+       _cons |   .3226189   .0735677     4.39   0.000     .1782496    .4669881
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       976         976           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== extensive (window +2) =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   6,    980) =       4.33
+Statistics robust to heteroskedasticity           Prob > F        =     0.0003
+                                                  R-squared       =     0.2421
+                                                  Adj R-squared   =     0.1827
+                                                  Within R-sq.    =     0.0034
+Number of clusters (tract_num) =        981       Root MSE        =     0.2999
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+     anyport | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.0381805   .0266583    -1.43   0.152    -.0904943    .0141333
+         Dm3 |  -.0452374   .0324183    -1.40   0.163    -.1088547      .01838
+         Dm2 |  -.0093087   .0312861    -0.30   0.766    -.0707041    .0520867
+          D0 |   .0025367   .0351661     0.07   0.943    -.0664728    .0715463
+          D1 |   .0165047   .0348018     0.47   0.635      -.05179    .0847993
+         D2p |   .0717092   .0288707     2.48   0.013     .0150537    .1283647
+       _cons |   .1253361   .0054755    22.89   0.000      .114591    .1360811
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== capped (window +2) =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   6,    980) =       6.10
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.2702
+                                                  Adj R-squared   =     0.2129
+                                                  Within R-sq.    =     0.0068
+Number of clusters (tract_num) =        981       Root MSE        =     0.5065
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port_cap | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.0706142   .0482873    -1.46   0.144    -.1653726    .0241442
+         Dm3 |  -.1099843    .056131    -1.96   0.050    -.2201352    .0001665
+         Dm2 |  -.0196751   .0549094    -0.36   0.720    -.1274286    .0880784
+          D0 |   .0238461   .0674825     0.35   0.724    -.1085806    .1562729
+          D1 |   .0160787   .0632281     0.25   0.799    -.1079993    .1401566
+         D2p |   .1856029   .0556841     3.33   0.001     .0763291    .2948768
+       _cons |   .1864929    .010043    18.57   0.000     .1667847    .2062011
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(294 observations deleted)
+
+===== post2014 (window +2) =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,440
+Absorbing 2 HDFE groups                           F(   6,    959) =       3.21
+Statistics robust to heteroskedasticity           Prob > F        =     0.0039
+                                                  R-squared       =     0.1487
+                                                  Adj R-squared   =     0.0818
+                                                  Within R-sq.    =     0.0025
+Number of clusters (tract_num) =        960       Root MSE        =     2.0438
+
+                            (Std. err. adjusted for 960 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.3302717   .3358163    -0.98   0.326    -.9892913    .3287478
+         Dm3 |   -.533459   .3532679    -1.51   0.131    -1.226726    .1598084
+         Dm2 |  -.3554059   .3567193    -1.00   0.319    -1.055446    .3446345
+          D0 |  -.0428927   .4297787    -0.10   0.921    -.8863079    .8005225
+          D1 |  -.1590985   .4100781    -0.39   0.698    -.9638524    .6456555
+         D2p |    .222892   .4508132     0.49   0.621    -.6618022    1.107586
+       _cons |   .3275251   .0737003     4.44   0.000     .1828927    .4721574
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       960         960           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
 
 . 
 . postclose `pf'
@@ -393,70 +613,116 @@ Absorbed degrees of freedom:
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/entity_did_robust.log
   log type:  text
- closed on:  25 Aug 2026, 21:10:57
+ closed on:  25 Aug 2026, 21:16:42
 -------------------------------------------------------------------------------
 
 . 
 . use "$OUT/_er.dta", clear
 
 . gen lb = b - 1.96*se
-(4 missing values generated)
+(10 missing values generated)
 
 . gen ub = b + 1.96*se
-(4 missing values generated)
+(10 missing values generated)
 
-. sort spec h
+. sort win spec h
 
 . export delimited "$OUT/entity_did_robust_coefs.csv", replace
-(file
-    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
-    > 2/entity_did_robust_coefs.csv not found)
 file C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design2
 > /entity_did_robust_coefs.csv saved
 
 . capture erase "$OUT/_er.dta"
 
-. list, noobs sep(8)
+. list, noobs sepby(spec win)
 
-  +---------------------------------------------------------------+
-  |      spec    h           b         se          lb          ub |
-  |---------------------------------------------------------------|
-  |  baseline   -4   -.1016269   .3755451   -.8376953    .6344414 |
-  |  baseline   -3   -.3099315   .3829573   -1.060528    .4406648 |
-  |  baseline   -2   -.3058524   .3346382   -.9617432    .3500385 |
-  |  baseline   -1           0          .           .           . |
-  |  baseline    0    2.037333   2.103004   -2.084555     6.15922 |
-  |  baseline    1   -.1887609   .3828195   -.9390871    .5615652 |
-  |  baseline    2   -.2222048   .3664499   -.9404466     .496037 |
-  |  baseline    3    .0733863   .6231229   -1.147935    1.294707 |
-  |---------------------------------------------------------------|
-  |    capped   -4   -.0759721   .0483725   -.1707821    .0188379 |
-  |    capped   -3   -.1119733   .0561338   -.2219955   -.0019511 |
-  |    capped   -2   -.0206981   .0549118   -.1283252    .0869289 |
-  |    capped   -1           0          .           .           . |
-  |    capped    0    .0246408   .0674443     -.10755    .1568317 |
-  |    capped    1    .0174168   .0631811    -.106418    .1412517 |
-  |    capped    2     .089507   .0753602    -.058199     .237213 |
-  |    capped    3    .2233731   .0593918    .1069651     .339781 |
-  |---------------------------------------------------------------|
-  |  dropblip   -4   -.3513432   .3170844   -.9728286    .2701422 |
-  |  dropblip   -3   -.4946274   .3364745   -1.154117    .1648625 |
-  |  dropblip   -2   -.3210764   .3392226   -.9859527       .3438 |
-  |  dropblip   -1           0          .           .           . |
-  |  dropblip    0   -.4394611   .3379378   -1.101819     .222897 |
-  |  dropblip    1   -.1984888   .3842689   -.9516559    .5546781 |
-  |  dropblip    2   -.1717013   .3665622   -.8901631    .5467606 |
-  |  dropblip    3    .3668685   .4601254   -.5349774    1.268714 |
-  |---------------------------------------------------------------|
-  | extensive   -4   -.0414954   .0267554    -.093936    .0109452 |
-  | extensive   -3    -.046468   .0324038   -.1099795    .0170436 |
-  | extensive   -2   -.0099417   .0312736   -.0712378    .0513545 |
-  | extensive   -1           0          .           .           . |
-  | extensive    0    .0030284   .0351405   -.0658469    .0719038 |
-  | extensive    1    .0173326   .0348313   -.0509367    .0856019 |
-  | extensive    2    .0122546   .0378664   -.0619635    .0864726 |
-  | extensive    3    .0950776   .0305646     .035171    .1549842 |
-  +---------------------------------------------------------------+
+  +---------------------------------------------------------------------+
+  |      spec   win    h           b         se          lb          ub |
+  |---------------------------------------------------------------------|
+  |  baseline     2   -4   -.0897963   .3682633   -.8115923    .6319999 |
+  |  baseline     2   -3   -.3055396   .3805251   -1.051369    .4402896 |
+  |  baseline     2   -2   -.3035934   .3346413   -.9594903    .3523035 |
+  |  baseline     2   -1           0          .           .           . |
+  |  baseline     2    0    2.035578   2.104938     -2.0901    6.161255 |
+  |  baseline     2    1   -.1917157   .3822605   -.9409463    .5575149 |
+  |  baseline     2    2   -.0100143   .5224483   -1.034013    1.013984 |
+  |---------------------------------------------------------------------|
+  |    capped     2   -4   -.0706142   .0482873   -.1652573    .0240289 |
+  |    capped     2   -3   -.1099843    .056131   -.2200012    .0000325 |
+  |    capped     2   -2   -.0196751   .0549094   -.1272975    .0879473 |
+  |    capped     2   -1           0          .           .           . |
+  |    capped     2    0    .0238461   .0674825   -.1084195    .1561117 |
+  |    capped     2    1    .0160787   .0632281   -.1078483    .1400057 |
+  |    capped     2    2    .1856029   .0556841    .0764621    .2947438 |
+  |---------------------------------------------------------------------|
+  |  dropblip     2   -4   -.3306763   .3168288   -.9516608    .2903082 |
+  |  dropblip     2   -3   -.4869388   .3366349   -1.146743    .1728656 |
+  |  dropblip     2   -2   -.3169471   .3393748   -.9821216    .3482275 |
+  |  dropblip     2   -1           0          .           .           . |
+  |  dropblip     2    0   -.4427666   .3378406   -1.104934     .219401 |
+  |  dropblip     2    1   -.2039068   .3840512   -.9566472    .5488336 |
+  |  dropblip     2    2    .2153083    .414427   -.5969687    1.027585 |
+  |---------------------------------------------------------------------|
+  | extensive     2   -4   -.0381805   .0266583   -.0904307    .0140697 |
+  | extensive     2   -3   -.0452374   .0324183   -.1087773    .0183026 |
+  | extensive     2   -2   -.0093087   .0312861   -.0706294     .052012 |
+  | extensive     2   -1           0          .           .           . |
+  | extensive     2    0    .0025367   .0351661   -.0663888    .0714623 |
+  | extensive     2    1    .0165047   .0348018   -.0517069    .0847162 |
+  | extensive     2    2    .0717092   .0288707    .0151226    .1282958 |
+  |---------------------------------------------------------------------|
+  |  post2014     2   -4   -.3302717   .3358163   -.9884716    .3279282 |
+  |  post2014     2   -3    -.533459   .3532679   -1.225864    .1589462 |
+  |  post2014     2   -2   -.3554059   .3567193   -1.054576    .3437639 |
+  |  post2014     2   -1           0          .           .           . |
+  |  post2014     2    0   -.0428927   .4297787    -.885259    .7994735 |
+  |  post2014     2    1   -.1590985   .4100781   -.9628515    .6446546 |
+  |  post2014     2    2     .222892   .4508132   -.6607019    1.106486 |
+  |---------------------------------------------------------------------|
+  |  baseline     3   -4   -.1016269   .3755451   -.8376953    .6344414 |
+  |  baseline     3   -3   -.3099315   .3829573   -1.060528    .4406648 |
+  |  baseline     3   -2   -.3058524   .3346382   -.9617432    .3500385 |
+  |  baseline     3   -1           0          .           .           . |
+  |  baseline     3    0    2.037333   2.103004   -2.084555     6.15922 |
+  |  baseline     3    1   -.1887609   .3828195   -.9390871    .5615652 |
+  |  baseline     3    2   -.2222048   .3664499   -.9404466     .496037 |
+  |  baseline     3    3    .0733863   .6231229   -1.147935    1.294707 |
+  |---------------------------------------------------------------------|
+  |    capped     3   -4   -.0759721   .0483725   -.1707821    .0188379 |
+  |    capped     3   -3   -.1119733   .0561338   -.2219955   -.0019511 |
+  |    capped     3   -2   -.0206981   .0549118   -.1283252    .0869289 |
+  |    capped     3   -1           0          .           .           . |
+  |    capped     3    0    .0246408   .0674443     -.10755    .1568317 |
+  |    capped     3    1    .0174168   .0631811    -.106418    .1412517 |
+  |    capped     3    2     .089507   .0753602    -.058199     .237213 |
+  |    capped     3    3    .2233731   .0593918    .1069651     .339781 |
+  |---------------------------------------------------------------------|
+  |  dropblip     3   -4   -.3513432   .3170844   -.9728286    .2701422 |
+  |  dropblip     3   -3   -.4946274   .3364745   -1.154117    .1648625 |
+  |  dropblip     3   -2   -.3210764   .3392226   -.9859527       .3438 |
+  |  dropblip     3   -1           0          .           .           . |
+  |  dropblip     3    0   -.4394611   .3379378   -1.101819     .222897 |
+  |  dropblip     3    1   -.1984888   .3842689   -.9516559    .5546781 |
+  |  dropblip     3    2   -.1717013   .3665622   -.8901631    .5467606 |
+  |  dropblip     3    3    .3668685   .4601254   -.5349774    1.268714 |
+  |---------------------------------------------------------------------|
+  | extensive     3   -4   -.0414954   .0267554    -.093936    .0109452 |
+  | extensive     3   -3    -.046468   .0324038   -.1099795    .0170436 |
+  | extensive     3   -2   -.0099417   .0312736   -.0712378    .0513545 |
+  | extensive     3   -1           0          .           .           . |
+  | extensive     3    0    .0030284   .0351405   -.0658469    .0719038 |
+  | extensive     3    1    .0173326   .0348313   -.0509367    .0856019 |
+  | extensive     3    2    .0122546   .0378664   -.0619635    .0864726 |
+  | extensive     3    3    .0950776   .0305646     .035171    .1549842 |
+  |---------------------------------------------------------------------|
+  |  post2014     3   -4   -.3447969   .3354016   -1.002184    .3125902 |
+  |  post2014     3   -3   -.5353925   .3532338   -1.227731    .1569459 |
+  |  post2014     3   -2   -.3566614   .3566546   -1.055705    .3423817 |
+  |  post2014     3   -1           0          .           .           . |
+  |  post2014     3    0   -.0411014   .4299118   -.8837286    .8015257 |
+  |  post2014     3    1   -.1554923   .4102723   -.9596259    .6486414 |
+  |  post2014     3    2   -.1666519   .3868755   -.9249279    .5916241 |
+  |  post2014     3    3    .3952914   .5156222   -.6153281    1.405911 |
+  +---------------------------------------------------------------------+
 
 . 
 end of do-file
