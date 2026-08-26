@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  17 AUG 2026 18:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  25 AUG 2026 21:23
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -473,7 +473,7 @@ Overfull \hbox (36.33107pt too wide) in paragraph at lines 38--40
 [3]
 
 [4]
-<figD12_salelevel_robustness.png, id=130, 2007.5pt x 1204.5pt>
+<figD12_salelevel_robustness.png, id=134, 2007.5pt x 1204.5pt>
 File: figD12_salelevel_robustness.png Graphic file (type png)
 <use figD12_salelevel_robustness.png>
 Package pdftex.def Info: figD12_salelevel_robustness.png  used on input line 20
@@ -482,27 +482,27 @@ Package pdftex.def Info: figD12_salelevel_robustness.png  used on input line 20
 
 
 [5 <./figD12_salelevel_robustness.png (PNG copy)>]
-<fig1_baseline.png, id=140, 2007.5pt x 1204.5pt>
+<fig1_baseline.png, id=144, 2007.5pt x 1204.5pt>
 File: fig1_baseline.png Graphic file (type png)
 <use fig1_baseline.png>
 Package pdftex.def Info: fig1_baseline.png  used on input line 240.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig2_real_vs_placebo.png, id=141, 2007.5pt x 1204.5pt>
+<fig2_real_vs_placebo.png, id=145, 2007.5pt x 1204.5pt>
 File: fig2_real_vs_placebo.png Graphic file (type png)
 <use fig2_real_vs_placebo.png>
 Package pdftex.def Info: fig2_real_vs_placebo.png  used on input line 251.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig3_gradient.png, id=142, 2007.5pt x 1204.5pt>
+<fig3_gradient.png, id=146, 2007.5pt x 1204.5pt>
 File: fig3_gradient.png Graphic file (type png)
 <use fig3_gradient.png>
 Package pdftex.def Info: fig3_gradient.png  used on input line 264.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig4_dose.png, id=143, 2007.5pt x 1204.5pt>
+<fig4_dose.png, id=147, 2007.5pt x 1204.5pt>
 File: fig4_dose.png Graphic file (type png)
 <use fig4_dose.png>
 Package pdftex.def Info: fig4_dose.png  used on input line 275.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig5_late.png, id=144, 2007.5pt x 1204.5pt>
+<fig5_late.png, id=148, 2007.5pt x 1204.5pt>
 File: fig5_late.png Graphic file (type png)
 <use fig5_late.png>
 Package pdftex.def Info: fig5_late.png  used on input line 295.
@@ -519,37 +519,37 @@ Overfull \vbox (3.90173pt too high) has occurred while \output is active []
 
 
 [9 <./fig5_late.png (PNG copy)>]
-<fig6_comp_lnstru.png, id=173, 2007.5pt x 1204.5pt>
+<fig6_comp_lnstru.png, id=177, 2007.5pt x 1204.5pt>
 File: fig6_comp_lnstru.png Graphic file (type png)
 <use fig6_comp_lnstru.png>
 Package pdftex.def Info: fig6_comp_lnstru.png  used on input line 311.
 (pdftex.def)             Requested size: 225.4804pt x 135.27066pt.
-<fig6_comp_lncab.png, id=174, 2007.5pt x 1204.5pt>
+<fig6_comp_lncab.png, id=178, 2007.5pt x 1204.5pt>
 File: fig6_comp_lncab.png Graphic file (type png)
 <use fig6_comp_lncab.png>
 Package pdftex.def Info: fig6_comp_lncab.png  used on input line 312.
 (pdftex.def)             Requested size: 225.4804pt x 135.27066pt.
-<fig6_comp_subu.png, id=175, 2007.5pt x 1204.5pt>
+<fig6_comp_subu.png, id=179, 2007.5pt x 1204.5pt>
 File: fig6_comp_subu.png Graphic file (type png)
 <use fig6_comp_subu.png>
 Package pdftex.def Info: fig6_comp_subu.png  used on input line 313.
 (pdftex.def)             Requested size: 225.4804pt x 135.27066pt.
-<fig6_comp_vac.png, id=176, 2007.5pt x 1204.5pt>
+<fig6_comp_vac.png, id=180, 2007.5pt x 1204.5pt>
 File: fig6_comp_vac.png Graphic file (type png)
 <use fig6_comp_vac.png>
 Package pdftex.def Info: fig6_comp_vac.png  used on input line 314.
 (pdftex.def)             Requested size: 225.4804pt x 135.27066pt.
-<fig7_parties.png, id=179, 2007.5pt x 1204.5pt>
+<fig7_parties.png, id=183, 2007.5pt x 1204.5pt>
 File: fig7_parties.png Graphic file (type png)
 <use fig7_parties.png>
 Package pdftex.def Info: fig7_parties.png  used on input line 326.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig8_transitions.png, id=180, 2007.5pt x 1204.5pt>
+<fig8_transitions.png, id=184, 2007.5pt x 1204.5pt>
 File: fig8_transitions.png Graphic file (type png)
 <use fig8_transitions.png>
 Package pdftex.def Info: fig8_transitions.png  used on input line 338.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<fig8b_netinflow.png, id=181, 2007.5pt x 1204.5pt>
+<fig8b_netinflow.png, id=185, 2007.5pt x 1204.5pt>
 File: fig8b_netinflow.png Graphic file (type png)
 <use fig8b_netinflow.png>
 Package pdftex.def Info: fig8b_netinflow.png  used on input line 352.
@@ -584,17 +584,17 @@ LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
 )
 
 [18]
-<../design2/figT1_lnhp_es.png, id=238, 2007.5pt x 1204.5pt>
+<../design2/figT1_lnhp_es.png, id=242, 2007.5pt x 1204.5pt>
 File: ../design2/figT1_lnhp_es.png Graphic file (type png)
 <use ../design2/figT1_lnhp_es.png>
 Package pdftex.def Info: ../design2/figT1_lnhp_es.png  used on input line 454.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figT2_dose_es.png, id=239, 2007.5pt x 1204.5pt>
+<../design2/figT2_dose_es.png, id=243, 2007.5pt x 1204.5pt>
 File: ../design2/figT2_dose_es.png Graphic file (type png)
 <use ../design2/figT2_dose_es.png>
 Package pdftex.def Info: ../design2/figT2_dose_es.png  used on input line 463.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figT4_reconciliation.png, id=241, 2007.5pt x 1204.5pt>
+<../design2/figT4_reconciliation.png, id=245, 2007.5pt x 1204.5pt>
 File: ../design2/figT4_reconciliation.png Graphic file (type png)
 <use ../design2/figT4_reconciliation.png>
 Package pdftex.def Info: ../design2/figT4_reconciliation.png  used on input lin
@@ -610,13 +610,13 @@ G copy)>]
 [21 <../design2/figT4_reconciliation.png (PNG copy)>]
 
 [22]
-<../design2/figH7_income_long.png, id=264, 2007.5pt x 1204.5pt>
+<../design2/figH7_income_long.png, id=268, 2007.5pt x 1204.5pt>
 File: ../design2/figH7_income_long.png Graphic file (type png)
 <use ../design2/figH7_income_long.png>
 Package pdftex.def Info: ../design2/figH7_income_long.png  used on input line 6
 01.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figH8_income_dose_long.png, id=265, 2007.5pt x 1204.5pt>
+<../design2/figH8_income_dose_long.png, id=269, 2007.5pt x 1204.5pt>
 File: ../design2/figH8_income_dose_long.png Graphic file (type png)
 <use ../design2/figH8_income_dose_long.png>
 Package pdftex.def Info: ../design2/figH8_income_dose_long.png  used on input l
@@ -625,13 +625,13 @@ ine 612.
 
 
 [23 <../design2/figH7_income_long.png (PNG copy)>]
-<../design2/figH9b_purch_nonhisp.png, id=278, 2007.5pt x 1204.5pt>
+<../design2/figH9b_purch_nonhisp.png, id=282, 2007.5pt x 1204.5pt>
 File: ../design2/figH9b_purch_nonhisp.png Graphic file (type png)
 <use ../design2/figH9b_purch_nonhisp.png>
 Package pdftex.def Info: ../design2/figH9b_purch_nonhisp.png  used on input lin
 e 655.
 (pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
-<../design2/figH11_refi_nonhisp.png, id=279, 2007.5pt x 1204.5pt>
+<../design2/figH11_refi_nonhisp.png, id=283, 2007.5pt x 1204.5pt>
 File: ../design2/figH11_refi_nonhisp.png Graphic file (type png)
 <use ../design2/figH11_refi_nonhisp.png>
 Package pdftex.def Info: ../design2/figH11_refi_nonhisp.png  used on input line
@@ -643,23 +643,69 @@ Package pdftex.def Info: ../design2/figH11_refi_nonhisp.png  used on input line
 
 [25 <../design2/figH9b_purch_nonhisp.png (PNG copy)> <../design2/figH11_refi_no
 nhisp.png (PNG copy)>]
+<../crim_entities/figE1_entity_share.png, id=305, 2007.5pt x 1204.5pt>
+File: ../crim_entities/figE1_entity_share.png Graphic file (type png)
+<use ../crim_entities/figE1_entity_share.png>
+Package pdftex.def Info: ../crim_entities/figE1_entity_share.png  used on input
+ line 731.
+(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
+<../crim_entities/figE2_portfolio_share.png, id=306, 2007.5pt x 1204.5pt>
+File: ../crim_entities/figE2_portfolio_share.png Graphic file (type png)
+<use ../crim_entities/figE2_portfolio_share.png>
+Package pdftex.def Info: ../crim_entities/figE2_portfolio_share.png  used on in
+put line 741.
+(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
+<../design2/figE3a_entity_did.png, id=307, 2007.5pt x 1204.5pt>
+File: ../design2/figE3a_entity_did.png Graphic file (type png)
+<use ../design2/figE3a_entity_did.png>
+Package pdftex.def Info: ../design2/figE3a_entity_did.png  used on input line 7
+51.
+(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
+<../design2/figE3b_portfolio_levels.png, id=308, 2007.5pt x 1204.5pt>
+File: ../design2/figE3b_portfolio_levels.png Graphic file (type png)
+<use ../design2/figE3b_portfolio_levels.png>
+Package pdftex.def Info: ../design2/figE3b_portfolio_levels.png  used on input 
+line 760.
+(pdftex.def)             Requested size: 399.29463pt x 239.57243pt.
+<../design2/figE4_t0_robustness.png, id=309, 2409.0pt x 1405.25pt>
+File: ../design2/figE4_t0_robustness.png Graphic file (type png)
+<use ../design2/figE4_t0_robustness.png>
+Package pdftex.def Info: ../design2/figE4_t0_robustness.png  used on input line
+ 769.
+(pdftex.def)             Requested size: 469.75502pt x 274.01193pt.
+ (../tables/tab_entity_robust.tex
+Overfull \hbox (76.98889pt too wide) in paragraph at lines 21--23
+ [][] 
+ []
 
-[26] (./design1_writeup.aux)
+)
+
+[26]
+
+[27 <../crim_entities/figE1_entity_share.png (PNG copy)> <../crim_entities/figE
+2_portfolio_share.png (PNG copy)>]
+
+[28 <../design2/figE3a_entity_did.png (PNG copy)> <../design2/figE3b_portfolio_
+levels.png (PNG copy)>]
+
+[29 <../design2/figE4_t0_robustness.png (PNG copy)>]
+
+[30] (./design1_writeup.aux)
  ***********
 LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-09-10>
  ***********
 Package rerunfilecheck Info: File `design1_writeup.out' has not changed.
-(rerunfilecheck)             Checksum: A3C38BFA76BCE20968ACD637B66D8DA0;4073.
+(rerunfilecheck)             Checksum: 8350E755D3778D2B9D77C3913117950B;4278.
  ) 
 Here is how much of TeX's memory you used:
- 12364 strings out of 473579
- 195801 string characters out of 5732262
- 626294 words of memory out of 5000000
- 35004 multiletter control sequences out of 15000+600000
- 572763 words of font info for 92 fonts, out of 8000000 for 9000
+ 12438 strings out of 473579
+ 198132 string characters out of 5732262
+ 628696 words of memory out of 5000000
+ 35063 multiletter control sequences out of 15000+600000
+ 573098 words of font info for 93 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,10n,79p,1478b,595s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,79p,1478b,449s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
 live/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/texlive/2024
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/2024/texmf-di
@@ -680,11 +726,12 @@ xmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb><c:/texlive/2024/texmf-dist/
 fonts/type1/public/amsfonts/cm/cmti9.pfb><c:/texlive/2024/texmf-dist/fonts/type
 1/public/amsfonts/cm/cmtt10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/
 amsfonts/symbols/msbm10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-s
-uper/sfrm1095.pfb>
-Output written on design1_writeup.pdf (26 pages, 3430267 bytes).
+uper/sfrm1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1
+095.pfb>
+Output written on design1_writeup.pdf (30 pages, 4507494 bytes).
 PDF statistics:
- 423 PDF objects out of 1000 (max. 8388607)
- 323 compressed objects within 4 object streams
- 85 named destinations out of 1000 (max. 500000)
- 269 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 467 PDF objects out of 1000 (max. 8388607)
+ 356 compressed objects within 4 object streams
+ 96 named destinations out of 1000 (max. 500000)
+ 302 words of extra memory for PDF output out of 10000 (max. 10000000)
 

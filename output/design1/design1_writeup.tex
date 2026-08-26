@@ -9,7 +9,7 @@
 \usepackage{enumitem}
 \usepackage{graphicx}
 \usepackage[font=small]{caption}
-\graphicspath{{./}{../design2/}}
+\graphicspath{{./}{../design2/}{../crim_entities/}}
 
 \title{The Local Housing-Market Effects of Act 22/60 Investor Purchases:\\
 Data and Empirical Design}
@@ -669,6 +669,112 @@ and we do not report it.)
   \label{fig:nhrefi}
 \end{figure}
 
+\section{Bounding institutional presence}
+\label{sec:institutional}
+
+Our identified investors are name-matched individuals; purchases through
+LLCs and trusts are invisible to the name search, and a natural worry is
+that the boom's capital is institutional --- ``hedge funds buying Puerto
+Rico'' --- rather than decree individuals. CRIM's buyer names let us bound
+this directly. We flag corporate-form buyers (LLC/Corp/LP/\ldots) and,
+because funds often hold one LLC per property, roll entities up into
+\emph{portfolio clusters}: a buyer name, or a set of entity names sharing
+one owner mailing address, that accumulates 10+ parcels island-wide (banks,
+cooperatives, and GSEs excluded as foreclosure REO).
+
+Three facts bound institutional presence in levels
+(Figures~\ref{fig:entshare}--\ref{fig:portshare}). First, entity buyers'
+share of purchases rises from 1--2\% before 2012 to 12--15\% by 2025 ---
+a decree-era surge. Second, however, the largest entity portfolios are
+recognizably local (bank REO stock, a hospital chain, San Juan landlords,
+coastal land developers), with no identifiable mainland fund. Third,
+purchases by portfolio-scale clusters --- the deeds-data signature a fund
+cannot avoid --- never exceed $\approx$2\% of transactions even at the
+boom's peak, and the series' one large spike (2014) is a single 480-unit
+apartment-building acquisition (Cobi\'an Plaza) predating the boom, which
+usefully demonstrates that the measure detects bulk deployment when it
+occurs. The entity surge is therefore overwhelmingly small single-LLC
+buyers --- consistent with decree individuals wrapping one or two
+properties in an entity, and quantifying the match-selection blind spot
+rather than overturning it.
+
+The level series cannot say whether the decree shock \emph{attracted}
+institutional capital, so we run the paper's tract design with entity and
+portfolio purchases as outcomes
+(Figures~\ref{fig:entdid}--\ref{fig:portdid}): staggered treatment at the
+tract's first identified purchase, never-treated controls. Neither margin
+responds. All-entity purchases show a precise Poisson null (pooled
+$+12.1$\%, s.e.\ $13.5$): treated tracts' entity purchases sextuple
+post-treatment, but never-treated tracts' rise just as fast. Portfolio
+purchases, in levels, are bounded at a fraction of one additional purchase
+per tract-year (baseline 0.32); the only nonzero point, a wide-CI blip at
+$t{=}0$, is five single-building acquisitions coinciding with treatment
+onset --- Cobi\'an Plaza alone is 74\% of it --- and vanishes under every
+treatment of the outlier (Figure~\ref{fig:portrobust}): dropping those
+five tracts ($-0.44$, s.e.\ $0.34$ at $t{=}0$), restricting to 2015+
+cohorts (a non-selective cut avoiding the 2014 acquisition: $-0.04$, s.e.\
+$0.43$), the extensive margin ($0.003$, s.e.\ $0.035$), and capped counts.
+Table~\ref{tab:entity_robust} reports the corresponding pooled effects
+with the post window capped at $t{=}2$.
+
+Two scope notes. The design tests the \emph{follow-the-shock} channel ---
+funds chasing decree-driven appreciation into its own geography --- which
+is the policy-relevant worry; total island deployment is bounded by the
+level series, which is geography-agnostic. And ``hedge fund'' identity is
+not observable in deeds: attributing specific clusters to funds would
+require corporate-registry matching. What the data establish is that
+institutional-\emph{scale} buying is small everywhere, did not break with
+Act 60, and did not respond to the decree shock where it landed.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{figE1_entity_share.png}
+  \caption{\textbf{Entity buyers' share of purchases.} Corporate-form
+  buyer names as a share of CRIM-recorded sales $>$\$10{,}000. Last-sale
+  censoring would, if anything, overstate early-year shares (entities hold
+  longer), understating the rise.}
+  \label{fig:entshare}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{figE2_portfolio_share.png}
+  \caption{\textbf{Purchases by portfolio-scale entity buyers.} Clusters
+  holding 10+/25+ parcels by name or rolled-up mailing address; banks
+  excluded. An upper bound on institutional-scale buying: $\leq$2\% of
+  transactions in the boom, with the largest episode (2014) predating it.}
+  \label{fig:portshare}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{figE3a_entity_did.png}
+  \caption{\textbf{Entity purchases around decree treatment.} Poisson
+  tract DiD, never-treated controls. The island-wide LLC boom is not
+  differentially concentrated where decree buyers land.}
+  \label{fig:entdid}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=.85\textwidth]{figE3b_portfolio_levels.png}
+  \caption{\textbf{Portfolio-scale purchases: absolute response.} OLS in
+  levels; post-year CIs rule out more than $\approx$0.6 additional
+  portfolio purchases per tract-year.}
+  \label{fig:portdid}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{figE4_t0_robustness.png}
+  \caption{\textbf{The year-0 blip is five bulk acquisitions.} Robustness
+  event studies for the portfolio-purchase DiD; the spike exists only in
+  raw counts.}
+  \label{fig:portrobust}
+\end{figure}
+
+\input{../tables/tab_entity_robust.tex}
+
 \section{Standing caveats}
 
 \begin{enumerate}[leftmargin=*]
@@ -679,7 +785,10 @@ and we do not report it.)
   ``the effect of the Act.''
   \item \textbf{Match selection}: identified investors skew toward
   single-property, personal-name buyers; entity (LLC/trust) purchases are
-  missing.
+  missing --- but Section~\ref{sec:institutional} bounds the missing mass:
+  the entity surge is small single-LLC buyers, and portfolio-scale
+  (institutional) purchases are $\leq$2\% of transactions with no response
+  to decree treatment.
   \item \textbf{Name proxy}: understates mainland presence; corporate and
   ambiguous names are excluded from shares.
   \item \textbf{Assessed values} are on CRIM's 1957 basis --- valid as
