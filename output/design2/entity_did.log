@@ -1,0 +1,431 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/entity_did.log
+  log type:  text
+ opened on:  25 Aug 2026, 20:56:02
+
+. 
+. tempname pf
+
+. postfile `pf' str16 test double h b se using "$OUT/_ed.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/_ed.dta not found)
+
+. 
+. foreach v in entity_n port10_n port25_n {
+  2.     use `panel', clear
+  3.     di as result _n "===== POISSON `v' (tract DiD, 2012-2025) ====="
+  4.     ppmlhdfe `v' `DVARS', absorb(tract_num year) vce(cluster tract_num)
+  5.     post `pf' ("`v'") (-4) (_b[Dm4]) (_se[Dm4])
+  6.     post `pf' ("`v'") (-3) (_b[Dm3]) (_se[Dm3])
+  7.     post `pf' ("`v'") (-2) (_b[Dm2]) (_se[Dm2])
+  8.     post `pf' ("`v'") (-1) (0) (.)
+  9.     post `pf' ("`v'") (0)  (_b[D0]) (_se[D0])
+ 10.     post `pf' ("`v'") (1)  (_b[D1]) (_se[D1])
+ 11.     post `pf' ("`v'") (2)  (_b[D2]) (_se[D2])
+ 12.     post `pf' ("`v'") (3)  (_b[D3]) (_se[D3])
+ 13. 
+.     di as result _n "===== POISSON pooled `v' ====="
+ 14.     ppmlhdfe `v' treat, absorb(tract_num year) vce(cluster tract_num)
+ 15.     post `pf' ("`v'") (99) (_b[treat]) (_se[treat])
+ 16. }
+
+===== POISSON entity_n (tract DiD, 2012-2025) =====
+(dropped 882 observations that are either singletons or separated by a fixed ef
+> fect)
+Iteration 1:   deviance = 2.5796e+04  eps = .         iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.53  P   
+Iteration 2:   deviance = 2.0853e+04  eps = 2.37e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.71      
+Iteration 3:   deviance = 2.0263e+04  eps = 2.91e-02  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.53      
+Iteration 4:   deviance = 2.0232e+04  eps = 1.52e-03  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.87      
+Iteration 5:   deviance = 2.0232e+04  eps = 1.33e-05  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.93      
+Iteration 6:   deviance = 2.0232e+04  eps = 6.16e-09  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -5.93   S  
+Iteration 7:   deviance = 2.0232e+04  eps = 5.51e-15  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -5.93   S  
+Iteration 8:   deviance = 2.0232e+04  eps = 0.00e+00  iters = 2    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -5.93   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 19 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =     12,852
+Absorbing 2 HDFE groups                           Residual df     =        917
+Statistics robust to heteroskedasticity           Wald chi2(7)    =       4.99
+Deviance             =  20231.78335               Prob > chi2     =     0.6607
+Log pseudolikelihood = -18733.56451               Pseudo R2       =     0.5353
+
+Number of clusters (tract_num)=       918
+                            (Std. err. adjusted for 918 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    entity_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.0138146   .1571251    -0.09   0.930    -.3217741    .2941448
+         Dm3 |  -.1079204     .13735    -0.79   0.432    -.3771214    .1612806
+         Dm2 |  -.1026429   .1395504    -0.74   0.462    -.3761566    .1708708
+          D0 |   .3965661   .3549401     1.12   0.264    -.2991037    1.092236
+          D1 |  -.0528916   .1438441    -0.37   0.713    -.3348208    .2290376
+          D2 |  -.0438258   .1275073    -0.34   0.731    -.2937356     .206084
+          D3 |  -.1436681   .1882155    -0.76   0.445    -.5125636    .2252275
+       _cons |   1.544103   .0666082    23.18   0.000     1.413553    1.674652
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       918         918           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== POISSON pooled entity_n =====
+(dropped 882 observations that are either singletons or separated by a fixed ef
+> fect)
+Iteration 1:   deviance = 2.6996e+04  eps = .         iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.53  P   
+Iteration 2:   deviance = 2.1318e+04  eps = 2.66e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.67      
+Iteration 3:   deviance = 2.0505e+04  eps = 3.97e-02  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.46      
+Iteration 4:   deviance = 2.0446e+04  eps = 2.88e-03  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.79      
+Iteration 5:   deviance = 2.0446e+04  eps = 3.70e-05  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.85      
+Iteration 6:   deviance = 2.0446e+04  eps = 1.16e-08  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -5.85   S  
+Iteration 7:   deviance = 2.0446e+04  eps = 4.91e-15  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -5.85   S  
+Iteration 8:   deviance = 2.0446e+04  eps = 0.00e+00  iters = 2    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -5.85   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 19 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =     12,852
+Absorbing 2 HDFE groups                           Residual df     =        917
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       0.81
+Deviance             =  20445.52807               Prob > chi2     =     0.3695
+Log pseudolikelihood = -18840.43687               Pseudo R2       =     0.5326
+
+Number of clusters (tract_num)=       918
+                            (Std. err. adjusted for 918 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    entity_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .1211031   .1349458     0.90   0.369    -.1433858     .385592
+       _cons |    1.46902   .0527323    27.86   0.000     1.365667    1.572374
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       918         918           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== POISSON port10_n (tract DiD, 2012-2025) =====
+(dropped 4522 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 2.1986e+04  eps = .         iters = 5    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.00  P   
+Iteration 2:   deviance = 1.4491e+04  eps = 5.17e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.82      
+Iteration 3:   deviance = 1.2967e+04  eps = 1.18e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.39      
+Iteration 4:   deviance = 1.2809e+04  eps = 1.24e-02  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.62      
+Iteration 5:   deviance = 1.2805e+04  eps = 2.64e-04  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.66      
+Iteration 6:   deviance = 1.2805e+04  eps = 2.06e-07  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.66      
+Iteration 7:   deviance = 1.2805e+04  eps = 2.50e-13  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -6.66   S  
+Iteration 8:   deviance = 1.2805e+04  eps = 0.00e+00  iters = 2    tol = 1.0e-0
+> 8                                                                            
+>    min(eta) =  -6.66   S  
+Iteration 9:   deviance = 1.2805e+04  eps = 2.03e-16  iters = 2    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -6.66   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 9 iterations and 26 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      9,212
+Absorbing 2 HDFE groups                           Residual df     =        657
+Statistics robust to heteroskedasticity           Wald chi2(7)    =      20.20
+Deviance             =  12805.42975               Prob > chi2     =     0.0052
+Log pseudolikelihood = -8457.506376               Pseudo R2       =     0.4484
+
+Number of clusters (tract_num)=       658
+                            (Std. err. adjusted for 658 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.1765536   .5133852    -0.34   0.731     -1.18277    .8296628
+         Dm3 |  -1.077018   .5190886    -2.07   0.038    -2.094413   -.0596235
+         Dm2 |  -.4524396   .5660923    -0.80   0.424     -1.56196    .6570809
+          D0 |   .9842143   .6626361     1.49   0.137    -.3145285    2.282957
+          D1 |  -.4614427   .5568949    -0.83   0.407    -1.552937    .6300512
+          D2 |  -.4223907   .4992281    -0.85   0.398     -1.40086    .5560783
+          D3 |  -.5508546   .5990496    -0.92   0.358     -1.72497    .6232611
+       _cons |   .8270691   .2487437     3.32   0.001     .3395403    1.314598
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       658         658           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== POISSON pooled port10_n =====
+(dropped 4522 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 2.7006e+04  eps = .         iters = 5    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.78  P   
+Iteration 2:   deviance = 1.6413e+04  eps = 6.45e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.46      
+Iteration 3:   deviance = 1.3872e+04  eps = 1.83e-01  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.92      
+Iteration 4:   deviance = 1.3486e+04  eps = 2.86e-02  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.18      
+Iteration 5:   deviance = 1.3466e+04  eps = 1.51e-03  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.24      
+Iteration 6:   deviance = 1.3466e+04  eps = 8.45e-06  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.25      
+Iteration 7:   deviance = 1.3466e+04  eps = 3.92e-10  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -6.25   S  
+Iteration 8:   deviance = 1.3466e+04  eps = 1.93e-16  iters = 2    tol = 1.0e-0
+> 7                                                                            
+>    min(eta) =  -6.25   S  
+Iteration 9:   deviance = 1.3466e+04  eps = 0.00e+00  iters = 1    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -6.25   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 9 iterations and 21 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      9,212
+Absorbing 2 HDFE groups                           Residual df     =        657
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       1.17
+Deviance             =  13466.02135               Prob > chi2     =     0.2799
+Log pseudolikelihood = -8787.802178               Pseudo R2       =     0.4268
+
+Number of clusters (tract_num)=       658
+                            (Std. err. adjusted for 658 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .4892118   .4527101     1.08   0.280    -.3980836    1.376507
+       _cons |   .5164654   .1881793     2.74   0.006     .1476407    .8852901
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       658         658           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== POISSON port25_n (tract DiD, 2012-2025) =====
+(dropped 9982 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 1.6868e+04  eps = .         iters = 7    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.47  P   
+Iteration 2:   deviance = 8.9033e+03  eps = 8.95e-01  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.33      
+Iteration 3:   deviance = 6.7646e+03  eps = 3.16e-01  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -7.29      
+Iteration 4:   deviance = 6.3274e+03  eps = 6.91e-02  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -8.24      
+Iteration 5:   deviance = 6.2755e+03  eps = 8.27e-03  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -9.00      
+Iteration 6:   deviance = 6.2728e+03  eps = 4.27e-04  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -9.38      
+Iteration 7:   deviance = 6.2728e+03  eps = 7.56e-06  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -9.46      
+Iteration 8:   deviance = 6.2728e+03  eps = 1.12e-08  iters = 3    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -9.47   S  
+Iteration 9:   deviance = 6.2728e+03  eps = 3.95e-14  iters = 3    tol = 1.0e-0
+> 7                                                                            
+>    min(eta) =  -9.47   S  
+Iteration 10:  deviance = 6.2728e+03  eps = 1.57e-16  iters = 3    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -9.47   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 10 iterations and 39 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      3,752
+Absorbing 2 HDFE groups                           Residual df     =        267
+Statistics robust to heteroskedasticity           Wald chi2(7)    =      32.22
+Deviance             =  6272.761102               Prob > chi2     =     0.0000
+Log pseudolikelihood = -3643.782196               Pseudo R2       =     0.5818
+
+Number of clusters (tract_num)=       268
+                            (Std. err. adjusted for 268 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port25_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -1.508974   .9850118    -1.53   0.126    -3.439562    .4216135
+         Dm3 |  -2.277361   .9904926    -2.30   0.021    -4.218691   -.3360315
+         Dm2 |  -1.475611   1.068368    -1.38   0.167    -3.569573    .6183513
+          D0 |   1.083232   .8817642     1.23   0.219     -.644994    2.811458
+          D1 |  -1.178636   1.131466    -1.04   0.298    -3.396269    1.038996
+          D2 |  -1.722632   .9608554    -1.79   0.073    -3.605874    .1606097
+          D3 |  -1.092319    1.07704    -1.01   0.310    -3.203279    1.018641
+       _cons |   1.982706   .5091052     3.89   0.000      .984878    2.980534
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       268         268           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== POISSON pooled port25_n =====
+(dropped 9982 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 2.8735e+04  eps = .         iters = 7    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.20  P   
+Iteration 2:   deviance = 1.3380e+04  eps = 1.15e+00  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.89      
+Iteration 3:   deviance = 8.6417e+03  eps = 5.48e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.46      
+Iteration 4:   deviance = 7.4021e+03  eps = 1.67e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -7.18      
+Iteration 5:   deviance = 7.1866e+03  eps = 3.00e-02  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -8.01      
+Iteration 6:   deviance = 7.1714e+03  eps = 2.12e-03  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -8.59      
+Iteration 7:   deviance = 7.1710e+03  eps = 5.55e-05  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -8.81      
+Iteration 8:   deviance = 7.1710e+03  eps = 5.05e-07  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -8.83      
+Iteration 9:   deviance = 7.1710e+03  eps = 8.70e-11  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -8.83   S  
+Iteration 10:  deviance = 7.1710e+03  eps = 0.00e+00  iters = 2    tol = 1.0e-0
+> 8                                                                            
+>    min(eta) =  -8.83   S  
+Iteration 11:  deviance = 7.1710e+03  eps = 1.38e-16  iters = 1    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -8.83   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 11 iterations and 32 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      3,752
+Absorbing 2 HDFE groups                           Residual df     =        267
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       1.47
+Deviance             =  7171.038348               Prob > chi2     =     0.2249
+Log pseudolikelihood = -4092.920819               Pseudo R2       =     0.5303
+
+Number of clusters (tract_num)=       268
+                            (Std. err. adjusted for 268 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port25_n | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |    1.17296   .9665722     1.21   0.225    -.7214865    3.067407
+       _cons |   1.021978    .542459     1.88   0.060    -.0412226    2.085178
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       268         268           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. postclose `pf'
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/entity_did.log
+  log type:  text
+ closed on:  25 Aug 2026, 20:56:07
+-------------------------------------------------------------------------------
