@@ -1,0 +1,23 @@
+\begin{table}[H]
+\centering
+\caption{\textbf{Institutional Deployment DiD: Pooled Effects, Post Window Capped at $t=2$} This table reports the pooled institutional-deployment DiD with the post window capped at $t{=}2$: the Treated coefficient is the post$-$pre effect from the pre-mean-differenced LP-DiD ($\frac{1}{3}\sum_{h=0}^{2} y_{t+h} - \frac{1}{4}\sum_{\tau=t-4}^{t-1} y_{\tau}$ on treatment entry, calendar-year effects, clean-control sample, SEs clustered by tract). Outcome: portfolio-cluster purchases per tract-year (buyer name or rolled-up mailing address holding 10+ parcels; banks excluded). Columns: (1) baseline counts; (2) dropping the five tracts whose onset-year single-building acquisitions are 88\% of year-0 portfolio purchases; (3) restricting to tracts first treated 2015+ (a cohort cut avoiding the 2014 Cobi\'an Plaza acquisition non-selectively); (4) the extensive margin, an indicator for any portfolio purchase; (5) counts capped at 3. The small positives in (4)-(5) are threshold effects of the island-wide entity trend in high-volume markets (null under Poisson) and are bounded at $\approx$0.1 purchases per tract-year.  Statistical significance levels are indicated as follows: *** $p < 0.01$, ** $p < 0.05$, * $p < 0.10$.}
+\scalebox{1.0}{
+\onehalfspacing
+\begin{tabular}{lccccc}
+\toprule\midrule
+ & Baseline & Drop 5 bulk tracts & Events 2015+ & 1\{any purchase\} & Capped at 3 \\
+ & (1) & (2) & (3) & (4) & (5) \\
+\midrule
+    Treated & 0.95 & 0.06 & 0.25 & 0.04** & 0.12*** \\
+ & (0.73) & (0.12) & (0.16) & (0.02) & (0.04) \\
+ & & & & & \\
+    Observations & 9,965 & 9,960 & 9,948 & 9,965 & 9,965 \\
+    R-squared & 0.007 & 0.004 & 0.005 & 0.020 & 0.020 \\
+    Tract differencing (LP-DiD) & Yes & Yes & Yes & Yes & Yes \\
+    Calendar-year effects & Yes & Yes & Yes & Yes & Yes \\
+    Never-treated controls & Yes & Yes & Yes & Yes & Yes \\
+\midrule\bottomrule
+\end{tabular}
+}
+\label{tab:entity_robust}
+\end{table}

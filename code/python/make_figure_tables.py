@@ -670,6 +670,54 @@ def main():
                 fh.write("\n".join(L) + "\n")
             print("wrote tab_censoring.tex")
 
+    # ================= institutional-deployment robustness table =================
+    _erp = os.path.join(O2, "entity_robust_pmd.csv")
+    if os.path.exists(_erp):
+        er = {r["spec"]: r for r in load_csv(_erp)}
+        eorder = [("baseline", "Baseline"), ("dropblip", "Drop 5 bulk tracts"),
+                  ("post2014", "Events 2015+"), ("extensive", "1\\{any purchase\\}"),
+                  ("capped", "Capped at 3")]
+        if all(k in er for k, _ in eorder):
+            enote = ("This table reports the pooled institutional-deployment DiD with the "
+                     "post window capped at $t{=}2$: the Treated coefficient is the "
+                     "post$-$pre effect from the pre-mean-differenced LP-DiD "
+                     "($\\frac{1}{3}\\sum_{h=0}^{2} y_{t+h} - \\frac{1}{4}"
+                     "\\sum_{\\tau=t-4}^{t-1} y_{\\tau}$ on treatment entry, calendar-year "
+                     "effects, clean-control sample, SEs clustered by tract). Outcome: "
+                     "portfolio-cluster purchases per tract-year (buyer name or rolled-up "
+                     "mailing address holding 10+ parcels; banks excluded). Columns: (1) "
+                     "baseline counts; (2) dropping the five tracts whose onset-year "
+                     "single-building acquisitions are 88\\% of year-0 portfolio purchases; "
+                     "(3) restricting to tracts first treated 2015+ (a cohort cut avoiding "
+                     "the 2014 Cobi\\'an Plaza acquisition non-selectively); (4) the "
+                     "extensive margin, an indicator for any portfolio purchase; (5) counts "
+                     "capped at 3. The small positives in (4)-(5) are threshold effects of "
+                     "the island-wide entity trend in high-volume markets (null under "
+                     "Poisson) and are bounded at $\\approx$0.1 purchases per tract-year. ")
+            L = ["\\begin{table}[H]", "\\centering",
+                 f"\\caption{{\\textbf{{Institutional Deployment DiD: Pooled Effects, Post Window Capped at $t=2$}} {enote} {SIGNOTE}}}",
+                 "\\scalebox{1.0}{", "\\onehalfspacing",
+                 "\\begin{tabular}{lccccc}", "\\toprule\\midrule",
+                 " & " + " & ".join(lab for _, lab in eorder) + " \\\\",
+                 " & " + " & ".join(f"({i+1})" for i in range(5)) + " \\\\", "\\midrule"]
+            tops, bots = [], []
+            for k, _ in eorder:
+                t, bo = cell(f(er[k]["b"]), f(er[k]["se"]), 1.0)
+                tops.append(t); bots.append(bo)
+            L.append("    Treated & " + " & ".join(tops) + " \\\\")
+            L.append(" & " + " & ".join(bots) + " \\\\")
+            L.append(" & & & & & \\\\")
+            L.append("    Observations & " + " & ".join(f"{int(f(er[k]['nobs'])):,}" for k, _ in eorder) + " \\\\")
+            L.append("    R-squared & " + " & ".join(f"{f(er[k]['r2']):.3f}" for k, _ in eorder) + " \\\\")
+            L.append("    Tract differencing (LP-DiD) & Yes & Yes & Yes & Yes & Yes \\\\")
+            L.append("    Calendar-year effects & Yes & Yes & Yes & Yes & Yes \\\\")
+            L.append("    Never-treated controls & Yes & Yes & Yes & Yes & Yes \\\\")
+            L += ["\\midrule\\bottomrule", "\\end{tabular}", "}",
+                  "\\label{tab:entity_robust}", "\\end{table}"]
+            with open(os.path.join(OUT, "tab_entity_robust.tex"), "w", encoding="utf-8") as fh:
+                fh.write("\n".join(L) + "\n")
+            print("wrote tab_entity_robust.tex")
+
     # ================= main-tables folder =================
     import shutil
     _main = os.path.join(OUT, "main")

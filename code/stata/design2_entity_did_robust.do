@@ -117,8 +117,59 @@ foreach w in 3 2 {
     runes port10_n post2014 "missing(first_event_year) | first_event_year >= 2015" `w' `pf'
 }
 
+/*============================================================================
+  POOLED DiD, post capped at t=2: PMD LP-DiD with H=2, k=4 (the paper's
+  estimator; avoids the staggered pooled-TWFE artifact). One Treated
+  coefficient per robustness spec.
+============================================================================*/
+tempname pp
+postfile `pp' str16 spec double b se r2 nobs using "$OUT/_erp.dta", replace
+
+capture program drop pmdrun
+program define pmdrun
+    * pmdrun <yvar> <spec> <cond> <pp>
+    args yvar spec cond pp
+    preserve
+    if "`cond'" != "" keep if `cond'
+    xtset tract_num year
+    gen y0  = `yvar'
+    gen yf1 = F1.`yvar'
+    gen yf2 = F2.`yvar'
+    gen yl1 = L1.`yvar'
+    gen yl2 = L2.`yvar'
+    gen yl3 = L3.`yvar'
+    gen yl4 = L4.`yvar'
+    egen postm = rowmean(y0 yf1 yf2)
+    egen prem  = rowmean(yl1 yl2 yl3 yl4)
+    gen pmd = postm - prem
+    gen dD = treat == 1 & L1.treat == 0
+    egen evertr = max(treat), by(tract_num)
+    keep if dD == 1 | evertr == 0
+    di as result _n "===== PMD H=2 [`spec'] ====="
+    reghdfe pmd dD, absorb(year) vce(cluster tract_num)
+    post `pp' ("`spec'") (_b[dD]) (_se[dD]) (e(r2)) (e(N))
+    restore
+end
+
+use `panel', clear
+pmdrun port10_n baseline "" `pp'
+use `panel', clear
+pmdrun port10_n dropblip "blip == 0" `pp'
+use `panel', clear
+pmdrun port10_n post2014 "missing(first_event_year) | first_event_year >= 2015" `pp'
+use `panel', clear
+pmdrun anyport extensive "" `pp'
+use `panel', clear
+pmdrun port_cap capped "" `pp'
+
+postclose `pp'
 postclose `pf'
 log close
+
+use "$OUT/_erp.dta", clear
+export delimited "$OUT/entity_robust_pmd.csv", replace
+capture erase "$OUT/_erp.dta"
+list, noobs
 
 use "$OUT/_er.dta", clear
 gen lb = b - 1.96*se

@@ -3,7 +3,7 @@
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/entity_did_robust.log
   log type:  text
- opened on:  25 Aug 2026, 21:16:40
+ opened on:  25 Aug 2026, 21:19:01
 
 . 
 . tempname pf
@@ -411,6 +411,275 @@ Absorbed degrees of freedom:
 * = FE nested within cluster; treated as redundant for DoF computation
 
 . 
+. /*===========================================================================
+> =
+>   POOLED DiD, post capped at t=2: PMD LP-DiD with H=2, k=4 (the paper's
+>   estimator; avoids the staggered pooled-TWFE artifact). One Treated
+>   coefficient per robustness spec.
+> ============================================================================*
+> /
+. tempname pp
+
+. postfile `pp' str16 spec double b se r2 nobs using "$OUT/_erp.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/_erp.dta not found)
+
+. 
+. capture program drop pmdrun
+
+. program define pmdrun
+  1.     * pmdrun <yvar> <spec> <cond> <pp>
+.     args yvar spec cond pp
+  2.     preserve
+  3.     if "`cond'" != "" keep if `cond'
+  4.     xtset tract_num year
+  5.     gen y0  = `yvar'
+  6.     gen yf1 = F1.`yvar'
+  7.     gen yf2 = F2.`yvar'
+  8.     gen yl1 = L1.`yvar'
+  9.     gen yl2 = L2.`yvar'
+ 10.     gen yl3 = L3.`yvar'
+ 11.     gen yl4 = L4.`yvar'
+ 12.     egen postm = rowmean(y0 yf1 yf2)
+ 13.     egen prem  = rowmean(yl1 yl2 yl3 yl4)
+ 14.     gen pmd = postm - prem
+ 15.     gen dD = treat == 1 & L1.treat == 0
+ 16.     egen evertr = max(treat), by(tract_num)
+ 17.     keep if dD == 1 | evertr == 0
+ 18.     di as result _n "===== PMD H=2 [`spec'] ====="
+ 19.     reghdfe pmd dD, absorb(year) vce(cluster tract_num)
+ 20.     post `pp' ("`spec'") (_b[dD]) (_se[dD]) (e(r2)) (e(N))
+ 21.     restore
+ 22. end
+
+. 
+. use `panel', clear
+
+. pmdrun port10_n baseline "" `pp'
+
+Panel variable: tract_num (strongly balanced)
+ Time variable: year, 2012 to 2025
+         Delta: 1 unit
+(981 missing values generated)
+(1,962 missing values generated)
+(981 missing values generated)
+(1,962 missing values generated)
+(2,943 missing values generated)
+(3,924 missing values generated)
+(981 missing values generated)
+(981 missing values generated)
+(3,020 observations deleted)
+
+===== PMD H=2 [baseline] =====
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =      9,965
+Absorbing 1 HDFE group                            F(   1,    976) =       1.69
+Statistics robust to heteroskedasticity           Prob > F        =     0.1943
+                                                  R-squared       =     0.0068
+                                                  Adj R-squared   =     0.0055
+                                                  Within R-sq.    =     0.0050
+Number of clusters (tract_num) =        977       Root MSE        =     2.0067
+
+                            (Std. err. adjusted for 977 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .9487431   .7305241     1.30   0.194    -.4848355    2.382322
+       _cons |   .0923168   .0080305    11.50   0.000     .0765578    .1080758
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           0          13     |
+-----------------------------------------------------+
+
+. use `panel', clear
+
+. pmdrun port10_n dropblip "blip == 0" `pp'
+(70 observations deleted)
+
+Panel variable: tract_num (strongly balanced)
+ Time variable: year, 2012 to 2025
+         Delta: 1 unit
+(976 missing values generated)
+(1,952 missing values generated)
+(976 missing values generated)
+(1,952 missing values generated)
+(2,928 missing values generated)
+(3,904 missing values generated)
+(976 missing values generated)
+(976 missing values generated)
+(2,955 observations deleted)
+
+===== PMD H=2 [dropblip] =====
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =      9,960
+Absorbing 1 HDFE group                            F(   1,    971) =       0.24
+Statistics robust to heteroskedasticity           Prob > F        =     0.6227
+                                                  R-squared       =     0.0044
+                                                  Adj R-squared   =     0.0031
+                                                  Within R-sq.    =     0.0001
+Number of clusters (tract_num) =        972       Root MSE        =     1.1833
+
+                            (Std. err. adjusted for 972 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0582691   .1183973     0.49   0.623    -.1740749    .2906131
+       _cons |   .0925542   .0080244    11.53   0.000      .076807    .1083013
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           0          13     |
+-----------------------------------------------------+
+
+. use `panel', clear
+
+. pmdrun port10_n post2014 "missing(first_event_year) | first_event_year >= 201
+> 5" `pp'
+(294 observations deleted)
+
+Panel variable: tract_num (strongly balanced)
+ Time variable: year, 2012 to 2025
+         Delta: 1 unit
+(960 missing values generated)
+(1,920 missing values generated)
+(960 missing values generated)
+(1,920 missing values generated)
+(2,880 missing values generated)
+(3,840 missing values generated)
+(960 missing values generated)
+(960 missing values generated)
+(2,743 observations deleted)
+
+===== PMD H=2 [post2014] =====
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =      9,948
+Absorbing 1 HDFE group                            F(   1,    959) =       2.38
+Statistics robust to heteroskedasticity           Prob > F        =     0.1229
+                                                  R-squared       =     0.0055
+                                                  Adj R-squared   =     0.0042
+                                                  Within R-sq.    =     0.0009
+Number of clusters (tract_num) =        960       Root MSE        =     1.2052
+
+                            (Std. err. adjusted for 960 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .2531266   .1639346     1.54   0.123    -.0685853    .5748386
+       _cons |   .0926826    .008037    11.53   0.000     .0769106    .1084547
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           0          13     |
+-----------------------------------------------------+
+
+. use `panel', clear
+
+. pmdrun anyport extensive "" `pp'
+
+Panel variable: tract_num (strongly balanced)
+ Time variable: year, 2012 to 2025
+         Delta: 1 unit
+(981 missing values generated)
+(1,962 missing values generated)
+(981 missing values generated)
+(1,962 missing values generated)
+(2,943 missing values generated)
+(3,924 missing values generated)
+(981 missing values generated)
+(981 missing values generated)
+(3,020 observations deleted)
+
+===== PMD H=2 [extensive] =====
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =      9,965
+Absorbing 1 HDFE group                            F(   1,    976) =       4.10
+Statistics robust to heteroskedasticity           Prob > F        =     0.0432
+                                                  R-squared       =     0.0198
+                                                  Adj R-squared   =     0.0185
+                                                  Within R-sq.    =     0.0007
+Number of clusters (tract_num) =        977       Root MSE        =     0.2462
+
+                            (Std. err. adjusted for 977 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .0431372   .0213047     2.02   0.043     .0013289    .0849455
+       _cons |   .0500834   .0029123    17.20   0.000     .0443683    .0557985
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           0          13     |
+-----------------------------------------------------+
+
+. use `panel', clear
+
+. pmdrun port_cap capped "" `pp'
+
+Panel variable: tract_num (strongly balanced)
+ Time variable: year, 2012 to 2025
+         Delta: 1 unit
+(981 missing values generated)
+(1,962 missing values generated)
+(981 missing values generated)
+(1,962 missing values generated)
+(2,943 missing values generated)
+(3,924 missing values generated)
+(981 missing values generated)
+(981 missing values generated)
+(3,020 observations deleted)
+
+===== PMD H=2 [capped] =====
+(MWFE estimator converged in 1 iterations)
+
+HDFE Linear regression                            Number of obs   =      9,965
+Absorbing 1 HDFE group                            F(   1,    976) =       7.46
+Statistics robust to heteroskedasticity           Prob > F        =     0.0064
+                                                  R-squared       =     0.0203
+                                                  Adj R-squared   =     0.0190
+                                                  Within R-sq.    =     0.0020
+Number of clusters (tract_num) =        977       Root MSE        =     0.3928
+
+                            (Std. err. adjusted for 977 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+         pmd | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+          dD |   .1164436   .0426334     2.73   0.006     .0327799    .2001072
+       _cons |   .0739707    .004744    15.59   0.000     .0646611    .0832802
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           0          13     |
+-----------------------------------------------------+
+
+. 
+. postclose `pp'
+
 . postclose `pf'
 
 . log close
@@ -418,5 +687,5 @@ Absorbed degrees of freedom:
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/entity_did_robust.log
   log type:  text
- closed on:  25 Aug 2026, 21:16:42
+ closed on:  25 Aug 2026, 21:19:04
 -------------------------------------------------------------------------------
