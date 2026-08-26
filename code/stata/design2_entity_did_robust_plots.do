@@ -31,8 +31,9 @@ local NOTE1 "OLS event studies, tract and year FE, never-treated controls, 95% C
 local NOTE2 "(a) counts per tract-year. (b) drops the five tracts whose onset-year single-building/resort acquisitions are 88% of all"
 local NOTE3 "year-0 portfolio purchases (Cobian Plaza's 480-unit 2014 purchase alone is 74%). (c) restricts to tracts first treated"
 local NOTE4 "2015+ -- a cohort cut avoiding the 2014 Cobian acquisition without outcome-based selection. (d) probability of any"
-local NOTE5 "portfolio purchase. (e) counts capped at 3. The year-0 spike exists only in (a); late-endpoint positives in (d)-(e) are"
-local NOTE6 "null in the Poisson (proportional) specification and within the absolute bound."
+local NOTE5 "portfolio purchase. (e) counts capped at 3. Panels (a)-(c) share one y-scale (purchases per tract-year); (d)-(e) have"
+local NOTE6 "their own units. The year-0 spike exists only in (a); late-endpoint positives in (d)-(e) are null in the Poisson"
+local NOTE7 "(proportional) specification and within the absolute bound."
 
 foreach w in 3 2 {
     local xmax = `w'
@@ -42,13 +43,18 @@ foreach w in 3 2 {
     local i = 0
     foreach s in baseline dropblip post2014 extensive capped {
         local ++i
+        * count panels (a)-(c) share one scale so CI widths are comparable;
+        * (d)-(e) are in different units (probability / capped counts)
+        local YL ylabel(, angle(horizontal))
+        if inlist("`s'", "baseline", "dropblip", "post2014") ///
+            local YL ylabel(-2(2)6, angle(horizontal)) yscale(range(-2.5 6.5))
         use `coefs', clear
         keep if spec == "`s'" & win == `w'
         twoway ///
             (rcap ub lb horizon, lcolor(cranberry) lwidth(medthin)) ///
             (connected b horizon, color(cranberry) msymbol(O) lwidth(medthin)) ///
             , graphregion(color(white)) bgcolor(white) ///
-            ylabel(, angle(horizontal)) ///
+            `YL' ///
             yline(0, lcolor(gs8) lwidth(thin)) ///
             xline(-0.5, lcolor(gs11) lpattern(dash)) legend(off) ///
             subtitle("`t_`s''", size(small)) ///
@@ -57,7 +63,7 @@ foreach w in 3 2 {
     }
     graph combine p1 p2 p3 p4 p5, rows(2) graphregion(color(white)) ///
         title("`ttl'", size(medsmall)) ///
-        note("`NOTE1'" "`NOTE2'" "`NOTE3'" "`NOTE4'" "`NOTE5'" "`NOTE6'", size(vsmall)) ///
+        note("`NOTE1'" "`NOTE2'" "`NOTE3'" "`NOTE4'" "`NOTE5'" "`NOTE6'" "`NOTE7'", size(vsmall)) ///
         xsize(12) ysize(7) name(fig_w`w', replace)
     graph export "$OUT/`fn'.png", replace width(2400)
 }

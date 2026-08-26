@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  25 AUG 2026 21:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.10.16)  25 AUG 2026 21:29
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -728,7 +728,7 @@ fonts/type1/public/amsfonts/cm/cmti9.pfb><c:/texlive/2024/texmf-dist/fonts/type
 amsfonts/symbols/msbm10.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-s
 uper/sfrm1000.pfb><c:/texlive/2024/texmf-dist/fonts/type1/public/cm-super/sfrm1
 095.pfb>
-Output written on design1_writeup.pdf (30 pages, 4507494 bytes).
+Output written on design1_writeup.pdf (30 pages, 4483460 bytes).
 PDF statistics:
  467 PDF objects out of 1000 (max. 8388607)
  356 compressed objects within 4 object streams

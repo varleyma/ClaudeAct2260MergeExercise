@@ -27,7 +27,8 @@ gen sh_c3    = 100 * n_clust3 / n_total
 sort year
 
 local STYLE graphregion(color(white)) bgcolor(white) ///
-    ylabel(, angle(horizontal)) yline(0, lcolor(gs8) lwidth(thin)) ///
+    ylabel(0(5)15, angle(horizontal)) yscale(range(0 16.5)) ///
+    yline(0, lcolor(gs8) lwidth(thin)) ///
     xline(2012, lcolor(gs11) lpattern(dash)) ///
     xline(2019.5, lcolor(gs11) lpattern(dot)) ///
     xlabel(2000(5)2025)
@@ -61,6 +62,7 @@ twoway ///
          "parcels, or its owner mailing ADDRESS accumulates 10+ (25+) parcels across distinct entity names (rolling up" ///
          "one-LLC-per-property structures). Banks, coops, and GSEs excluded (foreclosure REO). This is an upper bound on" ///
          "institutional-scale buying: the clusters include local developers, landlords, and law-office-administered LLCs." ///
+         "Same y-scale as the entity-share figure: portfolio-scale buying is a rounding error beneath the entity surge." ///
          "Dashed line = Act 22/60 (2012), dotted = post-2019 boom. 2026 is a partial year.", size(vsmall)) ///
     name(figE2, replace)
 graph export "$OUT/figE2_portfolio_share.png", replace width(2000)
