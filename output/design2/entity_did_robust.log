@@ -1,0 +1,201 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/entity_did_robust.log
+  log type:  text
+ opened on:  25 Aug 2026, 21:10:54
+
+. 
+. tempname pf
+
+. postfile `pf' str16 spec double h b se using "$OUT/_er.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/_er.dta not found)
+
+. 
+. capture program drop runes
+
+. program define runes
+  1.     args yvar spec cond pf
+  2.     preserve
+  3.     if "`cond'" != "" keep if `cond'
+  4.     di as result _n "===== `spec' ====="
+  5.     reghdfe `yvar' Dm4 Dm3 Dm2 D0 D1 D2 D3, absorb(tract_num year) vce(clu
+> ster tract_num)
+  6.     foreach h in -4 -3 -2 0 1 2 3 {
+  7.         local d = cond(`h' < 0, "Dm" + string(-`h'), "D" + string(`h'))
+  8.         post `pf' ("`spec'") (`h') (_b[`d']) (_se[`d'])
+  9.     }
+ 10.     post `pf' ("`spec'") (-1) (0) (.)
+ 11.     restore
+ 12. end
+
+. 
+. use `panel', clear
+
+. runes port10_n baseline "" `pf'
+
+===== baseline =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   7,    980) =       2.85
+Statistics robust to heteroskedasticity           Prob > F        =     0.0060
+                                                  R-squared       =     0.1030
+                                                  Adj R-squared   =     0.0325
+                                                  Within R-sq.    =     0.0037
+Number of clusters (tract_num) =        981       Root MSE        =     4.6193
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.1016269   .3755451    -0.27   0.787     -.838592    .6353381
+         Dm3 |  -.3099315   .3829573    -0.81   0.419    -1.061442    .4415792
+         Dm2 |  -.3058523   .3346382    -0.91   0.361    -.9625422    .3508375
+          D0 |   2.037333   2.103004     0.97   0.333    -2.089577    6.164242
+          D1 |  -.1887609   .3828195    -0.49   0.622    -.9400011    .5624793
+          D2 |  -.2222048   .3664499    -0.61   0.544    -.9413215    .4969119
+          D3 |   .0733863    .623123     0.12   0.906    -1.149422    1.296195
+       _cons |   .3291184   .0814658     4.04   0.000     .1692509    .4889859
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. use `panel', clear
+
+. runes port10_n dropblip "blip == 0" `pf'
+(70 observations deleted)
+
+===== dropblip =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,664
+Absorbing 2 HDFE groups                           F(   7,    975) =       3.10
+Statistics robust to heteroskedasticity           Prob > F        =     0.0030
+                                                  R-squared       =     0.1269
+                                                  Adj R-squared   =     0.0583
+                                                  Within R-sq.    =     0.0033
+Number of clusters (tract_num) =        976       Root MSE        =     2.0656
+
+                            (Std. err. adjusted for 976 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.3513432   .3170844    -1.11   0.268    -.9735896    .2709032
+         Dm3 |  -.4946274   .3364745    -1.47   0.142    -1.154925    .1656701
+         Dm2 |  -.3210764   .3392227    -0.95   0.344    -.9867669    .3446142
+          D0 |  -.4394611   .3379378    -1.30   0.194     -1.10263     .223708
+          D1 |  -.1984889   .3842689    -0.52   0.606    -.9525781    .5556004
+          D2 |  -.1717013   .3665622    -0.47   0.640    -.8910428    .5476403
+          D3 |   .3668685   .4601254     0.80   0.425    -.5360817    1.269819
+       _cons |   .3223578   .0736448     4.38   0.000     .1778373    .4668783
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       976         976           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. use `panel', clear
+
+. runes anyport extensive "" `pf'
+
+===== extensive =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   7,    980) =       4.38
+Statistics robust to heteroskedasticity           Prob > F        =     0.0001
+                                                  R-squared       =     0.2428
+                                                  Adj R-squared   =     0.1833
+                                                  Within R-sq.    =     0.0042
+Number of clusters (tract_num) =        981       Root MSE        =     0.2998
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+     anyport | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.0414954   .0267554    -1.55   0.121    -.0939999    .0110091
+         Dm3 |   -.046468   .0324038    -1.43   0.152    -.1100569     .017121
+         Dm2 |  -.0099417   .0312736    -0.32   0.751    -.0713125    .0514292
+          D0 |   .0030284   .0351405     0.09   0.931    -.0659308    .0719877
+          D1 |   .0173326   .0348313     0.50   0.619    -.0510199     .085685
+          D2 |   .0122546   .0378664     0.32   0.746    -.0620539     .086563
+          D3 |   .0950776   .0305646     3.11   0.002     .0350981    .1550572
+       _cons |   .1253006   .0054708    22.90   0.000     .1145647    .1360364
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. use `panel', clear
+
+. runes port_cap capped "" `pf'
+
+===== capped =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   7,    980) =       5.75
+Statistics robust to heteroskedasticity           Prob > F        =     0.0000
+                                                  R-squared       =     0.2707
+                                                  Adj R-squared   =     0.2135
+                                                  Within R-sq.    =     0.0076
+Number of clusters (tract_num) =        981       Root MSE        =     0.5064
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port_cap | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.0759721   .0483725    -1.57   0.117    -.1708976    .0189534
+         Dm3 |  -.1119733   .0561338    -1.99   0.046    -.2221295   -.0018171
+         Dm2 |  -.0206981   .0549118    -0.38   0.706    -.1284563      .08706
+          D0 |   .0246408   .0674443     0.37   0.715    -.1077111    .1569927
+          D1 |   .0174168   .0631811     0.28   0.783    -.1065689    .1414026
+          D2 |    .089507   .0753602     1.19   0.235    -.0583789    .2373929
+          D3 |   .2233731   .0593918     3.76   0.000     .1068233    .3399228
+       _cons |   .1864355    .010041    18.57   0.000     .1667313    .2061398
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. 
+. postclose `pf'
+
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design2/entity_did_robust.log
+  log type:  text
+ closed on:  25 Aug 2026, 21:10:57
+-------------------------------------------------------------------------------

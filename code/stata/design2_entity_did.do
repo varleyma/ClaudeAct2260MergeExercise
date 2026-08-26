@@ -206,9 +206,10 @@ twoway ///
     note("OLS in LEVELS (counts per tract-year), tract and year FE, never-treated controls, SEs clustered by tract; endpoints binned." ///
          "Purchases by clusters holding 10+ parcels (name or rolled-up mailing address; banks excluded). Treated tracts' baseline:" ///
          "0.32 portfolio purchases per tract-year (1.3% of sales). Post-year CIs rule out more than ~0.6 additional portfolio" ///
-         "purchases per tract-year; deep post bins (4-6 and 7+ years, not shown) are also null. The year-0 point is a noisy blip" ///
-         "from a handful of bulk events coinciding with treatment onset. Pooled specifications without pre-period dummies are" ///
-         "misleading here (staggered weighting); the event study is the bound.", size(vsmall)) ///
+         "purchases per tract-year; deep post bins (4-6 and 7+ years, not shown) are also null. The year-0 point is five" ///
+         "single-building/resort bulk acquisitions coinciding with treatment onset (Cobian Plaza's 480-unit 2014 purchase alone" ///
+         "is 74% of it); dropping those five tracts the year-0 coefficient is -0.44 (s.e. 0.34). Pooled specifications without" ///
+         "pre-period dummies are misleading here (staggered weighting); the event study is the bound.", size(vsmall)) ///
     xlabel(-4(1)3) name(figE3b, replace)
 graph export "$OUT/figE3b_portfolio_levels.png", replace width(2000)
 
