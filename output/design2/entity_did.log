@@ -3,7 +3,7 @@
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/entity_did.log
   log type:  text
- opened on:  25 Aug 2026, 20:56:02
+ opened on:  25 Aug 2026, 21:02:46
 
 . 
 . tempname pf
@@ -420,6 +420,166 @@ Absorbed degrees of freedom:
 * = FE nested within cluster; treated as redundant for DoF computation
 
 . 
+. *---- LEVELS version (OLS): absolute bound in purchases per tract-year ------
+> -
+. * Poisson gives proportional effects with wide CIs on rare counts; OLS in
+. * levels bounds the ABSOLUTE response directly (baseline: treated tracts
+. * averaged 0.32 portfolio purchases per tract-year pre-treatment).
+. tempname pl
+
+. postfile `pl' str16 test double h b se using "$OUT/_edl.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 2/_edl.dta not found)
+
+. foreach v in port10_n port25_n {
+  2.     use `panel', clear
+  3.     di as result _n "===== OLS LEVELS `v' (tract DiD) ====="
+  4.     reghdfe `v' `DVARS', absorb(tract_num year) vce(cluster tract_num)
+  5.     post `pl' ("`v'") (-4) (_b[Dm4]) (_se[Dm4])
+  6.     post `pl' ("`v'") (-3) (_b[Dm3]) (_se[Dm3])
+  7.     post `pl' ("`v'") (-2) (_b[Dm2]) (_se[Dm2])
+  8.     post `pl' ("`v'") (-1) (0) (.)
+  9.     post `pl' ("`v'") (0)  (_b[D0]) (_se[D0])
+ 10.     post `pl' ("`v'") (1)  (_b[D1]) (_se[D1])
+ 11.     post `pl' ("`v'") (2)  (_b[D2]) (_se[D2])
+ 12.     post `pl' ("`v'") (3)  (_b[D3]) (_se[D3])
+ 13. 
+.     di as result _n "===== OLS LEVELS pooled `v' ====="
+ 14.     reghdfe `v' treat, absorb(tract_num year) vce(cluster tract_num)
+ 15.     post `pl' ("`v'") (99) (_b[treat]) (_se[treat])
+ 16. }
+
+===== OLS LEVELS port10_n (tract DiD) =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   7,    980) =       2.85
+Statistics robust to heteroskedasticity           Prob > F        =     0.0060
+                                                  R-squared       =     0.1030
+                                                  Adj R-squared   =     0.0325
+                                                  Within R-sq.    =     0.0037
+Number of clusters (tract_num) =        981       Root MSE        =     4.6193
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.1016269   .3755451    -0.27   0.787     -.838592    .6353381
+         Dm3 |  -.3099315   .3829573    -0.81   0.419    -1.061442    .4415792
+         Dm2 |  -.3058523   .3346382    -0.91   0.361    -.9625422    .3508375
+          D0 |   2.037333   2.103004     0.97   0.333    -2.089577    6.164242
+          D1 |  -.1887609   .3828195    -0.49   0.622    -.9400011    .5624793
+          D2 |  -.2222048   .3664499    -0.61   0.544    -.9413215    .4969119
+          D3 |   .0733863    .623123     0.12   0.906    -1.149422    1.296195
+       _cons |   .3291184   .0814658     4.04   0.000     .1692509    .4889859
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== OLS LEVELS pooled port10_n =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   1,    980) =       4.73
+Statistics robust to heteroskedasticity           Prob > F        =     0.0299
+                                                  R-squared       =     0.1002
+                                                  Adj R-squared   =     0.0300
+                                                  Within R-sq.    =     0.0007
+Number of clusters (tract_num) =        981       Root MSE        =     4.6252
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port10_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   .6034829   .2774641     2.17   0.030     .0589908    1.147975
+       _cons |   .2830005   .0270918    10.45   0.000     .2298359    .3361652
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== OLS LEVELS port25_n (tract DiD) =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   7,    980) =       1.46
+Statistics robust to heteroskedasticity           Prob > F        =     0.1783
+                                                  R-squared       =     0.0815
+                                                  Adj R-squared   =     0.0094
+                                                  Within R-sq.    =     0.0039
+Number of clusters (tract_num) =        981       Root MSE        =     4.5217
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port25_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+         Dm4 |  -.1698307   .3633109    -0.47   0.640    -.8827876    .5431261
+         Dm3 |  -.2384711   .3723756    -0.64   0.522    -.9692163    .4922742
+         Dm2 |  -.3607931   .3212385    -1.12   0.262    -.9911876    .2696014
+          D0 |   1.903392   2.092427     0.91   0.363    -2.202759    6.009544
+          D1 |  -.3150428   .3696517    -0.85   0.394    -1.040443    .4103572
+          D2 |  -.5082537   .3437954    -1.48   0.140    -1.182913    .1664061
+          D3 |  -.3286715   .6383796    -0.51   0.607     -1.58142    .9240767
+       _cons |   .1678225   .0793135     2.12   0.035     .0121788    .3234663
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== OLS LEVELS pooled port25_n =====
+(MWFE estimator converged in 2 iterations)
+
+HDFE Linear regression                            Number of obs   =     13,734
+Absorbing 2 HDFE groups                           F(   1,    980) =       2.17
+Statistics robust to heteroskedasticity           Prob > F        =     0.1407
+                                                  R-squared       =     0.0782
+                                                  Adj R-squared   =     0.0062
+                                                  Within R-sq.    =     0.0003
+Number of clusters (tract_num) =        981       Root MSE        =     4.5290
+
+                            (Std. err. adjusted for 981 clusters in tract_num)
+------------------------------------------------------------------------------
+             |               Robust
+    port25_n | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |    .382352   .2593613     1.47   0.141    -.1266154    .8913193
+       _cons |   .1083636   .0253243     4.28   0.000     .0586676    .1580596
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+   tract_num |       981         981           0    *|
+        year |        14           1          13     |
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. postclose `pl'
+
 . postclose `pf'
 
 . log close
@@ -427,5 +587,5 @@ Absorbed degrees of freedom:
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design2/entity_did.log
   log type:  text
- closed on:  25 Aug 2026, 20:56:07
+ closed on:  25 Aug 2026, 21:02:49
 -------------------------------------------------------------------------------
