@@ -1,11 +1,13 @@
-"""Event-study figure for the investor-begets-investor arrivals DiD.
+"""Single-graph event-study figures for the investor-begets-investor
+arrivals DiD (one graph per file, user rule 2026-11-03).
 
 Reads output/design1/arrivals_coefs.csv (lpdid matrices from
-design1_arrivals_did.do) and plots the 0-250m and 250-500m rings vs the
-1500-2000m control band: all events (left) and pioneer4 events -- no other
-investor within 1km before t-4, predetermined w.r.t. the pre-window (right).
+design1_arrivals_did.do); 0-250m and 250-500m rings vs 1500-2000m control.
 
-Output: output/design1/fig_arrivals_es.png / .pdf
+Outputs (output/design1/):
+    fig_arrivals_es_all.png/.pdf    all 1,160 decree-era events
+    fig_arrivals_es_first.png/.pdf  237 first-investor events (no investor
+                                    within 1 km at purchase; pre ~ 0 by def.)
 """
 import os
 import matplotlib
@@ -37,32 +39,33 @@ def series(ax, tag, color, off, label):
     ax.plot(ref["t"] + off, ref["c1"], "o", ms=6, mfc="white", mec=color, mew=1.8, zorder=4)
 
 
-def panel(ax, samp, title):
+def make(samp, title, stem):
+    fig, ax = plt.subplots(figsize=(6.8, 4.6))
     ax.axhline(0, color=MUTED, lw=1, zorder=1)
     ax.axvline(-0.5, color=MUTED, lw=1, ls=":", zorder=1)
     series(ax, f"A_0_250_{samp}", BLUE, -0.08, "0\u2013250 m ring")
     series(ax, f"A_250_500_{samp}", ORANGE, 0.08, "250\u2013500 m ring")
     ax.set_title(title, fontsize=11, color=INK, loc="left")
     ax.set_xlabel("Years since investor purchase", fontsize=9, color=INK)
+    ax.set_ylabel("Other-investor arrivals per km\u00b2 per year,\nvs 1500\u20132000 m control band (95% CI, ref. t\u22121)",
+                  fontsize=9, color=INK)
     ax.set_xticks(range(-4, 4))
+    ax.legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left")
     ax.tick_params(colors=INK, labelsize=9)
     ax.grid(axis="y", color="#e5e7eb", lw=0.8, zorder=0)
     for sp in ["top", "right"]:
         ax.spines[sp].set_visible(False)
     for sp in ["left", "bottom"]:
         ax.spines[sp].set_color(MUTED)
+    fig.tight_layout()
+    for ext in ("png", "pdf"):
+        p = os.path.join(OUT, f"{stem}.{ext}")
+        fig.savefig(p, dpi=200, facecolor="white")
+        print("saved", p)
+    plt.close(fig)
 
 
-fig, axes = plt.subplots(1, 2, figsize=(10, 4.4))
-panel(axes[0], "all", "A. All events (n=1,160)")
-panel(axes[1], "first", "B. First-investor events (n=237): no investor\nwithin 1 km at purchase (pre \u2248 0 by definition)")
-axes[0].set_ylabel("Other-investor arrivals per km\u00b2 per year,\nvs 1500\u20132000 m control band (95% CI, ref. t\u22121)",
-                   fontsize=9, color=INK)
-axes[0].legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left")
-fig.suptitle("Investor purchases attract more investors: arrivals event study (lpdid, design1 events 2012\u20132025)",
-             fontsize=12, color=INK, x=0.01, ha="left")
-fig.tight_layout(rect=[0, 0, 1, 0.93])
-for ext in ("png", "pdf"):
-    p = os.path.join(OUT, f"fig_arrivals_es.{ext}")
-    fig.savefig(p, dpi=200, facecolor="white")
-    print("saved", p)
+make("all", "Other-investor arrivals around an investor purchase:\nall decree-era events (n=1,160), lpdid",
+     "fig_arrivals_es_all")
+make("first", "Other-investor arrivals around a FIRST investor purchase\n(n=237, no investor within 1 km at purchase; pre \u2248 0 by definition)",
+     "fig_arrivals_es_first")
