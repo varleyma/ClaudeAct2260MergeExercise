@@ -84,11 +84,16 @@ log using "$OUT/arrivals_results.log", replace text
 /*============================================================================
   LPDID: per treated bin vs control, by sample
 ============================================================================*/
-foreach samp in all pioneer established {
+* "first" = naive first-investor sample (no other-buyer event within 1km at
+* the event date, n=237): pre-window arrivals within 1km are mechanically
+* zero -- which IS the state of the world for a first arrival (user call
+* 2026-11-03); the control band may still have prior events beyond 1km.
+foreach samp in all pioneer established first {
     foreach b in 0_250 250_500 500_1000 1000_1500 {
         use "$OUT/_arrivals_panel.dta", clear
         if "`samp'" == "pioneer"     keep if pioneer4 == 1
         if "`samp'" == "established" keep if pioneer4 == 0
+        if "`samp'" == "first"       keep if pioneer == 1
         keep if inlist(bin, "`b'", "control")
         gen near = bin == "`b'"
         egen cellid = group(event_id near)
@@ -112,10 +117,11 @@ foreach samp in all pioneer established {
 capture postclose PH
 postfile PH str12 sample str12 bin double k coef se using "$OUT/_arrivals_ppml.dta", replace
 
-foreach samp in all pioneer established {
+foreach samp in all pioneer established first {
     use "$OUT/_arrivals_panel.dta", clear
     if "`samp'" == "pioneer"     keep if pioneer4 == 1
     if "`samp'" == "established" keep if pioneer4 == 0
+    if "`samp'" == "first"       keep if pioneer == 1
     gen k = year - event_year
     gen kk = k + 6                      // 0..11, base 5 (k = -1)
     encode bin, gen(binn)               // alphabetical: control is some level

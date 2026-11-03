@@ -3,7 +3,7 @@
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design1/arrivals_results.log
   log type:  text
- opened on:   3 Nov 2026, 17:10:00
+ opened on:   3 Nov 2026, 17:30:30
 
 . 
 . /*===========================================================================
@@ -11,28 +11,33 @@
 >   LPDID: per treated bin vs control, by sample
 > ============================================================================*
 > /
-. foreach samp in all pioneer established {
+. * "first" = naive first-investor sample (no other-buyer event within 1km at
+. * the event date, n=237): pre-window arrivals within 1km are mechanically
+. * zero -- which IS the state of the world for a first arrival (user call
+. * 2026-11-03); the control band may still have prior events beyond 1km.
+. foreach samp in all pioneer established first {
   2.     foreach b in 0_250 250_500 500_1000 1000_1500 {
   3.         use "$OUT/_arrivals_panel.dta", clear
   4.         if "`samp'" == "pioneer"     keep if pioneer4 == 1
   5.         if "`samp'" == "established" keep if pioneer4 == 0
-  6.         keep if inlist(bin, "`b'", "control")
-  7.         gen near = bin == "`b'"
-  8.         egen cellid = group(event_id near)
-  9.         gen treat = near & year >= event_year
- 10.         xtset cellid year
- 11.         di as result _n "===== arrivals `samp' | bin `b' vs control 1500-2
+  6.         if "`samp'" == "first"       keep if pioneer == 1
+  7.         keep if inlist(bin, "`b'", "control")
+  8.         gen near = bin == "`b'"
+  9.         egen cellid = group(event_id near)
+ 10.         gen treat = near & year >= event_year
+ 11.         xtset cellid year
+ 12.         di as result _n "===== arrivals `samp' | bin `b' vs control 1500-2
 > 000 ====="
- 12.         capture noisily lpdid y, unit(cellid) time(year) treat(treat) ///
+ 13.         capture noisily lpdid y, unit(cellid) time(year) treat(treat) ///
 >             pre_window(4) post_window(3) nevertreated
- 13.         if _rc continue
- 14.         local tag "A_`b'_`samp'"
- 15.         matrix E = e(results)
- 16.         grabmat E `tag' event
- 17.         capture matrix P = e(pooled_results)
- 18.         if !_rc grabmat P `tag' pooled
- 19.     }
- 20. }
+ 14.         if _rc continue
+ 15.         local tag "A_`b'_`samp'"
+ 16.         matrix E = e(results)
+ 17.         grabmat E `tag' event
+ 18.         capture matrix P = e(pooled_results)
+ 19.         if !_rc grabmat P `tag' pooled
+ 20.     }
+ 21. }
 (34,779 observations deleted)
 
 Panel variable: cellid (unbalanced)
@@ -605,6 +610,198 @@ LP-DiD Pooled Estimates
 -------------+---------------------
          Pre | -.0449229       4610 
         Post |  .2122995       4284 
+(45,550 observations deleted)
+(7,449 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: year, 2008 to 2025
+         Delta: 1 unit
+
+===== arrivals first | bin 0_250 vs control 1500-2000 =====
+lpdid y, unit(cellid) time(year) treat(treat) pre_window(4) post_window(3) neve
+> rtreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .0237919   .0038397        6.2          0    .016247 
+        pre3 |  .0135206   .0024434       5.53          0   .0087194 
+        pre2 |  .0066542   .0016598       4.01      .0001   .0033928 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .1809647   .0685014       2.64      .0085   .0463599 
+        tau1 |  .1270522   .0560156       2.27      .0238   .0169726 
+        tau2 |  .3397376   .1090879       3.11       .002   .1253355 
+        tau3 |  .6296544    .148237       4.25          0   .3382572 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .0313369       1772 
+        pre3 |  .0183219       2009 
+        pre2 |  .0099157       2246 
+        pre1 |         .          . 
+        tau0 |  .3155695       2483 
+        tau1 |  .2371317       2231 
+        tau2 |  .5541397       1973 
+        tau3 |  .9210516       1710 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0157886   .0027005       5.85          0   .0104822 
+        Post |  .3492251   .0664637       5.25          0   .2185738 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   .021095       1772 
+        Post |  .4798764       1710 
+(45,550 observations deleted)
+(7,449 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: year, 2008 to 2025
+         Delta: 1 unit
+
+===== arrivals first | bin 250_500 vs control 1500-2000 =====
+lpdid y, unit(cellid) time(year) treat(treat) pre_window(4) post_window(3) neve
+> rtreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .0237919   .0038397        6.2          0    .016247 
+        pre3 |  .0135206   .0024434       5.53          0   .0087194 
+        pre2 |  .0066542   .0016598       4.01      .0001   .0033928 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0548189   .0268347       2.04      .0416   .0020888 
+        tau1 |  .0965207   .0320422       3.01      .0027   .0335527 
+        tau2 |  .0712681   .0316773       2.25       .025   .0090093 
+        tau3 |  .1041691   .0397508       2.62      .0091   .0260289 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .0313369       1772 
+        pre3 |  .0183219       2009 
+        pre2 |  .0099157       2246 
+        pre1 |         .          . 
+        tau0 |  .1075489       2483 
+        tau1 |  .1594887       2231 
+        tau2 |  .1335269       1973 
+        tau3 |  .1823093       1710 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0157886   .0027005       5.85          0   .0104822 
+        Post |  .0962526   .0260935       3.69      .0003   .0449591 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   .021095       1772 
+        Post |   .147546       1710 
+(45,550 observations deleted)
+(7,449 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: year, 2008 to 2025
+         Delta: 1 unit
+
+===== arrivals first | bin 500_1000 vs control 1500-2000 =====
+lpdid y, unit(cellid) time(year) treat(treat) pre_window(4) post_window(3) neve
+> rtreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |  .0237919   .0038397        6.2          0    .016247 
+        pre3 |  .0135206   .0024434       5.53          0   .0087194 
+        pre2 |  .0066542   .0016598       4.01      .0001   .0033928 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0087731   .0071307       1.23      .2192  -.0052386 
+        tau1 |  .0245593   .0100913       2.43      .0153   .0047284 
+        tau2 |  .0675229   .0211374       3.19      .0015   .0259793 
+        tau3 |  .0577904   .0200491       2.88      .0042   .0183789 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .0313369       1772 
+        pre3 |  .0183219       2009 
+        pre2 |  .0099157       2246 
+        pre1 |         .          . 
+        tau0 |  .0227848       2483 
+        tau1 |  .0443903       2231 
+        tau2 |  .1090665       1973 
+        tau3 |   .097202       1710 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0157886   .0027005       5.85          0   .0104822 
+        Post |  .0429836   .0114392       3.76      .0002    .020497 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |   .021095       1772 
+        Post |  .0654702       1710 
+(45,550 observations deleted)
+(7,449 observations deleted)
+
+Panel variable: cellid (unbalanced)
+ Time variable: year, 2008 to 2025
+         Delta: 1 unit
+
+===== arrivals first | bin 1000_1500 vs control 1500-2000 =====
+lpdid y, unit(cellid) time(year) treat(treat) pre_window(4) post_window(3) neve
+> rtreated
+Warning: Your data is not strongly balanced. Please evaluate whether this is a 
+> problem in your application or not.
+
+LP-DiD Event Study Estimates
+
+      E-time | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+        pre4 |   .008942   .0083238       1.07      .2833  -.0074142 
+        pre3 | -.0022429   .0073984        -.3      .7619  -.0167807 
+        pre2 | -.0079414   .0069199      -1.15      .2517  -.0215389 
+        pre1 |         0          .          .          .          . 
+        tau0 |  .0147108   .0098204        1.5      .1348  -.0045861 
+        tau1 |  .0077873   .0107708        .72        .47  -.0133791 
+        tau2 |  .0012071   .0102691        .12      .9065   -.018976 
+        tau3 |  .0326983   .0185831       1.76      .0792  -.0038314 
+
+      E-time | interval]        obs 
+-------------+---------------------
+        pre4 |  .0252982       1772 
+        pre3 |  .0122948       2009 
+        pre2 |  .0056561       2246 
+        pre1 |         .          . 
+        tau0 |  .0340077       2483 
+        tau1 |  .0289537       2231 
+        tau2 |  .0213901       1973 
+        tau3 |  .0692281       1710 
+
+LP-DiD Pooled Estimates
+
+             | Coeffic~t         SE          t      P>|t|  [95% co~. 
+-------------+-------------------------------------------------------
+         Pre |  .0007287   .0070141         .1      .9173  -.0130539 
+        Post |  .0147142    .010913       1.35      .1783  -.0067379 
+
+             | interval]        obs 
+-------------+---------------------
+         Pre |  .0145114       1772 
+        Post |  .0361664       1710 
 
 . 
 . /*===========================================================================
@@ -621,41 +818,42 @@ LP-DiD Pooled Estimates
     > 1/_arrivals_ppml.dta not found)
 
 . 
-. foreach samp in all pioneer established {
+. foreach samp in all pioneer established first {
   2.     use "$OUT/_arrivals_panel.dta", clear
   3.     if "`samp'" == "pioneer"     keep if pioneer4 == 1
   4.     if "`samp'" == "established" keep if pioneer4 == 0
-  5.     gen k = year - event_year
-  6.     gen kk = k + 6                      // 0..11, base 5 (k = -1)
-  7.     encode bin, gen(binn)               // alphabetical: control is some l
+  5.     if "`samp'" == "first"       keep if pioneer == 1
+  6.     gen k = year - event_year
+  7.     gen kk = k + 6                      // 0..11, base 5 (k = -1)
+  8.     encode bin, gen(binn)               // alphabetical: control is some l
 > evel
-  8.     qui levelsof binn if bin == "control", local(cb)
-  9.     egen ebin  = group(event_id bin)
- 10.     egen eyear = group(event_id year)
- 11.     egen evid  = group(event_id)
- 12.     di as result _n "===== PPML arrivals `samp' (base: control band, k=-1)
+  9.     qui levelsof binn if bin == "control", local(cb)
+ 10.     egen ebin  = group(event_id bin)
+ 11.     egen eyear = group(event_id year)
+ 12.     egen evid  = group(event_id)
+ 13.     di as result _n "===== PPML arrivals `samp' (base: control band, k=-1)
 >  ====="
- 13.     capture noisily ppmlhdfe arrivals ib`cb'.binn#ib5.kk, ///
+ 14.     capture noisily ppmlhdfe arrivals ib`cb'.binn#ib5.kk, ///
 >         absorb(ebin eyear) vce(cluster evid) d
- 14.     if _rc continue
- 15.     matrix b = e(b)
- 16.     matrix V = e(V)
- 17.     local cn : colfullnames b
- 18.     local j = 0
- 19.     foreach n of local cn {
- 20.         local ++j
- 21.         if strpos("`n'", "#") == 0 continue
- 22.         if strpos("`n'", "b.") | strpos("`n'", "o.") continue
- 23.         * name like  3.binn#7.kk
+ 15.     if _rc continue
+ 16.     matrix b = e(b)
+ 17.     matrix V = e(V)
+ 18.     local cn : colfullnames b
+ 19.     local j = 0
+ 20.     foreach n of local cn {
+ 21.         local ++j
+ 22.         if strpos("`n'", "#") == 0 continue
+ 23.         if strpos("`n'", "b.") | strpos("`n'", "o.") continue
+ 24.         * name like  3.binn#7.kk
 .         local bl = real(substr("`n'", 1, strpos("`n'", ".") - 1))
- 24.         local rest = substr("`n'", strpos("`n'", "#") + 1, .)
- 25.         local kv = real(substr("`rest'", 1, strpos("`rest'", ".") - 1)) - 
+ 25.         local rest = substr("`n'", strpos("`n'", "#") + 1, .)
+ 26.         local kv = real(substr("`rest'", 1, strpos("`rest'", ".") - 1)) - 
 > 6
- 26.         local blab : label binn `bl'
- 27.         post PH ("`samp'") ("`blab'") (`kv') (b[1, `j']) (sqrt(V[`j', `j']
+ 27.         local blab : label binn `bl'
+ 28.         post PH ("`samp'") ("`blab'") (`kv') (b[1, `j']) (sqrt(V[`j', `j']
 > ))
- 28.     }
- 29. }
+ 29.     }
+ 30. }
 
 ===== PPML arrivals all (base: control band, k=-1) =====
 (dropped 20219 observations that are either singletons or separated by a fixed 
@@ -1067,6 +1265,180 @@ Absorbed degrees of freedom:
        eyear |      6229        6229           0    *|
 -----------------------------------------------------+
 * = FE nested within cluster; treated as redundant for DoF computation
+(45,550 observations deleted)
+
+===== PPML arrivals first (base: control band, k=-1) =====
+(dropped 11025 observations that are either singletons or separated by a fixed 
+> effect)
+note: 15 variables omitted because of collinearity: 1bn.binn#11bn.kk 2bn.binn#1
+> 1bn.kk 3bn.binn#11bn.kk 4bn.binn#11bn.kk 5bn.binn#0bn.kk 5bn.binn#1bn.kk 5bn.
+> binn#2bn.kk 5bn.binn#3bn.kk 5bn.binn#4bn.kk 5bn.binn#6bn.kk 5bn.binn#7bn.kk 5
+> bn.binn#8bn.kk 5bn.binn#9bn.kk 5bn.binn#10bn.kk 5bn.binn#11bn.kk
+(simplex method dropped 122 separated observations)
+(dropped 20 singleton observations)
+note: 18 variables omitted because of collinearity: 1.binn#0.kk 1.binn#1.kk 1.b
+> inn#2.kk 1.binn#3.kk 1.binn#4.kk 1.binn#5b.kk 3.binn#0.kk 3.binn#1.kk 3.binn#
+> 2.kk 3.binn#3.kk 3.binn#4.kk 3.binn#5b.kk 4.binn#0.kk 4.binn#1.kk 4.binn#2.kk
+>  4.binn#3.kk 4.binn#4.kk 4.binn#5b.kk
+ $$ Stopping (no negative residuals); separation found in 74 observations (52 i
+> terations and 238 subiterations)
+(ReLU method dropped 74 separated observations in 52 iterations)
+(dropped 63 singleton observations)
+Iteration 1:   deviance = 6.7362e+02  eps = .         iters = 6    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.06  P   
+Iteration 2:   deviance = 6.1783e+02  eps = 9.03e-02  iters = 7    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.70      
+Iteration 3:   deviance = 6.1224e+02  eps = 9.14e-03  iters = 7    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.93      
+Iteration 4:   deviance = 6.1074e+02  eps = 2.45e-03  iters = 10   tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.96      
+Iteration 5:   deviance = 6.1018e+02  eps = 9.22e-04  iters = 6    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -8.29      
+Iteration 6:   deviance = 6.0996e+02  eps = 3.53e-04  iters = 6    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) = -10.09      
+Iteration 7:   deviance = 6.0989e+02  eps = 1.22e-04  iters = 6    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) = -12.00      
+Iteration 8:   deviance = 6.0986e+02  eps = 5.51e-05  iters = 6    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) = -13.97      
+Iteration 9:   deviance = 6.0984e+02  eps = 2.10e-05  iters = 7    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) = -15.95      
+Iteration 10:  deviance = 6.0984e+02  eps = 9.93e-06  iters = 7    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) = -17.95   S  
+Iteration 11:  deviance = 6.0984e+02  eps = 3.75e-06  iters = 8    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) = -19.95   S  
+Iteration 12:  deviance = 6.0983e+02  eps = 1.45e-06  iters = 8    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) = -21.95   S  
+Iteration 13:  deviance = 6.0983e+02  eps = 5.44e-07  iters = 92   tol = 1.0e-0
+> 6                                                                            
+>    min(eta) = -23.95   S  
+Iteration 14:  deviance = 6.0983e+02  eps = 2.00e-07  iters = 134  tol = 1.0e-0
+> 7                                                                            
+>    min(eta) = -25.94   S  
+Iteration 15:  deviance = 6.0983e+02  eps = 3.78e-08  iters = 127  tol = 1.0e-0
+> 7                                                                            
+>    min(eta) = -26.97   S  
+Iteration 16:  deviance = 6.0983e+02  eps = 4.36e-08  iters = 163  tol = 1.0e-0
+> 9                                                                            
+>    min(eta) = -28.77   S  
+Iteration 17:  deviance = 6.0983e+02  eps = 4.66e-09  iters = 4    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) = -30.49   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 17 iterations and 604 HDFE sub-iterations (tol = 1.0e-08)
+warning: missing F statistic; dropped variables due to collinearity or too few 
+> clusters
+
+HDFE PPML regression                              No. of obs      =      1,111
+Absorbing 2 HDFE groups                           Residual df     =         73
+Statistics robust to heteroskedasticity           Wald chi2(26)   =          .
+Deviance             =  609.8344068               Prob > chi2     =          .
+Log pseudolikelihood = -1021.543658               Pseudo R2       =     0.3417
+
+Number of clusters (evid)   =         74
+                                  (Std. err. adjusted for 74 clusters in evid)
+------------------------------------------------------------------------------
+             |               Robust
+    arrivals | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     binn#kk |
+   0_250# 0  |          0  (empty)
+   0_250# 1  |          0  (empty)
+   0_250# 2  |          0  (empty)
+   0_250# 3  |          0  (empty)
+   0_250# 4  |          0  (empty)
+   0_250# 5  |          0  (empty)
+   0_250# 6  |  -.8111067   .6767125    -1.20   0.231    -2.137439    .5152255
+   0_250# 7  |  -.6363061   .5043746    -1.26   0.207    -1.624862      .35225
+   0_250# 8  |  -.8026144   .6006916    -1.34   0.182    -1.979948    .3747194
+   0_250# 9  |   .0375277   .5022554     0.07   0.940    -.9468748     1.02193
+   0_250#10  |  -.8498466   .4140464    -2.05   0.040    -1.661363   -.0383306
+   0_250#11  |          0  (omitted)
+  1000_1500 #|
+          0  |  -1.785682     1.1833    -1.51   0.131    -4.104907    .5335432
+  1000_1500 #|
+          1  |  -30.68238   .8646692   -35.48   0.000     -32.3771   -28.98766
+  1000_1500 #|
+          2  |  -18.89169   .2267679   -83.31   0.000    -19.33615   -18.44723
+  1000_1500 #|
+          3  |   17.05582   .2285907    74.61   0.000     16.60779    17.50385
+  1000_1500 #|
+          4  |  -.8621429   .6652243    -1.30   0.195    -2.165959    .4416726
+  1000_1500 #|
+          5  |  -.5938435   .4723888    -1.26   0.209    -1.519709    .3320216
+  1000_1500 #|
+          6  |  -.1671797   .4116673    -0.41   0.685    -.9740327    .6396733
+  1000_1500 #|
+          7  |  -.3022061   .3208935    -0.94   0.346    -.9311459    .3267337
+  1000_1500 #|
+          8  |  -.9492174    .352384    -2.69   0.007    -1.639877   -.2585574
+  1000_1500 #|
+          9  |  -.1144039    .371212    -0.31   0.758    -.8419659    .6131582
+  1000_1500 #|
+         10  |  -.4282636   .2086278    -2.05   0.040    -.8371666   -.0193606
+  1000_1500 #|
+         11  |          0  (omitted)
+ 250_500# 0  |          0  (empty)
+ 250_500# 1  |          0  (empty)
+ 250_500# 2  |          0  (empty)
+ 250_500# 3  |          0  (empty)
+ 250_500# 4  |          0  (empty)
+ 250_500# 5  |          0  (empty)
+ 250_500# 6  |  -.6013384   .7236055    -0.83   0.406    -2.019579    .8169024
+ 250_500# 7  |   .0432714   .5979631     0.07   0.942    -1.128715    1.215258
+ 250_500# 8  |  -1.002546   .8303009    -1.21   0.227    -2.629906    .6248142
+ 250_500# 9  |  -.2543314   .5313932    -0.48   0.632    -1.295843    .7871801
+ 250_500#10  |  -.5152077   .4520431    -1.14   0.254    -1.401196    .3707805
+ 250_500#11  |          0  (omitted)
+500_1000# 0  |          0  (empty)
+500_1000# 1  |          0  (empty)
+500_1000# 2  |          0  (empty)
+500_1000# 3  |          0  (empty)
+500_1000# 4  |          0  (empty)
+500_1000# 5  |          0  (empty)
+500_1000# 6  |  -1.196549   .6464094    -1.85   0.064    -2.463489    .0703898
+500_1000# 7  |  -.6857778   .3498403    -1.96   0.050    -1.371452   -.0001034
+500_1000# 8  |  -.4184891   .3675593    -1.14   0.255    -1.138892    .3019139
+500_1000# 9  |  -.5520836   .3433927    -1.61   0.108    -1.225121    .1209538
+500_1000#10  |  -.2075326   .2910325    -0.71   0.476    -.7779458    .3628807
+500_1000#11  |          0  (omitted)
+ control# 0  |          0  (omitted)
+ control# 1  |          0  (omitted)
+ control# 2  |          0  (omitted)
+ control# 3  |          0  (omitted)
+ control# 4  |          0  (omitted)
+ control# 6  |          0  (omitted)
+ control# 7  |          0  (omitted)
+ control# 8  |          0  (omitted)
+ control# 9  |          0  (omitted)
+ control#10  |          0  (omitted)
+ control#11  |          0  (omitted)
+             |
+       _cons |   .6160843   .1108768     5.56   0.000     .3987699    .8333988
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        ebin |       241         241           0    *|
+       eyear |       337         337           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
 
 . postclose PH
 
@@ -1076,5 +1448,5 @@ Absorbed degrees of freedom:
        log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
 > /design1/arrivals_results.log
   log type:  text
- closed on:   3 Nov 2026, 17:14:41
+ closed on:   3 Nov 2026, 17:36:08
 -------------------------------------------------------------------------------

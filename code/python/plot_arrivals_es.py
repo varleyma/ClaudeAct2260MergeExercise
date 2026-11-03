@@ -55,7 +55,7 @@ def panel(ax, samp, title):
 
 fig, axes = plt.subplots(1, 2, figsize=(10, 4.4))
 panel(axes[0], "all", "A. All events (n=1,160)")
-panel(axes[1], "pioneer", "B. Pioneer events (n=465): no investor within 1 km\nbefore t\u22124 (predetermined split)")
+panel(axes[1], "first", "B. First-investor events (n=237): no investor\nwithin 1 km at purchase (pre \u2248 0 by definition)")
 axes[0].set_ylabel("Other-investor arrivals per km\u00b2 per year,\nvs 1500\u20132000 m control band (95% CI, ref. t\u22121)",
                    fontsize=9, color=INK)
 axes[0].legend(frameon=False, fontsize=9, labelcolor=INK, loc="upper left")

@@ -1,0 +1,845 @@
+-------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/pioneer_follow_results.log
+  log type:  text
+ opened on:   3 Nov 2026, 17:32:03
+
+. 
+. di as result "units: " _N
+units: 11604
+
+. count if pioneer == 1
+  237
+
+. di as result "pioneers: " r(N)
+pioneers: 237
+
+. 
+. capture postclose PF
+
+. postfile PF str8 est double radius horizon coef se p double mean_pio mean_ctl
+>  ///
+>     double n_pio n_ctl using "$OUT/_pf_coefs.dta", replace
+(file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/_pf_coefs.dta not found)
+
+. 
+. foreach r in 250 500 1000 {
+  2.     foreach k in 1 2 3 {
+  3.         qui summ any_`r'_y`k' if pioneer == 1 & obs_y`k' == 1
+  4.         local mp = r(mean)
+  5.         local np = r(N)
+  6.         qui summ any_`r'_y`k' if pioneer == 0 & obs_y`k' == 1
+  7.         local mc = r(mean)
+  8.         local nc = r(N)
+  9. 
+.         di as result _n "===== radius `r'm, horizon `k'y: raw P(follow) " ///
+>             %5.3f `mp' " (pioneer) vs " %5.3f `mc' " (virgin luxury) ====="
+ 10. 
+.         * LPM with year + municipio FE
+.         capture noisily reghdfe any_`r'_y`k' pioneer if obs_y`k' == 1, ///
+>             absorb(year muni) vce(cluster muni)
+ 11.         if !_rc {
+ 12.             local b = _b[pioneer]
+ 13.             local s = _se[pioneer]
+ 14.             local pv = 2 * ttail(e(df_r), abs(`b'/`s'))
+ 15.             post PF ("lpm") (`r') (`k') (`b') (`s') (`pv') (`mp') (`mc') (
+> `np') (`nc')
+ 16.         }
+ 17. 
+.         * PPML on counts
+.         capture noisily ppmlhdfe n_`r'_y`k' pioneer if obs_y`k' == 1, ///
+>             absorb(year muni) vce(cluster muni)
+ 18.         if !_rc {
+ 19.             local b = _b[pioneer]
+ 20.             local s = _se[pioneer]
+ 21.             local pv = 2 * normal(-abs(`b'/`s'))
+ 22.             post PF ("ppml") (`r') (`k') (`b') (`s') (`pv') (`mp') (`mc') 
+> (`np') (`nc')
+ 23.         }
+ 24.     }
+ 25. }
+
+===== radius 250m, horizon 1y: raw P(follow) 0.054 (pioneer) vs 0.021 (virgin l
+> uxury) =====
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =     10,274
+Absorbing 2 HDFE groups                           F(   1,     77) =       1.64
+Statistics robust to heteroskedasticity           Prob > F        =     0.2036
+                                                  R-squared       =     0.0471
+                                                  Adj R-squared   =     0.0387
+                                                  Within R-sq.    =     0.0006
+Number of clusters (muni)    =         78         Root MSE        =     0.1429
+
+                                  (Std. err. adjusted for 78 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+  any_250_y1 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .0240604   .0187652     1.28   0.204    -.0133059    .0614268
+       _cons |   .0211854   .0004055    52.25   0.000      .020378    .0219928
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           1          12     |
+        muni |        78          78           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(dropped 2521 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 1.9608e+03  eps = .         iters = 5    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.45  P   
+Iteration 2:   deviance = 1.4281e+03  eps = 3.73e-01  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.14      
+Iteration 3:   deviance = 1.3347e+03  eps = 7.00e-02  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.57      
+Iteration 4:   deviance = 1.3279e+03  eps = 5.11e-03  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.79      
+Iteration 5:   deviance = 1.3278e+03  eps = 6.59e-05  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.83      
+Iteration 6:   deviance = 1.3278e+03  eps = 2.22e-08  iters = 3    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -5.84      
+Iteration 7:   deviance = 1.3278e+03  eps = 4.50e-15  iters = 3    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -5.84   S  
+Iteration 8:   deviance = 1.3278e+03  eps = 0.00e+00  iters = 2    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -5.84   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 26 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      7,753
+Absorbing 2 HDFE groups                           Residual df     =         21
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       2.40
+Deviance             =  1327.805017               Prob > chi2     =     0.1211
+Log pseudolikelihood = -888.4367726               Pseudo R2       =     0.1420
+
+Number of clusters (muni)   =         22
+                                  (Std. err. adjusted for 22 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+    n_250_y1 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .5494405   .3543945     1.55   0.121    -.1451599    1.244041
+       _cons |   -2.91278   .0202067  -144.15   0.000    -2.952384   -2.873175
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           1          12     |
+        muni |        22          22           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== radius 250m, horizon 2y: raw P(follow) 0.100 (pioneer) vs 0.047 (virgin l
+> uxury) =====
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =      9,101
+Absorbing 2 HDFE groups                           F(   1,     77) =       1.64
+Statistics robust to heteroskedasticity           Prob > F        =     0.2041
+                                                  R-squared       =     0.0625
+                                                  Adj R-squared   =     0.0533
+                                                  Within R-sq.    =     0.0007
+Number of clusters (muni)    =         78         Root MSE        =     0.2083
+
+                                  (Std. err. adjusted for 78 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+  any_250_y2 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .0381821   .0298119     1.28   0.204     -.021181    .0975451
+       _cons |   .0472833   .0006584    71.81   0.000     .0459722    .0485944
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        12           1          11     |
+        muni |        78          78           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(dropped 1733 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 2.9444e+03  eps = .         iters = 5    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.80  P   
+Iteration 2:   deviance = 2.3945e+03  eps = 2.30e-01  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.52      
+Iteration 3:   deviance = 2.3284e+03  eps = 2.84e-02  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.01      
+Iteration 4:   deviance = 2.3262e+03  eps = 9.33e-04  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.22      
+Iteration 5:   deviance = 2.3262e+03  eps = 2.96e-06  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.26      
+Iteration 6:   deviance = 2.3262e+03  eps = 3.35e-10  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -5.26   S  
+Iteration 7:   deviance = 2.3262e+03  eps = 4.24e-16  iters = 2    tol = 1.0e-0
+> 7                                                                            
+>    min(eta) =  -5.26   S  
+Iteration 8:   deviance = 2.3262e+03  eps = 2.12e-16  iters = 1    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -5.26   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 22 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      7,368
+Absorbing 2 HDFE groups                           Residual df     =         24
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       1.98
+Deviance             =  2326.218565               Prob > chi2     =     0.1592
+Log pseudolikelihood = -1613.525969               Pseudo R2       =     0.1143
+
+Number of clusters (muni)   =         25
+                                  (Std. err. adjusted for 25 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+    n_250_y2 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .3881411   .2757345     1.41   0.159    -.1522886    .9285708
+       _cons |  -2.314464   .0120634  -191.86   0.000    -2.338108   -2.290821
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        12           1          11     |
+        muni |        25          25           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== radius 250m, horizon 3y: raw P(follow) 0.160 (pioneer) vs 0.072 (virgin l
+> uxury) =====
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =      8,056
+Absorbing 2 HDFE groups                           F(   1,     77) =       5.58
+Statistics robust to heteroskedasticity           Prob > F        =     0.0207
+                                                  R-squared       =     0.0650
+                                                  Adj R-squared   =     0.0547
+                                                  Within R-sq.    =     0.0017
+Number of clusters (muni)    =         78         Root MSE        =     0.2549
+
+                                  (Std. err. adjusted for 78 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+  any_250_y3 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .0735309   .0311218     2.36   0.021     .0115595    .1355023
+       _cons |   .0726331   .0006761   107.44   0.000     .0712869    .0739793
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        11           1          10     |
+        muni |        78          78           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(dropped 1276 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 3.9562e+03  eps = .         iters = 5    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.56  P   
+Iteration 2:   deviance = 3.3695e+03  eps = 1.74e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.26      
+Iteration 3:   deviance = 3.3172e+03  eps = 1.58e-02  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.69      
+Iteration 4:   deviance = 3.3163e+03  eps = 2.50e-04  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.83      
+Iteration 5:   deviance = 3.3163e+03  eps = 1.51e-07  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.84      
+Iteration 6:   deviance = 3.3163e+03  eps = 2.11e-12  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -4.84   S  
+Iteration 7:   deviance = 3.3163e+03  eps = 2.21e-16  iters = 2    tol = 1.0e-0
+> 8                                                                            
+>    min(eta) =  -4.84   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 7 iterations and 20 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      6,780
+Absorbing 2 HDFE groups                           Residual df     =         27
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       9.02
+Deviance             =  3316.326021               Prob > chi2     =     0.0027
+Log pseudolikelihood = -2306.268601               Pseudo R2       =     0.1068
+
+Number of clusters (muni)   =         28
+                                  (Std. err. adjusted for 28 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+    n_250_y3 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |    .692978   .2306945     3.00   0.003      .240825    1.145131
+       _cons |  -1.851417   .0119531  -154.89   0.000    -1.874845    -1.82799
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        11           1          10     |
+        muni |        28          28           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== radius 500m, horizon 1y: raw P(follow) 0.099 (pioneer) vs 0.049 (virgin l
+> uxury) =====
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =     10,274
+Absorbing 2 HDFE groups                           F(   1,     77) =       2.32
+Statistics robust to heteroskedasticity           Prob > F        =     0.1321
+                                                  R-squared       =     0.0801
+                                                  Adj R-squared   =     0.0719
+                                                  Within R-sq.    =     0.0005
+Number of clusters (muni)    =         78         Root MSE        =     0.2098
+
+                                  (Std. err. adjusted for 78 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+  any_500_y1 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .0336425   .0221031     1.52   0.132    -.0103704    .0776555
+       _cons |   .0492049   .0004776   103.02   0.000     .0482539     .050156
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           1          12     |
+        muni |        78          78           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(dropped 1965 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 3.2127e+03  eps = .         iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.04  P   
+Iteration 2:   deviance = 2.6130e+03  eps = 2.29e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.84      
+Iteration 3:   deviance = 2.5432e+03  eps = 2.75e-02  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.58      
+Iteration 4:   deviance = 2.5406e+03  eps = 1.01e-03  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.07      
+Iteration 5:   deviance = 2.5406e+03  eps = 1.77e-05  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.24      
+Iteration 6:   deviance = 2.5406e+03  eps = 1.20e-07  iters = 3    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -6.26      
+Iteration 7:   deviance = 2.5406e+03  eps = 8.87e-12  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -6.26   S  
+Iteration 8:   deviance = 2.5406e+03  eps = 4.00e-16  iters = 2    tol = 1.0e-0
+> 8                                                                            
+>    min(eta) =  -6.26   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 23 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      8,309
+Absorbing 2 HDFE groups                           Residual df     =         30
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       4.26
+Deviance             =  2540.581932               Prob > chi2     =     0.0391
+Log pseudolikelihood = -1798.743235               Pseudo R2       =     0.1541
+
+Number of clusters (muni)   =         31
+                                  (Std. err. adjusted for 31 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+    n_500_y1 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .5506585   .2668387     2.06   0.039     .0276642    1.073653
+       _cons |  -2.135985   .0136719  -156.23   0.000    -2.162781   -2.109188
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           1          12     |
+        muni |        31          31           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== radius 500m, horizon 2y: raw P(follow) 0.169 (pioneer) vs 0.103 (virgin l
+> uxury) =====
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =      9,101
+Absorbing 2 HDFE groups                           F(   1,     77) =       0.93
+Statistics robust to heteroskedasticity           Prob > F        =     0.3376
+                                                  R-squared       =     0.1320
+                                                  Adj R-squared   =     0.1234
+                                                  Within R-sq.    =     0.0004
+Number of clusters (muni)    =         78         Root MSE        =     0.2868
+
+                                  (Std. err. adjusted for 78 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+  any_500_y2 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |    .039266   .0406964     0.96   0.338     -.041771    .1203029
+       _cons |   .1039564   .0008988   115.66   0.000     .1021667    .1057462
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        12           1          11     |
+        muni |        78          78           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(dropped 1412 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 4.7610e+03  eps = .         iters = 5    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.46  P   
+Iteration 2:   deviance = 4.1544e+03  eps = 1.46e-01  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.32      
+Iteration 3:   deviance = 4.1066e+03  eps = 1.16e-02  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.97      
+Iteration 4:   deviance = 4.1055e+03  eps = 2.66e-04  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.29      
+Iteration 5:   deviance = 4.1055e+03  eps = 3.22e-06  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.35      
+Iteration 6:   deviance = 4.1055e+03  eps = 2.75e-09  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -5.35   S  
+Iteration 7:   deviance = 4.1055e+03  eps = 2.65e-15  iters = 2    tol = 1.0e-0
+> 7                                                                            
+>    min(eta) =  -5.35   S  
+Iteration 8:   deviance = 4.1055e+03  eps = 0.00e+00  iters = 2    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -5.35   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 23 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      7,689
+Absorbing 2 HDFE groups                           Residual df     =         31
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       2.56
+Deviance             =   4105.53109               Prob > chi2     =     0.1099
+Log pseudolikelihood = -3074.422289               Pseudo R2       =     0.1485
+
+Number of clusters (muni)   =         32
+                                  (Std. err. adjusted for 32 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+    n_500_y2 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |    .433466   .2711747     1.60   0.110    -.0980268    .9649587
+       _cons |  -1.430526   .0108924  -131.33   0.000    -1.451875   -1.409177
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        12           1          11     |
+        muni |        32          32           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== radius 500m, horizon 3y: raw P(follow) 0.246 (pioneer) vs 0.155 (virgin l
+> uxury) =====
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =      8,056
+Absorbing 2 HDFE groups                           F(   1,     77) =       3.20
+Statistics robust to heteroskedasticity           Prob > F        =     0.0774
+                                                  R-squared       =     0.1367
+                                                  Adj R-squared   =     0.1272
+                                                  Within R-sq.    =     0.0009
+Number of clusters (muni)    =         78         Root MSE        =     0.3400
+
+                                  (Std. err. adjusted for 78 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+  any_500_y3 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .0695759   .0388661     1.79   0.077    -.0078164    .1469682
+       _cons |   .1556386   .0008443   184.34   0.000     .1539574    .1573197
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        11           1          10     |
+        muni |        78          78           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(dropped 1219 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 6.9242e+03  eps = .         iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.35  P   
+Iteration 2:   deviance = 6.1879e+03  eps = 1.19e-01  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.12      
+Iteration 3:   deviance = 6.1424e+03  eps = 7.41e-03  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.68      
+Iteration 4:   deviance = 6.1417e+03  eps = 1.21e-04  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.92      
+Iteration 5:   deviance = 6.1417e+03  eps = 8.84e-07  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.96      
+Iteration 6:   deviance = 6.1417e+03  eps = 1.71e-10  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -4.96   S  
+Iteration 7:   deviance = 6.1417e+03  eps = 0.00e+00  iters = 3    tol = 1.0e-0
+> 8                                                                            
+>    min(eta) =  -4.96   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 7 iterations and 21 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      6,837
+Absorbing 2 HDFE groups                           Residual df     =         30
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       5.19
+Deviance             =     6141.666               Prob > chi2     =     0.0227
+Log pseudolikelihood = -4518.966806               Pseudo R2       =     0.1349
+
+Number of clusters (muni)   =         31
+                                  (Std. err. adjusted for 31 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+    n_500_y3 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .5555274   .2438003     2.28   0.023     .0776877    1.033367
+       _cons |   -.890453   .0093955   -94.77   0.000    -.9088678   -.8720383
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        11           1          10     |
+        muni |        31          31           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== radius 1000m, horizon 1y: raw P(follow) 0.149 (pioneer) vs 0.102 (virgin 
+> luxury) =====
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =     10,274
+Absorbing 2 HDFE groups                           F(   1,     77) =       0.51
+Statistics robust to heteroskedasticity           Prob > F        =     0.4770
+                                                  R-squared       =     0.1362
+                                                  Adj R-squared   =     0.1286
+                                                  Within R-sq.    =     0.0001
+Number of clusters (muni)    =         78         Root MSE        =     0.2840
+
+                                  (Std. err. adjusted for 78 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+ any_1000_y1 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .0188611   .0263921     0.71   0.477    -.0336922    .0714144
+       _cons |   .1027655   .0005703   180.20   0.000     .1016299    .1039011
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           1          12     |
+        muni |        78          78           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(dropped 1748 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 5.5321e+03  eps = .         iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.68  P   
+Iteration 2:   deviance = 4.8319e+03  eps = 1.45e-01  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.59      
+Iteration 3:   deviance = 4.7778e+03  eps = 1.13e-02  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.45      
+Iteration 4:   deviance = 4.7748e+03  eps = 6.25e-04  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.18      
+Iteration 5:   deviance = 4.7744e+03  eps = 8.35e-05  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -6.62      
+Iteration 6:   deviance = 4.7744e+03  eps = 4.37e-06  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -6.75      
+Iteration 7:   deviance = 4.7744e+03  eps = 1.91e-08  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -6.76   S  
+Iteration 8:   deviance = 4.7744e+03  eps = 4.32e-13  iters = 2    tol = 1.0e-0
+> 7                                                                            
+>    min(eta) =  -6.76   S  
+Iteration 9:   deviance = 4.7744e+03  eps = 0.00e+00  iters = 2    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -6.76   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 9 iterations and 23 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      8,526
+Absorbing 2 HDFE groups                           Residual df     =         32
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       0.27
+Deviance             =  4774.403102               Prob > chi2     =     0.6018
+Log pseudolikelihood = -3553.802404               Pseudo R2       =     0.2001
+
+Number of clusters (muni)   =         33
+                                  (Std. err. adjusted for 33 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+   n_1000_y1 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |    .106183   .2035128     0.52   0.602    -.2926947    .5050607
+       _cons |  -1.153891   .0061921  -186.35   0.000    -1.166028   -1.141755
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        13           1          12     |
+        muni |        33          33           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== radius 1000m, horizon 2y: raw P(follow) 0.269 (pioneer) vs 0.188 (virgin 
+> luxury) =====
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =      9,101
+Absorbing 2 HDFE groups                           F(   1,     77) =       0.88
+Statistics robust to heteroskedasticity           Prob > F        =     0.3515
+                                                  R-squared       =     0.1909
+                                                  Adj R-squared   =     0.1830
+                                                  Within R-sq.    =     0.0003
+Number of clusters (muni)    =         78         Root MSE        =     0.3543
+
+                                  (Std. err. adjusted for 78 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+ any_1000_y2 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .0436535   .0465706     0.94   0.352    -.0490804    .1363875
+       _cons |   .1885755   .0010285   183.34   0.000     .1865274    .1906236
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        12           1          11     |
+        muni |        78          78           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(dropped 1233 observations that are either singletons or separated by a fixed e
+> ffect)
+Iteration 1:   deviance = 8.5371e+03  eps = .         iters = 5    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.31  P   
+Iteration 2:   deviance = 7.7166e+03  eps = 1.06e-01  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.12      
+Iteration 3:   deviance = 7.6637e+03  eps = 6.90e-03  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.80      
+Iteration 4:   deviance = 7.6603e+03  eps = 4.47e-04  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.31      
+Iteration 5:   deviance = 7.6601e+03  eps = 2.64e-05  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.50      
+Iteration 6:   deviance = 7.6601e+03  eps = 2.16e-07  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -5.52      
+Iteration 7:   deviance = 7.6601e+03  eps = 2.09e-11  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -5.52   S  
+Iteration 8:   deviance = 7.6601e+03  eps = 1.13e-16  iters = 2    tol = 1.0e-0
+> 8                                                                            
+>    min(eta) =  -5.52   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 23 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      7,868
+Absorbing 2 HDFE groups                           Residual df     =         35
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       1.64
+Deviance             =  7660.100783               Prob > chi2     =     0.2002
+Log pseudolikelihood = -5883.040254               Pseudo R2       =     0.2055
+
+Number of clusters (muni)   =         36
+                                  (Std. err. adjusted for 36 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+   n_1000_y2 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .2713141   .2118032     1.28   0.200    -.1438126    .6864409
+       _cons |  -.4440745   .0066971   -66.31   0.000    -.4572005   -.4309485
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        12           1          11     |
+        muni |        36          36           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+===== radius 1000m, horizon 3y: raw P(follow) 0.377 (pioneer) vs 0.265 (virgin 
+> luxury) =====
+(MWFE estimator converged in 6 iterations)
+
+HDFE Linear regression                            Number of obs   =      8,056
+Absorbing 2 HDFE groups                           F(   1,     77) =       3.91
+Statistics robust to heteroskedasticity           Prob > F        =     0.0515
+                                                  R-squared       =     0.2268
+                                                  Adj R-squared   =     0.2182
+                                                  Within R-sq.    =     0.0008
+Number of clusters (muni)    =         78         Root MSE        =     0.3913
+
+                                  (Std. err. adjusted for 78 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+ any_1000_y3 | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .0753235   .0380765     1.98   0.051    -.0004966    .1511436
+       _cons |    .265618   .0008271   321.13   0.000     .2639709     .267265
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        11           1          10     |
+        muni |        78          78           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+(dropped 943 observations that are either singletons or separated by a fixed ef
+> fect)
+Iteration 1:   deviance = 1.2187e+04  eps = .         iters = 5    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -3.26  P   
+Iteration 2:   deviance = 1.1117e+04  eps = 9.63e-02  iters = 4    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.06      
+Iteration 3:   deviance = 1.1053e+04  eps = 5.77e-03  iters = 3    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -4.80      
+Iteration 4:   deviance = 1.1049e+04  eps = 3.77e-04  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.27      
+Iteration 5:   deviance = 1.1049e+04  eps = 1.50e-05  iters = 2    tol = 1.0e-0
+> 4                                                                            
+>    min(eta) =  -5.43      
+Iteration 6:   deviance = 1.1049e+04  eps = 5.28e-08  iters = 2    tol = 1.0e-0
+> 5                                                                            
+>    min(eta) =  -5.44      
+Iteration 7:   deviance = 1.1049e+04  eps = 1.19e-12  iters = 2    tol = 1.0e-0
+> 6                                                                            
+>    min(eta) =  -5.44   S  
+Iteration 8:   deviance = 1.1049e+04  eps = 0.00e+00  iters = 2    tol = 1.0e-0
+> 9                                                                            
+>    min(eta) =  -5.44   S O
+-------------------------------------------------------------------------------
+> -----------------------------
+(legend: p: exact partial-out   s: exact solver   h: step-halving   o: epsilon 
+> below tolerance)
+Converged in 8 iterations and 22 HDFE sub-iterations (tol = 1.0e-08)
+
+HDFE PPML regression                              No. of obs      =      7,113
+Absorbing 2 HDFE groups                           Residual df     =         37
+Statistics robust to heteroskedasticity           Wald chi2(1)    =       3.62
+Deviance             =  11048.66474               Prob > chi2     =     0.0570
+Log pseudolikelihood = -8275.488723               Pseudo R2       =     0.2025
+
+Number of clusters (muni)   =         38
+                                  (Std. err. adjusted for 38 clusters in muni)
+------------------------------------------------------------------------------
+             |               Robust
+   n_1000_y3 | Coefficient  std. err.      z    P>|z|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+     pioneer |   .3820767   .2007366     1.90   0.057    -.0113599    .7755132
+       _cons |   .0747836   .0061819    12.10   0.000     .0626673    .0868999
+------------------------------------------------------------------------------
+
+Absorbed degrees of freedom:
+-----------------------------------------------------+
+ Absorbed FE | Categories  - Redundant  = Num. Coefs |
+-------------+---------------------------------------|
+        year |        11           1          10     |
+        muni |        38          38           0    *|
+-----------------------------------------------------+
+* = FE nested within cluster; treated as redundant for DoF computation
+
+. postclose PF
+
+. 
+. log close
+      name:  <unnamed>
+       log:  C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output
+> /design1/pioneer_follow_results.log
+  log type:  text
+ closed on:   3 Nov 2026, 17:32:10
+-------------------------------------------------------------------------------
