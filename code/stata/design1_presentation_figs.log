@@ -1,0 +1,277 @@
+
+  ___  ____  ____  ____  ____ ®
+ /__    /   ____/   /   ____/      StataNow 18.5
+___/   /   /___/   /   /___/       MP—Parallel Edition
+
+ Statistics and Data Science       Copyright 1985-2023 StataCorp LLC
+                                   StataCorp
+                                   4905 Lakeway Drive
+                                   College Station, Texas 77845 USA
+                                   800-782-8272        https://www.stata.com
+                                   979-696-4600        service@stata.com
+
+Stata license: Single-user 8-core , expiring 13 Aug 2027
+Serial number: 501809225348
+  Licensed to: Varley
+               University of Kentucky
+
+Notes:
+      1. Stata is running in batch mode.
+      2. Unicode is supported; see help unicode_advice.
+      3. More than 2 billion observations are allowed; see help obs_advice.
+      4. Maximum number of variables is set to 5,000 but can be increased;
+          see help set_maxvar.
+
+. do design1_presentation_figs.do 
+
+. /*===========================================================================
+> ===
+>  design1_presentation_figs.do
+> 
+>  Presentation variants of three canonical figures, replotted from the saved
+>  coefficient files (no re-estimation):
+> 
+>    fig1_baseline_pres.png  from robustness_coefs.dta (T1_baseline)
+>    figD3_decay_pres.png    from decay_coefs.dta (pooled rows)
+>    fig4_dose_pres.png      from dose2_coefs.csv (T4b_lo14 / T4b_hi5)
+> 
+>  Differences vs the canonical versions (which are NOT overwritten):
+>    - no title, no note/caption
+>    - x- and y-axis titles 25% larger (size(*1.25))
+>    - axis tick labels 25% larger (labsize(*1.25))
+>    - legends on one row and 25% larger (rows(1) size(*1.25))
+>  Everything else (styling, series, CIs, legends) matches the originals in
+>  design1_robustness_plots.do / design1_decay_plots.do / design1_dose_2way.do.
+> 
+>  lpdid matrix columns: c1=coefficient c2=se c3=t c4=p c5=ci_low c6=ci_high c7
+> =obs
+> =============================================================================
+> =*/
+. 
+. version 17
+
+. clear all
+
+. set more off
+
+. 
+. global REPO "C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise"
+
+. global OUT  "$REPO/output/design1"
+
+. 
+. local XT "Years since investor purchase (0 = purchase year)"
+
+. local YT "Effect on log sale price"
+
+. 
+. /*===========================================================================
+> =
+>   FIG 1: baseline event study (single series, no legend)
+> ============================================================================*
+> /
+. use "$OUT/robustness_coefs.dta", clear
+
+. gen b  = c1
+
+. gen se = c2
+(19 missing values generated)
+
+. gen lb = c5
+(19 missing values generated)
+
+. gen ub = c6
+(19 missing values generated)
+
+. replace lb = b - 1.96*se if missing(lb) & !missing(se)
+(0 real changes made)
+
+. replace ub = b + 1.96*se if missing(ub) & !missing(se)
+(0 real changes made)
+
+. gen horizon = "-"+substr(rowname,4,1) if substr(rowname,1,3) == "pre"
+(114 missing values generated)
+
+. replace horizon = substr(rowname,4,1) if substr(rowname,1,3) == "tau"
+(76 real changes made)
+
+. destring horizon, replace force
+horizon: all characters numeric; replaced as byte
+(38 missing values generated)
+
+. drop if missing(horizon) | missing(b)
+(38 observations deleted)
+
+. keep if test == "T1_baseline"
+(144 observations deleted)
+
+. 
+. twoway ///
+>     (rcap ub lb horizon, lcolor(navy) lwidth(medthin)) ///
+>     (connected b horizon, color(navy) msymbol(O) lwidth(medthin)) ///
+>     , graphregion(color(white)) bgcolor(white) ///
+>     ylabel(, angle(horizontal) format(%9.2f) labsize(*1.25)) ///
+>     yline(0, lcolor(gs8) lwidth(thin)) ///
+>     xline(-0.5, lcolor(gs11) lpattern(dash)) ///
+>     legend(off) ///
+>     ytitle("`YT'", size(*1.25)) ///
+>     xtitle("`XT'", size(*1.25)) ///
+>     xlabel(-4(1)3, labsize(*1.25)) name(fig1_baseline_pres, replace)
+
+. graph export "$OUT/fig1_baseline_pres.png", replace width(2000)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/fig1_baseline_pres.png saved as PNG format
+
+. 
+. /*===========================================================================
+> =
+>   FIG D3: decay curve (pooled post vs distance, pre-period placebo alongside)
+> ============================================================================*
+> /
+. use "$OUT/decay_coefs.dta", clear
+
+. gen b  = c1
+
+. gen se = c2
+(4 missing values generated)
+
+. gen lb = c5
+(4 missing values generated)
+
+. gen ub = c6
+(4 missing values generated)
+
+. replace lb = b - 1.96*se if missing(lb) & !missing(se)
+(0 real changes made)
+
+. replace ub = b + 1.96*se if missing(ub) & !missing(se)
+(0 real changes made)
+
+. drop if missing(b)
+(0 observations deleted)
+
+. keep if matrix_type == "pooled"
+(32 observations deleted)
+
+. gen post = lower(rowname) == "post"
+
+. gen mid = .
+(8 missing values generated)
+
+. replace mid = 125  if test == "D_0_250"
+(2 real changes made)
+
+. replace mid = 375  if test == "D_250_500"
+(2 real changes made)
+
+. replace mid = 750  if test == "D_500_1000"
+(2 real changes made)
+
+. replace mid = 1250 if test == "D_1000_1500"
+(2 real changes made)
+
+. drop if missing(mid)
+(0 observations deleted)
+
+. gen x = mid + cond(post, 0, 40)
+
+. sort post x
+
+. 
+. twoway ///
+>     (rcap ub lb x if post, lcolor(navy) lwidth(medthin)) ///
+>     (connected b x if post, color(navy) msymbol(O) lwidth(medthin) sort(x)) /
+> //
+>     (rcap ub lb x if !post, lcolor(gs9) lwidth(thin)) ///
+>     (connected b x if !post, color(gs9) msymbol(Oh) lpattern(dash) lwidth(thi
+> n) sort(x)) ///
+>     , graphregion(color(white)) bgcolor(white) ///
+>     ylabel(, angle(horizontal) format(%9.2f) labsize(*1.25)) ///
+>     yline(0, lcolor(gs8) lwidth(thin)) ///
+>     legend(order(2 "Pooled post-treatment effect" 4 "Pooled pre-period (place
+> bo)") ///
+>            rows(1) position(6) region(lstyle(none)) size(*1.25)) ///
+>     ytitle("Pooled effect on log sale price", size(*1.25)) ///
+>     xtitle("Distance from investor purchase (ring midpoint, meters)", size(*1
+> .25)) ///
+>     xlabel(125 "125" 375 "375" 750 "750" 1250 "1,250", labsize(*1.25)) ///
+>     name(figD3_decay_pres, replace)
+
+. graph export "$OUT/figD3_decay_pres.png", replace width(2000)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/figD3_decay_pres.png saved as PNG format
+
+. 
+. /*===========================================================================
+> =
+>   FIG 4: dose response, 2-way split (1-4 vs 5+ purchases within 1km)
+> ============================================================================*
+> /
+. import delimited "$OUT/dose2_coefs.csv", varnames(1) clear
+(encoding automatically selected: ISO-8859-1)
+(14 vars, 40 obs)
+
+. keep if matrix_type == "event"
+(8 observations deleted)
+
+. gen horizon = -real(substr(rowname,4,1)) if substr(rowname,1,3) == "pre"
+(16 missing values generated)
+
+. replace horizon = real(substr(rowname,4,1)) if substr(rowname,1,3) == "tau"
+(16 real changes made)
+
+. drop if missing(horizon) | missing(c1)
+(0 observations deleted)
+
+. gen b  = c1
+
+. gen lb = c5
+(4 missing values generated)
+
+. gen ub = c6
+(4 missing values generated)
+
+. sort test horizon
+
+. gen x1 = horizon - 0.06 if test == "T4b_lo14"
+(24 missing values generated)
+
+. gen x2 = horizon + 0.06 if test == "T4b_hi5"
+(24 missing values generated)
+
+. 
+. twoway ///
+>     (rcap ub lb x1 if test == "T4b_lo14", lcolor(cranberry) lwidth(medthin)) 
+> ///
+>     (connected b x1 if test == "T4b_lo14", color(cranberry) msymbol(O) lwidth
+> (medthin)) ///
+>     (rcap ub lb x2 if test == "T4b_hi5", lcolor(navy) lwidth(medthin)) ///
+>     (connected b x2 if test == "T4b_hi5", color(navy) msymbol(O) lwidth(medth
+> in)) ///
+>     , graphregion(color(white)) bgcolor(white) ///
+>     ylabel(, angle(horizontal) labsize(*1.25)) ///
+>     yline(0, lcolor(gs8) lwidth(thin)) ///
+>     xline(-0.5, lcolor(gs11) lpattern(dash)) ///
+>     legend(order(2 "1-4 purchases within 1km" 4 "5+ purchases within 1km") //
+> /
+>            rows(1) position(6) region(lstyle(none)) size(*1.25)) ///
+>     ytitle("`YT'", size(*1.25)) ///
+>     xtitle("`XT'", size(*1.25)) ///
+>     xlabel(-4(1)3, labsize(*1.25)) name(fig4_dose_pres, replace)
+
+. graph export "$OUT/fig4_dose_pres.png", replace width(2000)
+file
+    C:/Users/mva284/Documents/GitHub/ClaudeAct2260MergeExercise/output/design
+    > 1/fig4_dose_pres.png saved as PNG format
+
+. 
+. di as result _n "Presentation figures written: fig1_baseline_pres, figD3_deca
+> y_pres, fig4_dose_pres"
+
+Presentation figures written: fig1_baseline_pres, figD3_decay_pres, fig4_dose_p
+> res
+
+. 
+end of do-file
