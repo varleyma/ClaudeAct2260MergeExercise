@@ -147,6 +147,48 @@ stats.to_csv(OUT / "act22_gains_persistence_stats.csv", index=False)
 # ---------------------------------------------------------------------------
 # Figure: distribution of within-person gains recurrence
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# 4. Horizon profile: beta_H from the LPM  1{gains_{t+H}} = a + b 1{gains_t}
+#    (slope = P(gains t+H | gains t) - P(gains t+H | no gains t)),
+#    analytic CR1 SEs clustered by person
+# ---------------------------------------------------------------------------
+HMAX = 5
+key = panel.set_index(["panel_id", "report_year"])["has_gains"]
+pid_codes = panel["panel_id"].astype("category")
+prof_rows = []
+for H in range(1, HMAX + 1):
+    tgt = pd.MultiIndex.from_arrays(
+        [panel["panel_id"], panel["report_year"] + H])
+    nxt = key.reindex(tgt).to_numpy()
+    ok = ~pd.isna(nxt)
+    pid = pid_codes.cat.codes.to_numpy()[ok]
+    g0 = panel["has_gains"].to_numpy()[ok].astype(float)
+    gH = nxt[ok].astype(float)
+    X = np.column_stack([np.ones_like(g0), g0])
+    XtX_inv = np.linalg.inv(X.T @ X)
+    beta = XtX_inv @ (X.T @ gH)
+    u = gH - X @ beta
+    clusters = np.unique(pid)
+    meat = np.zeros((2, 2))
+    for g in clusters:
+        m = pid == g
+        s = X[m].T @ u[m]
+        meat += np.outer(s, s)
+    Gc, n, k = len(clusters), len(gH), 2
+    V = (Gc / (Gc - 1)) * ((n - 1) / (n - k)) * XtX_inv @ meat @ XtX_inv
+    se = np.sqrt(V[1, 1])
+    prof_rows.append({"H": H, "beta": beta[1], "se": se,
+                      "lo": beta[1] - 1.96 * se,
+                      "hi": beta[1] + 1.96 * se,
+                      "t": beta[1] / se, "n_pairs": n,
+                      "n_clusters": Gc,
+                      "p_cond": gH[g0 == 1].mean(),
+                      "p_uncond": gH[g0 == 0].mean()})
+prof = pd.DataFrame(prof_rows)
+print("\nHorizon profile beta_H (LPM, SEs clustered by person):")
+print(prof.round(3).to_string(index=False))
+prof.to_csv(OUT / "act22_gains_persistence_horizon.csv", index=False)
+
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -171,4 +213,29 @@ fig.text(0.01, 0.01,
 fig.tight_layout(rect=(0, 0.04, 1, 1))
 fig.savefig(OUT / "act22_gains_persistence_hist.png", dpi=200)
 plt.close(fig)
-print("\nWrote figure + stats to " + str(OUT))
+
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.errorbar(prof["H"], prof["beta"],
+            yerr=[prof["beta"] - prof["lo"], prof["hi"] - prof["beta"]],
+            color="#1f77b4", marker="o", linestyle="none", capsize=3,
+            elinewidth=1.2, markersize=5,
+            label=r"$\beta_H$: effect of gains in $t$ on P(gains in $t+H$)")
+ax.axhline(0, color=GRAY, lw=1, ls="--")
+ax.set_xticks(prof["H"])
+ax.set_ylim(bottom=min(0, prof["lo"].min() - 0.02))
+ax.set_title("Persistence of exempt capital-gains realization:\n"
+             "horizon profile within Act 22 filers",
+             fontsize=12, fontweight="bold")
+ax.set_xlabel("Horizon H (years ahead)")
+ax.set_ylabel("Change in probability of exempt gains at t+H")
+ax.spines[["top", "right"]].set_visible(False)
+ax.legend(frameon=False)
+fig.text(0.01, 0.01,
+         "LPM slope of 1{gains t+H} on 1{gains t} over all person-year "
+         "pairs with both years observed (fuzzy-merge panel); 95% CI, "
+         "SEs clustered by person. Lumpy one-off exits predict ~0 at "
+         "every horizon.", fontsize=7, color=GRAY)
+fig.tight_layout(rect=(0, 0.04, 1, 1))
+fig.savefig(OUT / "act22_gains_persistence_horizon.png", dpi=200)
+plt.close(fig)
+print("\nWrote figures + stats to " + str(OUT))
